@@ -1,5 +1,5 @@
-The Accelerators Modeling Interface (AMI) Standard
-====================
+The Particle-In-Cell Modeling Interface (PICMI) Standard
+==================================================
 
 VERSION: **1.0.0** (October 12th, 2016)
 
@@ -61,7 +61,6 @@ Mathematical and physical constants
     - **definition**: Planck's constant
     - **units**: J.s
 **units**: J.s
-
 
 Particles
 ---------
@@ -200,13 +199,74 @@ Particles
 
   - `Species`
     - **type**: *object*
-    - `Type=type`:  **type**: *Particle* - "an elementary particle or atom, or user-defined type."
+    - `Type=type` - **type**: *Particle* - "an elementary particle or atom, or user-defined type."
     - `Name=name` - **type**: *string* - "name of the species."
     - `Sid=sid` - **type**: *integer* - "unique identification number of the species."
     - `Charge_state=charg_state` - **type**: *integer* - "Charge state of the species (applies to atoms)."
     - `Charge=charge=Q=q` - **type**: *double* - **value**: Type.Charge (multiplied by Charge_state if atom).
     - `Mass=mass=M=m` - **type**: *double* - **value**: Type.Mass
     - `Weight=weight=W=w` - **type**: *double* - "weight of the species."
+    - `add_particles(` - **type**: *method*
+      - n - **type**: *integer* - "Number of particles"
+      - x[n] - **type**: *double array* - **size**: n - "Positions of particles along X."
+      - y[n] - **type**: *double array* - **size**: n - "Positions of particles along Y."
+      - z[n] - **type**: *double array* - **size**: n - "Positions of particles along Z."
+      - vx[n] - **type**: *double array* - **size**: n - "Velocities of particles along X."
+      - vy[n] - **type**: *double array* - **size**: n - "Velocities of particles along Y."
+      - vz[n] - **type**: *double array* - **size**: n - "Velocities of particles along Z."
+      - `)`
 
+    - `add_uniform_box(` - **type**: *method*
+      - n - **type**: *integer* - "Number of particles"
+      - xmin - **type**: *double* - "Min position of box along X."
+      - xmax - **type**: *double* - "Max position of box along X."
+      - ymin - **type**: *double* - "Min position of box along Y."
+      - ymax - **type**: *double* - "Max position of box along Y."
+      - zmin - **type**: *double* - "Min position of box along Z."
+      - zmax - **type**: *double* - "Max position of box along Z."
+      - vthx - **type**: *double* - **defaut**: 0. - "Thermal velocity along X."
+      - vthy - **type**: *double* - **defaut**: 0. - "Thermal velocity along Y."
+      - vthz - **type**: *double* - **defaut**: 0. - "Thermal velocity along Z."
+      - vxmean - **type**: *double* - **defaut**: 0. - "Mean velocity along X."
+      - vymean - **type**: *double* - **defaut**: 0. - "Mean velocity along Y."
+      - vzmean - **type**: *double* - **defaut**: 0. - "Mean velocity along Z."
+      - `)`
+
+Fields
+------
+  - `Grid`
+    - **type**: *object*
+    - `Nx=nx` - **type**: *integer* - "Number of cells along X (Nb nodes=nx+1)."
+    - `Ny=ny` - **type**: *integer* - "Number of cells along Y (Nb nodes=ny+1)."
+    - `Nr=nr` - **type**: *integer* - "Number of cells along R (Nb nodes=nr+1)."
+    - `Nz=nz` - **type**: *integer* - "Number of cells along Z (Nb nodes=nz+1)."
+    - `Nm=nm` - **type**: *integer* - "Number of azimuthal modes."    
+    - `Xmin=xmin` - **type**: *double* - "Position of first node along X."
+    - `Xmax=xmax` - **type**: *double* - "Position of last node along X."
+    - `Ymin=ymin` - **type**: *double* - "Position of first node along Y."
+    - `Ymax=ymax` - **type**: *double* - "Position of last node along Y."
+    - `Rmax=rmax` - **type**: *double* - "Position of last node along R."
+    - `Zmin=zmin` - **type**: *double* - "Position of first node along Z."
+    - `Zmax=zmax` - **type**: *double* - "Position of last node along Z."
+    - `bcxmin` - **type**: *string* - "Boundary condition at min X: periodic/open/dirichlet/neumann."
+    - `bcxmax` - **type**: *string* - "Boundary condition at max X: periodic/open/dirichlet/neumann."
+    - `bcymin` - **type**: *string* - "Boundary condition at min Y: periodic/open/dirichlet/neumann."
+    - `bcymax` - **type**: *string* - "Boundary condition at max Y: periodic/open/dirichlet/neumann."
+    - `bcrmax` - **type**: *string* - "Boundary condition at max R: open/dirichlet/neumann."
+    - `bczmin` - **type**: *string* - "Boundary condition at min Z: periodic/open/dirichlet/neumann."
+    - `bczmax` - **type**: *string* - "Boundary condition at max Z: periodic/open/dirichlet/neumann."
+
+  - `EM_solver`
+    - **type**: *Grid*
+    - `Method=method` - **type**: *double* - "Yee/CK/CKC/Lehe/PSTD/PSATD/GPSTD"
+    - `norderx` - **type**: *integer* - "Order of stencil in X (-1=infinite)."
+    - `nordery` - **type**: *integer* - "Order of stencil in Y (-1=infinite)."
+    - `norderr` - **type**: *integer* - "Order of stencil in R (-1=infinite)."
+    - `norderz` - **type**: *integer* - "Order of stencil in Z (-1=infinite)."
+    - `l_nodal` -**type**: *logical* - "Quantities are at nodes if True, staggered otherwise."
+
+  - `ES_solver`
+    - **type**: *Grid*
+    - `Method=method` - **type**: *double* - "FFT/Multigrid"
 
 

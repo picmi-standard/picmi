@@ -269,4 +269,20 @@ Fields
     - **type**: *Grid*
     - `Method=method` - **type**: *double* - "FFT/Multigrid"
 
-
+  - `Gaussian_laser`
+    - **type**: *object*
+    - `lambda0` - **type**: *double* - "Laser wavelength."
+    - `a0` - **type**: *double* - "Normalized vector potential at focus."
+    - `w0` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
+    - `ctau` - **type**: *double* - "Length of the Gaussian pulse [m]."
+    - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
+    - `x0` - **type**: *double* - "Position of the laser centroid in X."
+    - `y0` - **type**: *double* - "Position of the laser centroid in Y."
+    - `z0` - **type**: *double* - "Position of the laser centroid in Z."
+    - `zf` - **type**: *double* - "Position of the laser focus."
+    - `antenna_x0` - **type**: *double* - "Position of antenna launching the laser along X."
+    - `antenna_y0` - **type**: *double* - "Position of antenna launching the laser along Y."
+    - `antenna_z0` - **type**: *double* - "Position of antenna launching the laser along Z."
+    - `antenna_xvec` - **type**: *double* - "Component along X of vector normal to antenna plane."
+    - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
+    - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."

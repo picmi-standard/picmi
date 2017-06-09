@@ -60,16 +60,15 @@ Mathematical and physical constants
     - **value**: 6.62606957e-34
     - **definition**: Planck's constant
     - **units**: J.s
-**units**: J.s
 
 Particles
 ---------
   - `Particle`
     - **type**: *object*
-    - `Charge=charge=Q=q` - **type**: *double*
-    - `Mass=mass=M=m` - **type**: *double*
-    - `Symbol=symbol=S=s`- **type**: *string*
-    - `Name=name=N=n` - **type**: *string* 
+    - `charge` - **type**: *double*
+    - `mass` - **type**: *double*
+    - `symbol`- **type**: *string*
+    - `name` - **type**: *string* 
     - **Predefined** 
       - `Electron`: **q**=-echarge, **m**=emass, **symbol**='e-', **name**='Electron'.
       - `Positron`: **q**=echarge, **m**=emass, **symbol**='e+', **name**='Positron'.
@@ -84,9 +83,9 @@ Particles
     - **type**: *Particle*
     - `A` - **type**: *double*
     - `Z` - **type**: *integer*
-    - `Group` - **type**: *integer*
-    - `Period` - **type**: *integer*
-    - `Mass=mass=M=m` - **type**: *double*
+    - `group` - **type**: *integer*
+    - `period` - **type**: *integer*
+    - `mass` - **type**: *double*
       - **value**: A*amu
     - **Predefined** 
       - `Hydrogen`: **A**=1.0079400000000001, **Symbol**='H', **Z**=1, **Group**=1, **Period**=1.
@@ -199,13 +198,13 @@ Particles
 
   - `Species`
     - **type**: *object*
-    - `Type=type` - **type**: *Particle* - "an elementary particle or atom, or user-defined type."
-    - `Name=name` - **type**: *string* - "name of the species."
-    - `Sid=sid` - **type**: *integer* - "unique identification number of the species."
-    - `Charge_state=charg_state` - **type**: *integer* - "Charge state of the species (applies to atoms)."
-    - `Charge=charge=Q=q` - **type**: *double* - **value**: Type.Charge (multiplied by Charge_state if atom).
-    - `Mass=mass=M=m` - **type**: *double* - **value**: Type.Mass
-    - `Weight=weight=W=w` - **type**: *double* - "weight of the species."
+    - `type` - **type**: *Particle* - "an elementary particle or atom, or user-defined type."
+    - `name` - **type**: *string* - "name of the species."
+    - `sid` - **type**: *integer* - "unique identification number of the species."
+    - `charg_state` - **type**: *integer* - "Charge state of the species (applies to atoms)."
+    - `charge` - **type**: *double* - **value**: Type.Charge (multiplied by Charge_state if atom).
+    - `mass` - **type**: *double* - **value**: Type.Mass
+    - `weight` - **type**: *double* - "weight of the species."
     - `add_particles(` - **type**: *method*
       - n - **type**: *integer* - "Number of particles"
       - x[n] - **type**: *double array* - **size**: n - "Positions of particles along X."
@@ -258,7 +257,7 @@ Fields
 
   - `EM_solver`
     - **type**: *Grid*
-    - `Method=method` - **type**: *double* - "Yee/CK/CKC/Lehe/PSTD/PSATD/GPSTD"
+    - `method` - **type**: *string* - "Yee/CK/CKC/Lehe/PSTD/PSATD/GPSTD"
     - `norderx` - **type**: *integer* - "Order of stencil in X (-1=infinite)."
     - `nordery` - **type**: *integer* - "Order of stencil in Y (-1=infinite)."
     - `norderr` - **type**: *integer* - "Order of stencil in R (-1=infinite)."
@@ -267,7 +266,7 @@ Fields
 
   - `ES_solver`
     - **type**: *Grid*
-    - `Method=method` - **type**: *double* - "FFT/Multigrid"
+    - `method` - **type**: *double* - "FFT/Multigrid"
 
   - `Gaussian_laser`
     - **type**: *object*
@@ -286,3 +285,4 @@ Fields
     - `antenna_xvec` - **type**: *double* - "Component along X of vector normal to antenna plane."
     - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
     - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."
+

@@ -307,3 +307,16 @@ Fields
     - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
     - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."
 
+Simulation
+----------
+  - `Simulation`
+    - **type**: *object*
+    - `plot_int` - **type** *integer* - "Diagnostic output interval"
+    - `verbose` - **type** *integer* - "Verbosity flag"
+    - `cfl` - **type** *integer* - "Courant-Friedrich-Lewy limit"
+    - `init()` - **type**: *method*
+    - `step(` - **type**: *method*
+      - `nsteps` - **type** *integer* - "Number of time steps"
+      - `)`
+    - `finalize()` - **type**: *method*
+

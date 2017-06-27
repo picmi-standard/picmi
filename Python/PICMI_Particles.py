@@ -6,10 +6,8 @@ class Particle(object):
         self.name = name
         if mass is not None:
             self.mass = mass
-            self.M = self.mass
         if charge is not None:
             self.charge = charge
-            self.Q = self.charge
 
 
 class Atom(Particle):
@@ -25,8 +23,8 @@ class Molecule(Particle):
     def __init__(self, symbol, composition, name=None):
         self.composition = composition
         mass = 0.
-        self.A = 0
-        self.Z = 0
+        self.A = 0.
+        self.Z = 0.
         for c in composition:
             mass += c.mass
             self.A += c.A

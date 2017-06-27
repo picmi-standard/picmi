@@ -275,6 +275,10 @@ Fields
     - `bcrmax` - **type**: *string* - "Boundary condition at max R: open/dirichlet/neumann."
     - `bczmin` - **type**: *string* - "Boundary condition at min Z: periodic/open/dirichlet/neumann."
     - `bczmax` - **type**: *string* - "Boundary condition at max Z: periodic/open/dirichlet/neumann."
+    - `moving_window_velocity` - **type** *double array* - **size**: Ndims - "An array of the moving frame velocity in each direction"
+
+    - `getmins()` - **type**: *method* - "Get mins of grid"
+    - `getmaxs()` - **type**: *method* - "Get maxs of grid"
 
   - `EM_solver`
     - **type**: *Grid*

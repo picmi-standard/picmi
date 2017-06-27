@@ -26,12 +26,13 @@ class PICMI_Grid(object):
       - bcrmax: Boundary condition at max R: open/dirichlet/neumann
       - bczmin: Boundary condition at min Z: periodic/open/dirichlet/neumann
       - bczmax: Boundary condition at max Z: periodic/open/dirichlet/neumann
+      - moving_window_velocity: An array of the moving frame velocity in each direction
     """
 
     def __init__(self, nx=None, ny=None, nr=None, nz=None, nm=None,
                  xmin=None, xmax=None, ymin=None, ymax=None, rmax=None, zmin=None, zmax=None,
                  bcxmin=None, bcxmax=None, bcymin=None, bcymax=None, bcrmax=None, bczmin=None, bczmax=None,
-                 **kw):
+                 moving_window_velocity=None,  **kw):
         self.nx = nx
         self.ny = ny
         self.nr = nr
@@ -51,12 +52,21 @@ class PICMI_Grid(object):
         self.bcrmax = bcrmax
         self.bczmin = bczmin
         self.bczmax = bczmax
+        self.moving_window_velocity = moving_window_velocity
 
         self.init(**kw)
 
     def init(self, **kw):
         raise NotImplementedError
 
+    def getmins(self, **kw):
+        raise NotImplementedError
+
+    def getmaxs(self, **kw):
+        raise NotImplementedError
+
+    def getdims(self, **kw):
+        raise NotImplementedError
 
 class PICMI_EM_solver(object):
     """
@@ -114,9 +124,8 @@ class PICMI_Species(object):
         self.type = type
         self.name = name
         self.sid = sid
-        self.charge_state = charge_state
-        self.charge = charge
-        self.mass = mass
+        self.PICMI_init_charge(charge, charge_state)
+        self.PICMI_init_mass(mass)
         self.weight = weight
 
         self.init(**kw)

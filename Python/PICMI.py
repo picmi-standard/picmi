@@ -1,6 +1,7 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
+from CODATA2014 import *
 
 
 class PICMI_Grid(object):
@@ -120,6 +121,35 @@ class PICMI_Species(object):
 
         self.init(**kw)
 
+    def PICMI_init_charge(self, charge, charge_state):
+        """
+        The input argument, charge, takes precedent, followed by charge_state, then
+        the possible charge of the particle type, and finally defaulting to zero.
+        """
+        self.charge_state = charge_state
+        if charge is not None:
+            self.charge = charge
+        elif charge_state is not None:
+            self.charge = echarge*charge_state
+        else:
+            try:
+                self.charge = self.type.charge
+            except AttributeError:
+                self.charge = 0.
+
+    def PICMI_init_mass(self, mass):
+        """
+        The input argument, mass, takes precedent, followed by the mass of the particle
+        and finally defaulting to zero.
+        """
+        if mass is not None:
+            self.mass = mass
+        else:
+            try:
+                self.mass = self.type.mass
+            except AttributeError:
+                self.mass = 0.
+
     def init(self, **kw):
         raise NotImplementedError
 
@@ -132,7 +162,7 @@ class PICMI_Species(object):
 
 class PICMI_Simulation(object):
     """
-    Simulation`
+    Simulation
       - plot_in: Diagnostic output interval
       - verbose: Verbosity flag
       - cfl: Courant-Friedrich-Lewy limit

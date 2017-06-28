@@ -3,6 +3,12 @@ The Particle-In-Cell Modeling Interface (PICMI) Standard
 
 VERSION: **1.0.0** (October 12th, 2016)
 
+Code specific specifications
+----------------------------
+  - `codename`
+    - **type**: *string*
+    - **definition**: Name of code
+
 Mathematical and physical constants
 -----------------------------------
   - `pi`  

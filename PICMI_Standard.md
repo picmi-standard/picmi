@@ -11,17 +11,17 @@ Code specific specifications
 
 Mathematical and physical constants
 -----------------------------------
-  - `pi`  
+  - `pi`
     - **type**: *double*
     - **value**: 3.14159265358979323
     - **definition**: ratio of a circle's circumference to its diameter
     - **units**: N/A
-  - `euler` 
+  - `euler`
     - **type**: *double*
     - **value**: 0.57721566490153386
     - **definition**: Euler-Masceroni constant. Base of the natural logarithm
     - **units**: N/A
-  - `amu`   
+  - `amu`
     - **type**: *double*
     - **value**: 1.660538921e-27
     - **definition**: Atomic Mass Unit
@@ -31,37 +31,37 @@ Mathematical and physical constants
     - **value**: 2.99792458e+8
     - **definition**: Speed of light in vacuum (exact)
     - **units**: m/s
-  - `echarge`        
+  - `echarge`
     - **type**: *double*
     - **value**: 1.602176565e-19
     - **definition**: Elementary charge
     - **units**: C
-  - `emass`        
+  - `emass`
     - **type**: *double*
     - **value**: 9.10938291e-31
-    - **definition**: Electron mass 
+    - **definition**: Electron mass
     - **units**: kg
-  - `mu0`           
+  - `mu0`
     - **type**: *double*
     - **value**: 4.e-7*pi
     - **definition**: Permeability of free space
     - **units**: kg.m/(s.s.A.A)=H/m=T.m/A
-  - `eps0`         
+  - `eps0`
     - **type**: *double*
     - **value**: 1./(mu0.clight.clight)
     - **definition**: Permittivity of free space
-    - **units**: F/m 
-  - `boltzmann` 
+    - **units**: F/m
+  - `boltzmann`
     - **type**: *double*
     - **value**: 1.3806488e-23
     - **definition**: Boltzmann's constant
     - **units**: J/K
-  - `avogadro`  
+  - `avogadro`
     - **type**: *double*
     - **value**: 6.02214129e23
     - **definition**: Avogadro's Number
     - **units**: N/A
-  - `planck`     
+  - `planck`
     - **type**: *double*
     - **value**: 6.62606957e-34
     - **definition**: Planck's constant
@@ -74,8 +74,8 @@ Particles
     - `charge` - **type**: *double*
     - `mass` - **type**: *double*
     - `symbol`- **type**: *string*
-    - `name` - **type**: *string* 
-    - **Predefined** 
+    - `name` - **type**: *string*
+    - **Predefined**
       - `Electron`: **q**=-echarge, **m**=emass, **symbol**='e-', **name**='Electron'.
       - `Positron`: **q**=echarge, **m**=emass, **symbol**='e+', **name**='Positron'.
       - `Proton`: **q**=echarge, **m**=1.6726231e-27, **symbol**='p', **name**='Proton'.
@@ -84,7 +84,7 @@ Particles
       - `Muon`: **q**=-echarge, **m**=1.883531475e-28, **symbol**='mu-', **name**='Muon'.
       - `Antimuon`: **q**=echarge, **m**=1.883531475e-28, **symbol**='mu+', **name**='Antimuon'.
       - `Photon`: **q**=0., **m**=0., **symbol**='gnu', **name**='Photon'.
-    
+
   - `Atom`
     - **type**: *Particle*
     - `A` - **type**: *double*
@@ -94,7 +94,7 @@ Particles
     - `mass` - **type**: *double*
       - **value**: A*amu
     - `ionization_levels` - **type**: *list*
-    - **Predefined** 
+    - **Predefined**
       - `Hydrogen`: **A**=1.00794, **symbol**='H', **Z**=1, **group**=1, **period**=1.
       - `Deuterium`: **A**=2.01410178, **symbol**='D', **Z**=1, **group**=1, **period**=1.
       - `Tritium`: **A**=3.0160492, **symbol**='T', **Z**=1, **group**=1, **period**=1.
@@ -213,7 +213,7 @@ Particles
     - `symbol` - **type**: *string* - "Chemical symbol"
     - `composition` - **type**: *list* - "List of atomic elements"
     - `name` - **type**: *string* - "Common name"
-    - **Predefined** 
+    - **Predefined**
       - `Dihydrogen`: **composition**=[Hydrogen, Hydrogen], **symbol**='H2', **name**='Dihydrogen'
       - `Dideuterium`: **composition**=[Deuterium, Deuterium], **symbol**='D2', **name**='Dideuterium'
       - `Dinitrogen`: **composition**=[Nitrogen, Nitrogen], **symbol**='N2', **name**='Dinitrogen'
@@ -266,7 +266,7 @@ Fields
     - `ny` - **type**: *integer* - "Number of cells along Y (Nb nodes=ny+1)."
     - `nr` - **type**: *integer* - "Number of cells along R (Nb nodes=nr+1)."
     - `nz` - **type**: *integer* - "Number of cells along Z (Nb nodes=nz+1)."
-    - `nm` - **type**: *integer* - "Number of azimuthal modes."    
+    - `nm` - **type**: *integer* - "Number of azimuthal modes."
     - `xmin` - **type**: *double* - "Position of first node along X."
     - `xmax` - **type**: *double* - "Position of last node along X."
     - `ymin` - **type**: *double* - "Position of first node along Y."
@@ -293,29 +293,33 @@ Fields
     - `nordery` - **type**: *integer* - "Order of stencil in Y (-1=infinite)."
     - `norderr` - **type**: *integer* - "Order of stencil in R (-1=infinite)."
     - `norderz` - **type**: *integer* - "Order of stencil in Z (-1=infinite)."
-    - `l_nodal` -**type**: *logical* - "Quantities are at nodes if True, staggered otherwise."
+    - `l_nodal` - **type**: *logical* - "Quantities are at nodes if True, staggered otherwise."
+    - `laser` - **type**: *laser object* - "Object specifying the laser profile"
 
   - `ES_solver`
     - **type**: *Grid*
     - `method` - **type**: *double* - "FFT/Multigrid"
 
   - `Gaussian_laser`
-    - **type**: *object*
-    - `lambda0` - **type**: *double* - "Laser wavelength."
-    - `a0` - **type**: *double* - "Normalized vector potential at focus."
-    - `w0` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
-    - `ctau` - **type**: *double* - "Length of the Gaussian pulse [m]."
+    - **type**: *laser object*
+    - `wavelength` - **type**: *double* - "Laser wavelength."
+    - `waist` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
+    - `duration` - **type**: *double* - "Length of the Gaussian pulse [m]."
+    - `t_peak` - **type**: *double* - "The time at which the peak of the laser pulse is emitted by the antenna"
     - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
+    - `focal_position` - **type**: *double* - "Position of the laser focus."
+    - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
+    - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
     - `x0` - **type**: *double* - "Position of the laser centroid in X."
     - `y0` - **type**: *double* - "Position of the laser centroid in Y."
     - `z0` - **type**: *double* - "Position of the laser centroid in Z."
-    - `zf` - **type**: *double* - "Position of the laser focus."
     - `antenna_x0` - **type**: *double* - "Position of antenna launching the laser along X."
     - `antenna_y0` - **type**: *double* - "Position of antenna launching the laser along Y."
     - `antenna_z0` - **type**: *double* - "Position of antenna launching the laser along Z."
     - `antenna_xvec` - **type**: *double* - "Component along X of vector normal to antenna plane."
     - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
     - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."
+    - `em_solver` - **type**: *EM_solver* - "The structure that contains the fields of the simulation."
 
 Simulation
 ----------

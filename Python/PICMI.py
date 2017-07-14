@@ -68,6 +68,7 @@ class PICMI_Grid(object):
     def getdims(self, **kw):
         raise NotImplementedError
 
+
 class PICMI_EM_solver(object):
     """
     EM_solver
@@ -77,13 +78,14 @@ class PICMI_EM_solver(object):
       - norderr: Order of stencil in R (-1=infinite)
       - norderz: Order of stencil in Z (-1=infinite)
       - l_nodal: Quantities are at nodes if True, staggered otherwise
+      - laser: Object specifying the laser profile
     """
 
     Methods_list = ['Yee', 'CK', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
 
     def __init__(self, Method=None,
                  norderx=None, nordery=None, norderr=None, norderz=None,
-                 l_nodal=None,
+                 l_nodal=None, laser=None,
                  current_deposition_algo=None, charge_deposition_algo=None,
                  field_gathering_algo=None, particle_pusher_algo=None, **kw):
 
@@ -94,13 +96,77 @@ class PICMI_EM_solver(object):
         self.norderr = norderr
         self.norderz = norderz
         self.l_nodal = l_nodal
+        self.laser = laser
         self.current_deposition_algo = current_deposition_algo
         self.charge_deposition_algo = charge_deposition_algo
         self.field_gathering_algo = field_gathering_algo
         self.particle_pusher_algo = particle_pusher_algo
 
         self.init(**kw)
-    
+
+    def init(self, **kw):
+        raise NotImplementedError
+
+
+class PICMI_Gaussian_laser(object):
+    """
+    Gaussian Laser
+    - wavelength: Laser wavelength.
+    - waist: Waist of the Gaussian pulse at focus [m].
+    - duration: Length of the Gaussian pulse [m].
+    - t_peak: The time at which the peak of the laser pulse is emitted by the antenna
+    - pol_angle: Angle of polarization (relative to X).
+    - a0: Normalized vector potential at focus.
+          Specify either a0 or E0 (E0 takes precedence)
+    - E0: Maximum amplitude of the laser field (in V/m).
+          Specify either a0 or E0 (E0 takes precedence)
+    - x0: Position of the laser centroid in X.
+    - y0: Position of the laser centroid in Y.
+    - z0: Position of the laser centroid in Z.
+    - focal_position: Position of the laser focus.
+    - antenna_x0: Position of antenna launching the laser along X.
+    - antenna_y0: Position of antenna launching the laser along Y.
+    - antenna_z0: Position of antenna launching the laser along Z.
+    - antenna_xvec: Component along X of vector normal to antenna plane.
+    - antenna_yvec: Component along Y of vector normal to antenna plane.
+    - antenna_zvec: Component along Z of vector normal to antenna plane.
+    - em_solver: The structure that contains the fields of the simulation.
+    """
+    def __init__(self, wavelength, waist, duration, t_peak, pol_angle, a0=None, E0=None,
+                 x0=0., y0=0., z0=None, focal_position=None,
+                 antenna_x0=0., antenna_y0=0., antenna_z0=0.,
+                 antenna_xvec=0., antenna_yvec=0., antenna_zvec=1., em_solver=None, **kw):
+        k0 = 2.*pi/wavelength
+        if E0 is None:
+            E0 = a0*emass*clight**2*k0/echarge
+        if a0 is None:
+            a0 = E0/(emass*clight**2*k0/echarge)
+
+        if z0 is None:
+            z0 = antenna_z0 - t_peak*clight
+
+        self.wavelength = wavelength
+        self.k0 = k0
+        self.waist = waist
+        self.duration = duration
+        self.t_peak = t_peak
+        self.pol_angle = pol_angle
+        self.focal_position = focal_position
+        self.a0 = a0
+        self.E0 = E0
+        self.x0 = x0
+        self.y0 = y0
+        self.z0 = z0
+        self.antenna_x0 = antenna_x0
+        self.antenna_y0 = antenna_y0
+        self.antenna_z0 = antenna_z0
+        self.antenna_xvec = antenna_xvec
+        self.antenna_yvec = antenna_yvec
+        self.antenna_zvec = antenna_zvec
+        self.em_solver = em_solver
+
+        self.init(**kw)
+
     def init(self, **kw):
         raise NotImplementedError
 
@@ -189,6 +255,6 @@ class PICMI_Simulation(object):
 
     def step(self, nsteps=1):
         raise NotImplementedError
-        
+
     def finalize(self):
         raise NotImplementedError

@@ -328,7 +328,7 @@ Simulation
     - **Input arguments:**
         - `timestep` - **type** *float* - "Absolute time step size of the simulation
         (use 0 if you prefer specifying instead the timestep relative to the CFL limit)"
-        - `timestep_over_CFL` - **type** *float* - **defaut**: 0. - "Ratio of the time step size to the CFL limit
+        - `timestep_over_CFL` - **type** *float* - **defaut**: 1. - "Ratio of the time step size to the CFL limit
         (used only if `timestep` is 0 ; should raise an error when the code does not have a well-defined CFL)"
         - `verbose` - **type** *boolean* - "Verbosity flag"
     - **Methods:**

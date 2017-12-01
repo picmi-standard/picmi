@@ -276,7 +276,6 @@ Physics objects
     - `wavelength` - **type**: *double* - "Laser wavelength."
     - `waist` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
     - `duration` - **type**: *double* - "Duration of the Gaussian pulse [s]."
-    - `t_peak` - **type**: *double* - "The time at which the peak of the laser pulse is emitted by the antenna"
     - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
     - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
     - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
@@ -287,7 +286,7 @@ Numerics objects
 
   - `ParticleDistributionInjector`
     - **type**: *object*
-    - `type` - **type**: *Beam or Plasma* - "beam/plasma to inject" 
+    - `distribution` - **type**: *Beam or Plasma* - "beam/plasma to inject" 
     - `method` - **type**: *string* - **defaut**: "InPlace" - "method of injection ('InPlace','Plane')
     - `X0` - **type**: *double* - **defaut**: 0. - "Position of the particle centroid in X."
     - `Y0` - **type**: *double* - **defaut**: 0. - "Position of the particle centroid in Y."
@@ -387,4 +386,19 @@ EBeam = GaussianBeam(species=Beam_Electrons,
                      UZrms=1.e3,
                      UZmean=1.e8)
 
-LBeam = GaussianLaser
+LBeam = GaussianLaser(wavelength=1.e-6,
+                      waist=30.e-6,
+                      duration=30.e-15,
+                      pol_angle=pi/2,
+                      a0=2.)
+
+EBeam_Injector = ParticleDistributionInjector(distribution=EBeam,
+                                             method='InPlace',
+                                             Z0=10.e-6)
+
+LBeam_Antenna = LaserAntenna(laser=LBeam,
+                             focal_position=40.e-6,
+                             z0=40.e-6-LBeam.duration*clight,
+                             antenna_z0=30.e-6)
+
+To define: grid, sim.

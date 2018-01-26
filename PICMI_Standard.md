@@ -249,8 +249,8 @@ Physics objects
     - `UZmean` - **type**: *double* - "Mean velocity (gamma*V) along X [m/s]."
     - density_func (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
     - array_func (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
-	
-  - `Plasma` 
+
+  - `Plasma`
     - **type**: *object*
     - `species' - **type**: *Particle list* - "Particle species list"
     - xmin - **type**: *double* - "Min position of box along X."
@@ -269,24 +269,13 @@ Physics objects
     - density_func (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
     - array_func (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
 
-### Laser beams
-
-  - `GaussianLaser`
-    - **type**: *object*
-    - `wavelength` - **type**: *double* - "Laser wavelength."
-    - `waist` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
-    - `duration` - **type**: *double* - "Duration of the Gaussian pulse [s]."
-    - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
-    - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
-    - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
-
 Numerics objects
 ---------------
 ### Particles
 
   - `ParticleDistributionInjector`
     - **type**: *object*
-    - `distribution` - **type**: *Beam or Plasma* - "beam/plasma to inject" 
+    - `distribution` - **type**: *Beam or Plasma* - "beam/plasma to inject"
     - `method` - **type**: *string* - **defaut**: "InPlace" - "method of injection ('InPlace','Plane')
     - `X0` - **type**: *double* - **defaut**: 0. - "Position of the particle centroid in X."
     - `Y0` - **type**: *double* - **defaut**: 0. - "Position of the particle centroid in Y."
@@ -300,7 +289,7 @@ Numerics objects
     - `XVecPlane` - **type**: *double* - "Component along X of vector normal to injection plane."
     - `YVecPlane` - **type**: *double* - "Component along Y of vector normal to injection plane."
     - `ZVecPlane` - **type**: *double* - "Component along Z of vector normal to injection plane."
-   
+
 ###Fields
   - `Grid`
     - **type**: *object*
@@ -342,8 +331,42 @@ Numerics objects
     - **type**: *Grid*
     - `method` - **type**: *double* - "FFT/Multigrid"
 
+### Injecting a laser pulse in the Simulation
+
+Laser pulses are injected in the simulation by using the function `add_laser_pulse`:
+
+  - `add_laser_pulse( simulation, laser_profile, injection_method )`:
+    - `simulation`: a `Simulation` object (see below)
+        Top-level object that contains all the relevant data for a simulation.
+    - `laser_profile`: one of laser profile object (see below)
+        Specifies the **physical** properties of the laser pulse.
+        (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
+    - `injection_method`: a laser injector object, optional (see below)
+        Specifies how the laser is injected (numerically) into the simulation
+        (e.g. through a laser antenna, or directly added to the mesh).
+        This argument describes an **algorithm**, not a physical object.
+        It is optional. (It is up to each code to define the default method
+        of injection, if the user does not provide `injection_method`)
+
+#### Defining the physical parameters, through a laser profile object
+
+Instances of the different classes below can be passed as the `laser_profile`
+argument in `add_laser_pulse`:
+
+  - `GaussianLaser`
+    - `wavelength` - **type**: *double* - "Laser wavelength."
+    - `waist` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
+    - `duration` - **type**: *double* - "Duration of the Gaussian pulse [s]."
+    - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
+    - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
+    - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
+
+#### Defining an injection method, through a laser injector object
+
+Instances of the different classes below can be passed as the `injection_method`
+argument of `add_laser_pulse`:
+
   - `LaserAntenna`
-    - **type**: *object*
     - `laser` - **type**: *Laser* - "Laser to be injected."
     - `focal_position` - **type**: *double* - "Position of the laser focus."
     - `x0` - **type**: *double* - "Position of the laser centroid in X."

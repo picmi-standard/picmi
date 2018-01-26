@@ -331,7 +331,22 @@ Numerics objects
     - **type**: *Grid*
     - `method` - **type**: *double* - "FFT/Multigrid"
 
-### Injecting a laser pulse in the Simulation
+### Simulation
+  - `Simulation`
+    - **Type**: *object*
+    - **Input arguments:**
+        - `timestep` - **type** *float* - **defaut**: 0. - "Absolute time step size of the simulation
+        (use 0 if you prefer specifying instead the timestep relative to the CFL limit)"
+        - `timestep_over_CFL` - **type** *float* - **defaut**: 1. - "Ratio of the time step size to the CFL limit
+        (used only if `timestep` is 0 ; should raise an error when the code does not have a well-defined CFL)"
+        - `verbose` - **type** *boolean* - "Verbosity flag"
+    - **Methods:**
+        - `step(`
+        `nsteps` - **type** *integer* - "Number of time steps"
+        `)`
+
+Injecting a laser pulse in the Simulation
+-----------------------------------------
 
 Laser pulses are injected in the simulation by using the function `add_laser_pulse`:
 
@@ -348,7 +363,7 @@ Laser pulses are injected in the simulation by using the function `add_laser_pul
         It is optional. (It is up to each code to define the default method
         of injection, if the user does not provide `injection_method`)
 
-#### Defining the physical parameters, through a laser profile object
+### Defining the physical parameters, through a laser profile object
 
 Instances of the different classes below can be passed as the `laser_profile`
 argument in `add_laser_pulse`:
@@ -361,7 +376,7 @@ argument in `add_laser_pulse`:
     - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
     - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
 
-#### Defining an injection method, through a laser injector object
+### Defining an injection method, through a laser injector object
 
 Instances of the different classes below can be passed as the `injection_method`
 argument of `add_laser_pulse`:
@@ -378,20 +393,6 @@ argument of `add_laser_pulse`:
     - `antenna_xvec` - **type**: *double* - "Component along X of vector normal to antenna plane."
     - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
     - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."
-
-### Simulation
-  - `Simulation`
-    - **Type**: *object*
-    - **Input arguments:**
-        - `timestep` - **type** *float* - **defaut**: 0. - "Absolute time step size of the simulation
-        (use 0 if you prefer specifying instead the timestep relative to the CFL limit)"
-        - `timestep_over_CFL` - **type** *float* - **defaut**: 1. - "Ratio of the time step size to the CFL limit
-        (used only if `timestep` is 0 ; should raise an error when the code does not have a well-defined CFL)"
-        - `verbose` - **type** *boolean* - "Verbosity flag"
-    - **Methods:**
-        - `step(`
-        `nsteps` - **type** *integer* - "Number of time steps"
-        `)`
 
 Examples
 --------

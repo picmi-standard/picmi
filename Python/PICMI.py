@@ -99,7 +99,6 @@ class PICMI_EM_solver(object):
         self.norderr = norderr
         self.norderz = norderz
         self.l_nodal = l_nodal
-        self.laser = laser
         self.current_deposition_algo = current_deposition_algo
         self.charge_deposition_algo = charge_deposition_algo
         self.field_gathering_algo = field_gathering_algo
@@ -163,12 +162,12 @@ class PICMI_Laser_antenna(object):
     """
     Laser antenna injection method
     - laser: Laser object to be injected
-    - antenna_x0: Position of antenna launching the laser along X.
-    - antenna_y0: Position of antenna launching the laser along Y.
-    - antenna_z0: Position of antenna launching the laser along Z.
-    - antenna_xvec: Component along X of vector normal to antenna plane.
-    - antenna_yvec: Component along Y of vector normal to antenna plane.
-    - antenna_zvec: Component along Z of vector normal to antenna plane.
+    - antenna_x0=0.: Position of antenna launching the laser along X.
+    - antenna_y0=0.: Position of antenna launching the laser along Y.
+    - antenna_z0=0.: Position of antenna launching the laser along Z.
+    - antenna_xvec=0.: Component along X of vector normal to antenna plane.
+    - antenna_yvec=0.: Component along Y of vector normal to antenna plane.
+    - antenna_zvec=1.: Component along Z of vector normal to antenna plane.
     """
     def __init__(self, laser, antenna_x0=0., antenna_y0=0., antenna_z0=0.,
                  antenna_xvec=0., antenna_yvec=0., antenna_zvec=1., **kw):

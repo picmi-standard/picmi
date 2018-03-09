@@ -1,74 +1,76 @@
 The Particle-In-Cell Modeling Interface (PICMI) Standard
 ==================================================
 
-VERSION: **1.0.0** (October 12th, 2016)
+VERSION: **0.0.2** (November 22th, 2017)
 
 Code specific specifications
 ----------------------------
   - `codename`
     - **type**: *string*
-    - **definition**: Name of code
+    - **definition**: "Name of code"
 
 Mathematical and physical constants
 -----------------------------------
   - `pi`
     - **type**: *double*
     - **value**: 3.14159265358979323
-    - **definition**: ratio of a circle's circumference to its diameter
+    - **definition**: "ratio of a circle's circumference to its diameter"
     - **units**: N/A
   - `euler`
     - **type**: *double*
     - **value**: 0.57721566490153386
-    - **definition**: Euler-Masceroni constant. Base of the natural logarithm
+    - **definition**: "Euler-Masceroni constant. Base of the natural logarithm"
     - **units**: N/A
   - `amu`
     - **type**: *double*
     - **value**: 1.660538921e-27
-    - **definition**: Atomic Mass Unit
+    - **definition**: "Atomic Mass Unit"
     - **units**: kg
   - `clight`
     - **type**: *double*
     - **value**: 2.99792458e+8
-    - **definition**: Speed of light in vacuum (exact)
+    - **definition**: "Speed of light in vacuum (exact)"
     - **units**: m/s
   - `echarge`
     - **type**: *double*
     - **value**: 1.602176565e-19
-    - **definition**: Elementary charge
+    - **definition**: "Elementary charge"
     - **units**: C
   - `emass`
     - **type**: *double*
     - **value**: 9.10938291e-31
-    - **definition**: Electron mass
+    - **definition**: "Electron mass"
     - **units**: kg
   - `mu0`
     - **type**: *double*
     - **value**: 4.e-7*pi
-    - **definition**: Permeability of free space
+    - **definition**: "Permeability of free space"
     - **units**: kg.m/(s.s.A.A)=H/m=T.m/A
   - `eps0`
     - **type**: *double*
     - **value**: 1./(mu0.clight.clight)
-    - **definition**: Permittivity of free space
+    - **definition**: "Permittivity of free space"
     - **units**: F/m
   - `boltzmann`
     - **type**: *double*
     - **value**: 1.3806488e-23
-    - **definition**: Boltzmann's constant
+    - **definition**: "Boltzmann's constant"
     - **units**: J/K
   - `avogadro`
     - **type**: *double*
     - **value**: 6.02214129e23
-    - **definition**: Avogadro's Number
+    - **definition**: "Avogadro's Number"
     - **units**: N/A
   - `planck`
     - **type**: *double*
     - **value**: 6.62606957e-34
-    - **definition**: Planck's constant
+    - **definition**: "Planck's constant"
     - **units**: J.s
 
-Particles
----------
+Physics objects
+---------------
+
+###Particles
   - `Particle`
     - **type**: *object*
     - `charge` - **type**: *double*
@@ -222,44 +224,94 @@ Particles
       - `Carbon_Dioxide`: **composition**=[Carbon, Oxygen, Oxygen], **symbol**='CO2', **name**='Carbon_Dioxide'
       - `Water`: **composition**=[Hydrogen, Hydrogen, Oxygen], **symbol**='H2O', **name**='Water'
 
+### Particle species and distributions
 
   - `Species`
     - **type**: *object*
     - `type` - **type**: *Particle* - "an elementary particle or atom, or user-defined type."
     - `name` - **type**: *string* - "name of the species."
-    - `sid` - **type**: *integer* - "unique identification number of the species."
-    - `charg_state` - **type**: *integer* - "Charge state of the species (applies to atoms)."
-    - `charge` - **type**: *double* - **value**: Type.Charge (multiplied by Charge_state if atom).
-    - `mass` - **type**: *double* - **value**: Type.Mass
-    - `weight` - **type**: *double* - "weight of the species."
-    - `add_particles(` - **type**: *method*
-      - n - **type**: *integer* - "Number of particles"
-      - x[n] - **type**: *double array* - **size**: n - "Positions of particles along X."
-      - y[n] - **type**: *double array* - **size**: n - "Positions of particles along Y."
-      - z[n] - **type**: *double array* - **size**: n - "Positions of particles along Z."
-      - vx[n] - **type**: *double array* - **size**: n - "Velocities of particles along X."
-      - vy[n] - **type**: *double array* - **size**: n - "Velocities of particles along Y."
-      - vz[n] - **type**: *double array* - **size**: n - "Velocities of particles along Z."
-      - `)`
+    - `charg_state` (optional) - **type**: *integer* - "Charge state of the species (applies to atoms)."
+    - `charge` (optional) - **type**: *double* - **default**: Type.Charge (multiplied by Charge_state if atom) - "particles charge, overwrites default if provided."
+    - `mass` (optional) - **type**: *double* - **default**: Type.Mass - "particles mass, overwrites default if provided."
 
-    - `add_uniform_box(` - **type**: *method*
-      - n - **type**: *integer* - "Number of particles"
-      - xmin - **type**: *double* - "Min position of box along X."
-      - xmax - **type**: *double* - "Max position of box along X."
-      - ymin - **type**: *double* - "Min position of box along Y."
-      - ymax - **type**: *double* - "Max position of box along Y."
-      - zmin - **type**: *double* - "Min position of box along Z."
-      - zmax - **type**: *double* - "Max position of box along Z."
-      - vthx - **type**: *double* - **defaut**: 0. - "Thermal velocity along X."
-      - vthy - **type**: *double* - **defaut**: 0. - "Thermal velocity along Y."
-      - vthz - **type**: *double* - **defaut**: 0. - "Thermal velocity along Z."
-      - vxmean - **type**: *double* - **defaut**: 0. - "Mean velocity along X."
-      - vymean - **type**: *double* - **defaut**: 0. - "Mean velocity along Y."
-      - vzmean - **type**: *double* - **defaut**: 0. - "Mean velocity along Z."
-      - `)`
+  - `GaussianBeam`
+    - **type**: *object*
+    - `species` - **type**: *Particle* - "Particle species"
+    - `number_real_particles` - **type**: *double* - "Number of real particles in the beam."
+    - `number_sim_particles` - **type**: *double* - "Number of simulation particles in the beam."
+    - `T0` - **type**: *double* - **default**: 0. - "Time at which parameters are specified [s]."
+    - `Xmean` - **type**: *double* - **default**: 0. - "Mean X position [m]."
+    - `Ymean` - **type**: *double* - **default**: 0. - "Mean Y position [m]."
+    - `Zmean` - **type**: *double* - **default**: 0. - "Mean Z position [m]."
+    - `Xrms` - **type**: *double* - **default**: 0. - "R.M.S. size along X [m]."
+    - `Yrms` - **type**: *double* - **default**: 0. - "R.M.S. size along Y [m]."
+    - `Zrms` - **type**: *double* - **default**: 0. - "R.M.S. size along Z [m]."
+    - `UXmean` - **type**: *double* - **default**: 0. - "Mean velocity (gamma*V) along X [m/s]."
+    - `UYmean` - **type**: *double* - **default**: 0. - "Mean velocity (gamma*V) along X [m/s]."
+    - `UZmean` - **type**: *double* - **default**: 0. - "Mean velocity (gamma*V) along X [m/s]."
+    - `UXrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along X [m/s]."
+    - `UYrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along Y [m/s]."
+    - `UZrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along Z [m/s]."
+    - `density_func` (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
+    - `array_func` (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
 
-Fields
-------
+  - `Plasma`
+    - **type**: *object*
+    - `species` - **type**: *Particle list* - "Particle species or list of species"
+    - `density` - **type**: *double* - "Plasma density [m^-3]."
+    - `xmin` - **type**: *double* - **default**: -infinity - "Min position of box along X."
+    - `xmax` - **type**: *double* - **default**: +infinity - "Max position of box along X."
+    - `ymin` - **type**: *double* - **default**: -infinity - "Min position of box along Y."
+    - `ymax` - **type**: *double* - **default**: +infinity - "Max position of box along Y."
+    - `zmin` - **type**: *double* - **default**: -infinity - "Min position of box along Z."
+    - `zmax` - **type**: *double* - **default**: +infinity - "Max position of box along Z."
+    - `vthx` - **type**: *double* - **default**: 0. - "Thermal velocity along X."
+    - `vthy` - **type**: *double* - **default**: 0. - "Thermal velocity along Y."
+    - `vthz` - **type**: *double* - **default**: 0. - "Thermal velocity along Z."
+    - `vxmean` - **type**: *double* - **default**: 0. - "Mean velocity along X."
+    - `vymean` - **type**: *double* - **default**: 0. - "Mean velocity along Y."
+    - `vzmean` - **type**: *double* - **default**: 0. - "Mean velocity along Z."
+    - `number_per_cell` - **type**: *double* - "Number of particles per cell (randomly placed)
+                                                Only one of number_per_cell or number_per_cell_each_dim should be specified."
+    - `number_per_cell_each_dim` - **type**: *integer array* - **size**: Ndims - "Number of particles along each axis (for regularly placed particles)
+                                                Only one of number_per_cell or number_per_cell_each_dim should be specified."
+    - `density_func` (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
+    - `array_func` (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
+
+  - `ParticleList`
+    - **type**: *object*
+    - `species` - **type**: *Particle* - "Particle species"
+    - `weight` - **type**: *double* - "Particle weight, number of real particles per simulation particle"
+    - `x` - **type**: *list* - "List of x positions of the particles [m]"
+    - `y` - **type**: *list* - "List of y positions of the particles [m]"
+    - `z` - **type**: *list* - "List of z positions of the particles [m]"
+    - `ux` - **type**: *list* - "List of ux positions of the particles (ux = gamma*vx) [m/s]"
+    - `uy` - **type**: *list* - "List of uy positions of the particles (uy = gamma*vy) [m/s]"
+    - `uz` - **type**: *list* - "List of uz positions of the particles (uz = gamma*vz) [m/s]"
+    
+
+Numerics objects
+---------------
+### Particles
+
+  - `ParticleDistributionInjector`
+    - **type**: *object*
+    - `distribution` - **type**: *Beam or Plasma* - "beam/plasma to inject"
+    - `method` - **type**: *string* - **default**: "InPlace" - "method of injection ('InPlace', 'Plane')"
+    - `X0` - **type**: *double* - **default**: 0. - "Position of the particle centroid in X."
+    - `Y0` - **type**: *double* - **default**: 0. - "Position of the particle centroid in Y."
+    - `Z0` - **type**: *double* - **default**: 0. - "Position of the particle centroid in Z."
+    - `Xplane` (optional) - **type**: *double* - **default**: 0. - "Position of the plane of injection in X."
+    - `Yplane` (optional) - **type**: *double* - **default**: 0. - "Position of the plane of injection in Y."
+    - `Zplane` (optional) - **type**: *double* - **default**: 0. - "Position of the plane of injection in Z."
+    - `VXplane` (optional) - **type**: *double* - **default**: 0. - "Velocity of the plane of injection in X."
+    - `VYplane` (optional) - **type**: *double* - **default**: 0. - "Velocity of the plane of injection in Y."
+    - `VZplane` (optional) - **type**: *double* - **default**: 0. - "Velocity of the plane of injection in Z."
+    - `XVecPlane` - **type**: *double* - "Component along X of vector normal to injection plane."
+    - `YVecPlane` - **type**: *double* - "Component along Y of vector normal to injection plane."
+    - `ZVecPlane` - **type**: *double* - "Component along Z of vector normal to injection plane."
+
+###Fields
   - `Grid`
     - **type**: *object*
     - `nx` - **type**: *integer* - "Number of cells along X (Nb nodes=nx+1)."
@@ -294,44 +346,106 @@ Fields
     - `norderr` - **type**: *integer* - "Order of stencil in R (-1=infinite)."
     - `norderz` - **type**: *integer* - "Order of stencil in Z (-1=infinite)."
     - `l_nodal` - **type**: *logical* - "Quantities are at nodes if True, staggered otherwise."
-    - `laser` - **type**: *laser object* - "Object specifying the laser profile"
+    - `add` - **type**: *method* - "Add object to solver (e.g. laser)"
 
   - `ES_solver`
     - **type**: *Grid*
     - `method` - **type**: *double* - "FFT/Multigrid"
 
-  - `Gaussian_laser`
-    - **type**: *laser object*
+### Simulation
+  - `Simulation`
+    - **Type**: *object*
+    - **Input arguments:**
+        - `timestep` - **type** *float* - **default**: 0. - "Absolute time step size of the simulation
+        (use 0 if you prefer specifying instead the timestep relative to the CFL limit)"
+        - `timestep_over_CFL` - **type** *float* - **default**: 1. - "Ratio of the time step size to the CFL limit
+        (used only if `timestep` is 0 ; should raise an error when the code does not have a well-defined CFL)"
+        - `max_step` - **type** *integer* - "Maximum number of time steps"
+        - `max_time` - **type** *float* - "Maximum time to run the simulation"
+        - `verbose` - **type** *boolean* - "Verbosity flag"
+    - **Methods:**
+        - `step(`
+        `nsteps` - **type** *integer* - "Number of time steps"
+        `)`
+
+Injecting a laser pulse in the Simulation
+-----------------------------------------
+
+Laser pulses are injected in the simulation by using the function `add_laser_pulse`:
+
+  - `add_laser_pulse( simulation, laser_profile, injection_method )`:
+    - `simulation`: a `Simulation` object (see below)
+        Top-level object that contains all the relevant data for a simulation.
+    - `laser_profile`: one of laser profile object (see below)
+        Specifies the **physical** properties of the laser pulse.
+        (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
+    - `injection_method`: a laser injector object, optional (see below)
+        Specifies how the laser is injected (numerically) into the simulation
+        (e.g. through a laser antenna, or directly added to the mesh).
+        This argument describes an **algorithm**, not a physical object.
+        It is optional. (It is up to each code to define the default method
+        of injection, if the user does not provide `injection_method`)
+
+### Defining the physical parameters, through a laser profile object
+
+Instances of the different classes below can be passed as the `laser_profile`
+argument in `add_laser_pulse`:
+
+  - `GaussianLaser`
     - `wavelength` - **type**: *double* - "Laser wavelength."
     - `waist` - **type**: *double* - "Waist of the Gaussian pulse at focus [m]."
-    - `duration` - **type**: *double* - "Length of the Gaussian pulse [m]."
-    - `t_peak` - **type**: *double* - "The time at which the peak of the laser pulse is emitted by the antenna"
-    - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
+    - `duration` - **type**: *double* - "Duration of the Gaussian pulse [s]."
     - `focal_position` - **type**: *double* - "Position of the laser focus."
+    - `x0` - **type**: *double* - "Position of the laser centroid in X at time 0."
+    - `y0` - **type**: *double* - "Position of the laser centroid in Y at time 0."
+    - `z0` - **type**: *double* - "Position of the laser centroid in Z at time 0"
+    - `pol_angle` - **type**: *double* - "Angle of polarization (relative to X)."
     - `a0` - **type**: *double* - "Normalized vector potential at focus. Specify eiter a0 or E0."
     - `E0` - **type**: *double* - "Maximum amplitude of the laser field (in V/m). Specify eiter a0 or E0."
-    - `x0` - **type**: *double* - "Position of the laser centroid in X."
-    - `y0` - **type**: *double* - "Position of the laser centroid in Y."
-    - `z0` - **type**: *double* - "Position of the laser centroid in Z."
+
+### Defining an injection method, through a laser injector object
+
+Instances of the different classes below can be passed as the `injection_method`
+argument of `add_laser_pulse`:
+
+  - `LaserAntenna`
+    - `laser` - **type**: *Laser* - "Laser to be injected."
     - `antenna_x0` - **type**: *double* - "Position of antenna launching the laser along X."
     - `antenna_y0` - **type**: *double* - "Position of antenna launching the laser along Y."
     - `antenna_z0` - **type**: *double* - "Position of antenna launching the laser along Z."
     - `antenna_xvec` - **type**: *double* - "Component along X of vector normal to antenna plane."
     - `antenna_yvec` - **type**: *double* - "Component along Y of vector normal to antenna plane."
     - `antenna_zvec` - **type**: *double* - "Component along Z of vector normal to antenna plane."
-    - `em_solver` - **type**: *EM_solver* - "The structure that contains the fields of the simulation."
 
-Simulation
-----------
-  - `Simulation`
-    - **Type**: *object*
-    - **Input arguments:**
-        - `timestep` - **type** *float* - **defaut**: 0. - "Absolute time step size of the simulation
-        (use 0 if you prefer specifying instead the timestep relative to the CFL limit)"
-        - `timestep_over_CFL` - **type** *float* - **defaut**: 1. - "Ratio of the time step size to the CFL limit
-        (used only if `timestep` is 0 ; should raise an error when the code does not have a well-defined CFL)"
-        - `verbose` - **type** *boolean* - "Verbosity flag"
-    - **Methods:**
-        - `step(`
-        `nsteps` - **type** *integer* - "Number of time steps"
-        `)`
+Examples
+--------
+
+### Example 1
+Beam_Electrons = Species(type='Electron')
+
+EBeam = GaussianBeam(species=Beam_Electrons,
+                     nbpart=1.e9,
+                     Xrms=1.e-6,
+                     Yrms=1.e-6,
+                     Zrms=5.e-6,
+                     UXrms=1.e3,
+                     UYrms=1.e3,
+                     UZrms=1.e3,
+                     UZmean=1.e8)
+
+LBeam = GaussianLaser(wavelength=1.e-6,
+                      waist=30.e-6,
+                      duration=30.e-15,
+                      pol_angle=pi/2,
+                      a0=2.)
+
+EBeam_Injector = ParticleDistributionInjector(distribution=EBeam,
+                                             method='InPlace',
+                                             Z0=10.e-6)
+
+LBeam_Antenna = LaserAntenna(laser=LBeam,
+                             focal_position=40.e-6,
+                             z0=40.e-6-LBeam.duration*clight,
+                             antenna_z0=30.e-6)
+
+To define: grid, sim.

@@ -1,4 +1,10 @@
 """
+Run parameters - can be in separate file
+"""
+Laser_waist             = 5.e-6  # The waist of the laser (in meters)
+Injected_plasma_density = 1.e23  # plasma density (in m^-3)
+
+"""
 Physics part - can be in separate file
 """
 import PICMI
@@ -7,7 +13,7 @@ t_peak = 30.e-15  # The time at which the laser reaches its peak at the antenna 
 focal_distance = 100.e-6  # Focal distance from the antenna (in meters)
 antenna_z0 = 9.e-6  # This point is on the laser plane
 laser = PICMI.Gaussian_laser(wavelength = 0.8e-6,  # The wavelength of the laser (in meters)
-                             waist = 5.e-6,  # The waist of the laser (in meters)
+                             waist = Laser_waist,  # The waist of the laser (in meters)
                              duration = 15.e-15,  # The duration of the laser (in seconds)
                              pol_angle = PICMI.pi/2.,  # The main polarization vector
                              focal_position = focal_distance + antenna_z0,  # Focal position (m)
@@ -19,9 +25,8 @@ electrons = PICMI.Species(type=PICMI.Electron, name='electrons')
 
 plasma_min = [-20.e-6, -20.e-6,  0.0e-6]
 plasma_max = [ 20.e-6,  20.e-6,  1.e-3]
-injected_plasma_density = 1.e23
 plasma = PICMI.Plasma(species = electrons,
-                      density = injected_plasma_density,
+                      density = Injected_plasma_density,
                       xmin = plasma_min[0],
                       xmax = plasma_max[0],
                       ymin = plasma_min[1],

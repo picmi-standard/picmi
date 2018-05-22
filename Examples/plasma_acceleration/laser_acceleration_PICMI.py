@@ -4,116 +4,124 @@ Run parameters - can be in separate file
 # Laser parameters
 laser_waist = 5.e-6  # The waist of the laser (in meters)
 laser_duration = 15.e-15  # The duration of the laser (in seconds)
-laser_focal_position = (0.e-6, 0.e-6, 100.e-6)  # Position of the focal plane
-laser_centroid = (0.e-6, 0.e-6, 0.e-6)  # Position of the laser centroid
 laser_a0 = 4. # Amplitude of the normalized vector potential
-
-# Plasma parameters
-plasma_density = 1.e23  # plasma density (in m^-3)
-
 
 """
 Physics part - can be in separate file
 """
 import numpy as np
-import PICMI
+import picmi
 
-laser = PICMI.Gaussian_laser(
+# Define laser
+laser = picmi.GaussianLaser(
     a0=laser_a0,
     wavelength=0.8e-6,  # The wavelength of the laser (in meters)
     waist=laser_waist,  # The waist of the laser (in meters)
     duration=laser_duration,  # The duration of the laser (in seconds)
     polarization_angle = np.pi/2,  # The main polarization vector
-    focal_position=laser_focal_position,  # Focal position (m)
-    centroid_position=laser_centroid_position )
+    focal_position=(0., 0., 100.e-6),  # Focal position (m)
+    centroid_position=(0., 0., 0.),  # Position of the laser centroid at t=0 (m)
+    propagation_direction=(0., 0., 1.) )
 
-electrons = PICMI.Species(type=PICMI.species.electron, name='electrons')
+# Define electron beam
+beam_dist = picmi.GaussianBunchDistribution(
+                n_physical_particles=1.e9,
+                gamma=1000,
+                x_rms=2.e-6, y_rms=2.e-6, z_rms=1.e-6,
+                x_emittance=1.e-6, y_emittance=1.e-6, z_emittance=1.e-6,
+                z_focus=100.e-6, t_focus=10.e-15 )
+                # Initializes the beam so that it will focus at z_focus,
+                # at time t_focus (should we use Twiss parameters instead?)
+beam = picmi.Species(
+            particle_type=picmi.Electron,
+            initial_distribution=beam_dist )
 
-plasma_min = [-20.e-6, -20.e-6,  0.0e-6]
-plasma_max = [ 20.e-6,  20.e-6,  1.e-3]
-plasma = PICMI.Plasma(species = electrons,
-                      density = plasma_density,
-                      xmin = plasma_min[0],
-                      xmax = plasma_max[0],
-                      ymin = plasma_min[1],
-                      ymax = plasma_max[1],
-                      zmin = plasma_min[2],
-                      zmax = plasma_max[2])
+# Define plasma
+plasma_dist = picmi.DistributionFromParsedExpression(
+                density_expression="tanh((z - 20.e-6)/100.e-6)",
+                density_scaling=1.e23 ) # Plasma density in m-3
+plasma = picmi.MultiSpecies(
+                particle_types=[ picmi.Electron, picmi.Helium, picmi.Argon ],
+                proportions=[ 1., 0.2, 0.8 ],
+                initial_distribution=plasma_dist )
 
 """
 Numerics part - can be in separate file
 """
 import numpy as np
-import PICMI
+from scipy.constants import c
+import picmi
 
 max_step = 1000
-plot_int = 100
 
+number_per_cell_each_dim = [2, 2, 2]
+number_macro_electrons   = 100000
+
+# Define the grid
 nx = 64
 ny = 64
 nz = 480
-
 xmin = -30.e-6
 xmax = +30.e-6
 ymin = -30.e-6
 ymax = +30.e-6
 zmin = -56.e-6
 zmax = +12.e-6
+v_window = (0., 0., c)
 
-number_per_cell_each_dim = [2, 2, 2]
-number_macro_electrons   = 100000
+# Setup the grid ; this may be code dependent
+if picmi.code == 'fbpic':
+    grid = picmi.CylindricalGrid(
+        nr=nx, rmin=0., rmax=xmax, bc_rmax='reflective',
+        nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
+        n_azimuthal_modes=2,
+        moving_window_velocity=v_window )
+elif picmi.code in ['warp', 'warpx']:
+    grid = picmi.Cartesian3DGrid(
+        nx=nx, xmin=xmin, xmax=xmax, bc_ymin='periodic', bc_xmax='periodic',
+        ny=ny, ymin=ymin, ymax=ymax, bc_ymin='periodic', bc_ymax='periodic',
+        nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
+        moving_window_velocity=v_window )
+    if picmi.code == 'warpx':
+        grid.set_specific_arguments( max_grid_size=32, max_level=0 )
 
-moving_window_velocity = [0., 0., PICMI.clight]
-antenna_z0 = 9.e-6  # This point is on the laser plane
+# Setup the electromagnetic solver
+solver = picmi.ElectromagneticSolver( grid=grid, cfl=1.0 )
 
-t_peak = 30.e-15  # The time at which the laser reaches its peak at the antenna (in seconds)
+# Initialize the simulation object
+sim = picmi.Simulation( solver=solver,
+    current_deposition_algo='Esirkepov',
+    charge_deposition_algo='Direct',
+    field_gathering_algo='Energy_conserving',
+    particle_pusher_algo='Boris',
+    dt=None )  # Takes dt from the solver
 
+# Inject the laser through an antenna
+antenna = picmi.LaserAntenna(
+                position=(0, 0, 9.e-6),
+                normal_vector=(0, 0, 1.) )
+sim.add_laser( laser, injection_method=antenna )
 
-grid = PICMI.Grid(nx=nx, ny=ny, nz=nz,
-                  xmin=xmin, xmax=xmax,
-                  ymin=ymin, ymax=ymax,
-                  zmin=zmin, zmax=zmax,
-                  bcxmin='periodic', bcxmax='periodic',
-                  bcymin='periodic', bcymax='periodic',
-                  bczmin='open',     bczmax='open',
-                  moving_window_velocity = moving_window_velocity,
-                  coord_sys='XYZ')
+# Add the plasma: continuously injected by the moving window
+plasma_layout = picmi.EvenlySpacedLayout(
+                    grid=grid,
+                    n_macroparticle_per_cell=[ 2, 2, 2 ], # How does this translate for circ/2d?
+                    continuous_injection=True )
+plasma.set_layout( plasma_layout )
+sim.add_species( plasma )  # For Python-driven codes: macroparticles are created at this point
 
-solver = PICMI.EM_solver(current_deposition_algo = 'Esirkepov',
-                         charge_deposition_algo  = 'Direct',
-                         field_gathering_algo    = 'Energy_conserving',
-                         particle_pusher_algo    = 'Boris')
-
-# the following is relevant only to codes using antenna and could be ignored by others
-# ot should be
-laser.SetAntenna(antenna_z0 = antenna_z0,  # This point is on the laser plane
-                 antenna_zvec = 1.,  # The plane normal direction
-                 )
-
-# here we assume that the code will somehow detect that the plasma is not entirely
-# in the simulation box and do automatically the injection as the moving window
-# evolves. Alternative would be to set up automatically.
-plasma.SetLayout(method='regular', # options: 'regular', 'random', 'bitreverse'
-                 number_per_cell_each_dim = number_per_cell_each_dim)
-
-electrons.SetLayout(method='random', # options: 'regular', 'random', 'bitreverse'
-                    number_macroparticles = number_macro_electrons)
-
-sim = PICMI.Simulation(plot_int = plot_int,
-                       verbose = 1,
-                       cfl = 1.0,
-                       max_step = max_step)
+# Add the beam
+beam_layout = picmi.RandomDraw(
+                n_macroparticles=10**5,
+                seed=0 )
+beam.set_layout( beam_layout )
+sim.add_species( beam )
 
 """
-PICMI input script
+picmi input script
 """
-
 import numpy as np
-from pywarpx import PICMI
-#from warp import PICMI
-
-grid.SetSpecificArguments(max_grid_size=32, max_level=0)
-
-sim.write_inputs(inputs_name = 'inputs_from_PICMI')
+from pywarpx import picmi
+sim.write_inputs( inputs_name='inputs_from_picmi')
 
 #sim.step(max_step)

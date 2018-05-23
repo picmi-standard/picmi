@@ -10,7 +10,10 @@ laser_a0 = 4. # Amplitude of the normalized vector potential
 Physics part - can be in separate file
 """
 import numpy as np
-import picmi
+
+# This should be the only line that needs to be changed
+from fbpic import picmi
+# from warp import picmi
 
 # Define laser
 laser = picmi.GaussianLaser(
@@ -38,8 +41,8 @@ beam = picmi.Species(
 
 # Define plasma
 plasma_dist = picmi.DistributionFromParsedExpression(
-                density_expression="tanh((z - 20.e-6)/100.e-6)",
-                density_scaling=1.e23 ) # Plasma density in m-3
+                density_expression="1.e23*tanh((z - 20.e-6)/100.e-6)" )
+                # Plasma density in m-3
 plasma = picmi.MultiSpecies(
                 particle_types=[ picmi.Electron, picmi.Helium, picmi.Argon ],
                 proportions=[ 1., 0.2, 0.8 ],
@@ -51,11 +54,6 @@ Numerics part - can be in separate file
 import numpy as np
 from scipy.constants import c
 import picmi
-
-max_step = 1000
-
-number_per_cell_each_dim = [2, 2, 2]
-number_macro_electrons   = 100000
 
 # Define the grid
 nx = 64
@@ -77,24 +75,33 @@ if picmi.code == 'fbpic':
         n_azimuthal_modes=2,
         moving_window_velocity=v_window )
 elif picmi.code in ['warp', 'warpx']:
+    grid_specific_arguments = {}
+    if  picmi.code == 'warpx':
+        grid_specific_arguments = {'max_grid_size':32, 'max_level':0}
     grid = picmi.Cartesian3DGrid(
-        nx=nx, xmin=xmin, xmax=xmax, bc_ymin='periodic', bc_xmax='periodic',
+        nx=nx, xmin=xmin, xmax=xmax, bc_xmin='periodic', bc_xmax='periodic',
         ny=ny, ymin=ymin, ymax=ymax, bc_ymin='periodic', bc_ymax='periodic',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
-        moving_window_velocity=v_window )
-    if picmi.code == 'warpx':
-        grid.set_specific_arguments( max_grid_size=32, max_level=0 )
+        moving_window_velocity=v_window, **grid_specific_arguments )
 
 # Setup the electromagnetic solver
 solver = picmi.ElectromagneticSolver( grid=grid, cfl=1.0 )
 
 # Initialize the simulation object
-sim = picmi.Simulation( solver=solver,
-    current_deposition_algo='Esirkepov',
-    charge_deposition_algo='Direct',
-    field_gathering_algo='Energy_conserving',
-    particle_pusher_algo='Boris',
-    dt=None )  # Takes dt from the solver
+if picmi.code == 'warp':
+    sim_specific_arguments = {
+        'current_deposition_algo':'Esirkepov',
+        'charge_deposition_algo':'Direct',
+        'field_gathering_algo':'Energy_conserving',
+        'particle_pusher_algo':'Boris' }
+else:
+    sim_specific_arguments = {
+        'current_correction':'curl-free'}
+
+sim = picmi.Simulation(
+        solver=solver,
+        **sim_specific_arguments,
+        dt=None )  # Takes dt from the solver
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -103,25 +110,32 @@ antenna = picmi.LaserAntenna(
 sim.add_laser( laser, injection_method=antenna )
 
 # Add the plasma: continuously injected by the moving window
+if picmi.code == 'fbpic':
+    n_macroparticle_per_cell={'r':2, 'z':2, 'theta':4}
+else:
+    n_macroparticle_per_cell={'x':2, 'y':2, 'z':2}
+
 plasma_layout = picmi.EvenlySpacedLayout(
                     grid=grid,
-                    n_macroparticle_per_cell=[ 2, 2, 2 ], # How does this translate for circ/2d?
+                    n_macroparticle_per_cell=n_macroparticle_per_cell,
                     continuous_injection=True )
-plasma.set_layout( plasma_layout )
-sim.add_species( plasma )  # For Python-driven codes: macroparticles are created at this point
+sim.add_species( species=plasma, layout=plasma_layout )
+# For Python-driven codes: macroparticles are created at this point
 
 # Add the beam
 beam_layout = picmi.RandomDraw(
                 n_macroparticles=10**5,
                 seed=0 )
-beam.set_layout( beam_layout )
-sim.add_species( beam )
+sim.add_species( species=beam, layout=beam_layout )
 
 """
 picmi input script
 """
 import numpy as np
 from pywarpx import picmi
-sim.write_inputs( inputs_name='inputs_from_picmi')
 
-#sim.step(max_step)
+if picmi.code == 'warpx':
+    sim.set_max_step( 1000 )
+    sim.write_input_file( file_name='warpx_input_script' )
+else:
+    sim.step( 1000 )

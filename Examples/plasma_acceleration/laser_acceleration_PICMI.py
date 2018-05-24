@@ -36,16 +36,17 @@ beam_dist = picmi.GaussianBunchDistribution(
                 # Initializes the beam so that it will focus at z_focus,
                 # at time t_focus (should we use Twiss parameters instead?)
 beam = picmi.Species(
-            particle_type=picmi.Electron,
+            particle_type='electron',
             initial_distribution=beam_dist )
 
 # Define plasma
 plasma_dist = picmi.DistributionFromParsedExpression(
                 density_expression="1.e23*tanh((z - 20.e-6)/100.e-6)" )
-                # Plasma density in m-3
 plasma = picmi.MultiSpecies(
-                particle_types=[ picmi.Electron, picmi.Helium, picmi.Argon ],
-                proportions=[ 1., 0.2, 0.8 ],
+                particle_types=       [ 'He',    'Ar', 'electron'],
+                initial_charge_states=[    1,       5,      None ],
+                proportions=          [  0.2,     0.8,      None ],
+                ensure_charge_neutrality=True,
                 initial_distribution=plasma_dist )
 
 """

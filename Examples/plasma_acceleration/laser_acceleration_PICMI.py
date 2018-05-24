@@ -86,7 +86,9 @@ elif picmi.code in ['warp', 'warpx']:
         moving_window_velocity=v_window, **grid_specific_arguments )
 
 # Setup the electromagnetic solver
-solver = picmi.ElectromagneticSolver( grid=grid, cfl=1.0 )
+smoother = picmi.BinomialSmoother( n_pass=2, compensator=True )
+solver = picmi.ElectromagneticSolver( grid=grid, cfl=1.0,
+                                      source_smoother=smoother )
 
 # Initialize the simulation object
 if picmi.code == 'warp':

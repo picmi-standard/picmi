@@ -11,7 +11,7 @@ Physics part - can be in separate file
 """
 import numpy as np
 
-# This should be the only line that needs to be changed
+# This should be the only line that needs to be changed for different codes
 from fbpic import picmi
 # from warp import picmi
 

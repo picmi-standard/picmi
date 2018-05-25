@@ -15,7 +15,7 @@ import numpy as np
 from fbpic import picmi
 # from warp import picmi
 
-# Define laser
+# Define the laser profile laser
 laser = picmi.GaussianLaser(
     a0=laser_a0,
     wavelength=0.8e-6,  # The wavelength of the laser (in meters)
@@ -26,7 +26,7 @@ laser = picmi.GaussianLaser(
     centroid_position=(0., 0., 0.),  # Position of the laser centroid at t=0 (m)
     propagation_direction=(0., 0., 1.) )
 
-# Define electron beam
+# Define the electron beam
 beam_dist = picmi.GaussianBunchDistribution(
                 n_physical_particles=1.e9,
                 gamma=1000,
@@ -43,11 +43,20 @@ beam = picmi.Species(
 plasma_dist = picmi.DistributionFromParsedExpression(
                 density_expression="1.e23*tanh((z - 20.e-6)/100.e-6)" )
 plasma = picmi.MultiSpecies(
-                particle_types=       [ 'He',    'Ar', 'electron'],
+                particle_types=       [ 'He',    'Ar', 'electron'], # Follows openPMD convention
+                species_names=        ['He+', 'Argon',       'e-'], # Optional names, free format
                 initial_charge_states=[    1,       5,      None ],
                 proportions=          [  0.2,     0.8,      None ],
-                ensure_charge_neutrality=True,
+                ensure_initial_charge_neutrality=True,
+                # The above automatically calculates the missing proportion for
+                # the electrons, so that the plasma is neutral initially
                 initial_distribution=plasma_dist )
+# Individual species in a `MultiSpecies` can be addressed either
+# with their index (using Python indexing conventions) or with their name
+# (if the user provided a name)
+# Set the ionization for the species number 1 (Argon)
+# and place the created electrons into the species number 2 (electron)
+plasma[1].activate_ionization( model="ADK", target_species=plasma['e-'] )
 
 """
 Numerics part - can be in separate file
@@ -129,7 +138,7 @@ sim.add_species( species=plasma, layout=plasma_layout )
 beam_layout = picmi.RandomDraw(
                 n_macroparticles=10**5,
                 seed=0 )
-sim.add_species( species=beam, layout=beam_layout )
+sim.add_species( species=beam, layout=beam_layout, calculate_self_field=True )
 
 """
 picmi input script

@@ -43,20 +43,19 @@ beam = picmi.Species(
 plasma_dist = picmi.DistributionFromParsedExpression(
                 density_expression="1.e23*tanh((z - 20.e-6)/100.e-6)" )
 plasma = picmi.MultiSpecies(
-                particle_types=       [ 'He',    'Ar', 'electron'], # Follows openPMD convention
-                species_names=        ['He+', 'Argon',       'e-'], # Optional names, free format
+                particle_types=       [ 'He',    'Ar', 'electron'],
+                # `particle_types` follows the openPMD 2.0 convention
+                species_names=        ['He+', 'Argon',       'e-'],
+                # `species_names` are optional, and free format
                 initial_charge_states=[    1,       5,      None ],
-                proportions=          [  0.2,     0.8,      None ],
-                ensure_initial_charge_neutrality=True,
-                # The above automatically calculates the missing proportion for
-                # the electrons, so that the plasma is neutral initially
+                proportions=          [  0.2,     0.8,  0.2 + 5*0.8 ],
                 initial_distribution=plasma_dist )
 # Individual species in a `MultiSpecies` can be addressed either
 # with their index (using Python indexing conventions) or with their name
 # (if the user provided a name)
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
-plasma[1].activate_ionization( model="ADK", target_species=plasma['e-'] )
+plasma['Argon'].activate_ionization( model="ADK", target_species=plasma['e-'] )
 
 """
 Numerics part - can be in separate file
@@ -79,8 +78,9 @@ v_window = (0., 0., c)
 
 # Setup the grid ; this may be code dependent
 if picmi.code == 'fbpic':
+    nr = nx/2.
     grid = picmi.CylindricalGrid(
-        nr=nx, rmin=0., rmax=xmax, bc_rmax='reflective',
+        nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
         moving_window_velocity=v_window )

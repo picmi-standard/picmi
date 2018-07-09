@@ -53,11 +53,18 @@ class PICMI_GaussianBeam(object):
       - UXrms=0.: R.M.S. velocity (gamma*V) spread along X [m/s]
       - UYrms=0.: R.M.S. velocity (gamma*V) spread along Y [m/s]
       - UZrms=0.: R.M.S. velocity (gamma*V) spread along Z [m/s]
+      - UXdiv=0.: Velocity (gamma*V) divergence along X [m/s/m]
+      - UYdiv=0.: Velocity (gamma*V) divergence along Y [m/s/m]
+      - UZdiv=0.: Velocity (gamma*V) divergence along Z [m/s/m]
       - density_func=None: Function modulating density as a function of x, y, z and/or time
       - array_func=None: Array modulating density as a function of x, y, z and/or time
     """
-    def __init(self, species, number_real_particles, number_sim_particles, T0=0., Xmean=0., Ymean=0., Zmean=0., Xrms=0., Yrms=0., Zrms=0.,
-               UXmean=0., UYmean=0., UZmean=0., UXrms=0., UYrms=0., UZrms=0.,
+    def __init(self, species, number_real_particles, number_sim_particles, T0=0.,
+               Xmean=0., Ymean=0., Zmean=0.,
+               Xrms=0., Yrms=0., Zrms=0.,
+               UXmean=0., UYmean=0., UZmean=0.,
+               UXrms=0., UYrms=0., UZrms=0.,
+               UXdiv=0., UYdiv=0., UZdiv=0.,
                density_func=None, array_func=None,
                **kw):
         self.species = species

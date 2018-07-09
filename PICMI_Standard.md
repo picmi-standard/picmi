@@ -40,6 +40,9 @@ Physics objects
     - `UXrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along X [m/s]."
     - `UYrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along Y [m/s]."
     - `UZrms` - **type**: *double* - **default**: 0. - "R.M.S. velocity (gamma*V) spread along Z [m/s]."
+    - `UXdiv` - **type**: *double* - **default**: 0. - "Velocity (gamma*V) divergence along X [m/s/m]."
+    - `UYdiv` - **type**: *double* - **default**: 0. - "Velocity (gamma*V) divergence along Y [m/s/m]."
+    - `UZdiv` - **type**: *double* - **default**: 0. - "Velocity (gamma*V) divergence along Z [m/s/m]."
     - `density_func` (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
     - `array_func` (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
 

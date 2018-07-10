@@ -59,14 +59,14 @@ class PICMI_GaussianBeam(object):
       - density_func=None: Function modulating density as a function of x, y, z and/or time
       - array_func=None: Array modulating density as a function of x, y, z and/or time
     """
-    def __init(self, species, number_real_particles, number_sim_particles, T0=0.,
-               Xmean=0., Ymean=0., Zmean=0.,
-               Xrms=0., Yrms=0., Zrms=0.,
-               UXmean=0., UYmean=0., UZmean=0.,
-               UXrms=0., UYrms=0., UZrms=0.,
-               UXdiv=0., UYdiv=0., UZdiv=0.,
-               density_func=None, array_func=None,
-               **kw):
+    def __init__(self, species, number_real_particles, number_sim_particles, T0=0.,
+                 Xmean=0., Ymean=0., Zmean=0.,
+                 Xrms=0., Yrms=0., Zrms=0.,
+                 UXmean=0., UYmean=0., UZmean=0.,
+                 UXrms=0., UYrms=0., UZrms=0.,
+                 UXdiv=0., UYdiv=0., UZdiv=0.,
+                 density_func=None, array_func=None,
+                 **kw):
         self.species = species
         self.number_real_particles = number_real_particles
         self.number_sim_particles = number_sim_particles
@@ -83,6 +83,9 @@ class PICMI_GaussianBeam(object):
         self.UXrms = UXrms
         self.UYrms = UYrms
         self.UZrms = UZrms
+        self.UXdiv = UXdiv
+        self.UYdiv = UYdiv
+        self.UZdiv = UZdiv
         self.density_func = density_func
         self.array_func = array_func
 

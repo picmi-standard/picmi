@@ -115,14 +115,17 @@ class PICMI_Plasma(object):
                                   Only one of number_per_cell or number_per_cell_each_dim should be specified.
       - density_func=None: Function modulating density as a function of x, y, z and/or time.
       - array_func=None: Array modulating density as a function of x, y, z and/or time.
+      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+
     """
 
     def __init__(self, species, density,
-                 xmin=-sys.float_info.max, xmax=+sys.float_info.max,
-                 ymin=-sys.float_info.max, ymax=+sys.float_info.max,
-                 zmin=-sys.float_info.max, zmax=+sys.float_info.max,
+                 xmin=None, xmax=None,
+                 ymin=None, ymax=None,
+                 zmin=None, zmax=None,
                  vthx=0., vthy=0., vthz=0., vxmean=0., vymean=0., vzmean=0.,
                  number_per_cell=None, number_per_cell_each_dim=None, density_func=None, array_func=None,
+                 fill_in=False,
                  **kw):
         if not isinstance(species, list):
             species = [species]
@@ -144,6 +147,7 @@ class PICMI_Plasma(object):
         self.number_per_cell_each_dim = number_per_cell_each_dim
         self.density_func = density_func
         self.array_func = array_func
+        self.fill_in = fill_in
 
         self.init(**kw)
 
@@ -217,8 +221,9 @@ class PICMI_ParticleList(object):
 class PICMI_ParticleDistributionInjector(object):
     """
     Describes the injection of particles from a plane
+      - species: Particle species to inject
       - distribution: Particle distribution to inject
-      - method: InPlace - method of injection. One of ''InPlace', or 'Plane'
+      - method: InPlace - method of injection. One of 'InPlace', or 'Plane'
       - X0=0.: Position of the particle centroid in X [m]
       - Y0=0.: Position of the particle centroid in Y [m]
       - Z0=0.: Position of the particle centroid in Z [m]
@@ -232,9 +237,12 @@ class PICMI_ParticleDistributionInjector(object):
       - YVecPlane=0.: Component along Y of vector normal to injection plane
       - ZVecPlane=1.: Component along Z of vector normal to injection plane
     """
-    def __init__(self, distribution, method, X0, Y0, Z0,
-                 Xplane, Yplane, Zplane, VXplane, VYplane, VZplane, XVecPlane, YVecPlane, ZVecPlane,
+    def __init__(self, species, distribution, method='InPlace', X0=0., Y0=0., Z0=0.,
+                 Xplane=0., Yplane=0., Zplane=0.,
+                 VXplane=0., VYplane=0., VZplane=0.,
+                 XVecPlane=0., YVecPlane=0., ZVecPlane=1.,
                  **kw):
+        self.species = species
         self.distribution = distribution
         self.method = method
         self.X0 = X0
@@ -397,7 +405,6 @@ class PICMI_Simulation(object):
                  **kw):
         self.timestep = timestep
         self.timestep_over_cfl = timestep_over_cfl
-        self.plot_int = plot_int
         self.verbose = verbose
         self.max_step = max_step
         self.max_time = max_time

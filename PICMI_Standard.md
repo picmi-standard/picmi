@@ -68,6 +68,7 @@ Physics objects
                                                 Only one of number_per_cell or number_per_cell_each_dim should be specified."
     - `density_func` (optional) - **type**: *function*: "Function modulating density as a function of x, y, z and/or time."
     - `array_func` (optional) - **type**: *array*: "Array modulating density as a function of x, y, z and/or time."
+    - `fill_in` - **type**: *logical* - **default**: False - "Flags whether to fill in the empty spaced opened up when the grid moves"
 
   - `ParticleList`
     - **type**: *object*
@@ -87,6 +88,7 @@ Numerics objects
 
   - `ParticleDistributionInjector`
     - **type**: *object*
+    - `species` - **type**: *Species* - "Particle species to inject"
     - `distribution` - **type**: *Beam or Plasma* - "beam/plasma to inject"
     - `method` - **type**: *string* - **default**: "InPlace" - "method of injection ('InPlace', 'Plane')"
     - `X0` - **type**: *double* - **default**: 0. - "Position of the particle centroid in X."

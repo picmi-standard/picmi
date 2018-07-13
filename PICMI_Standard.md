@@ -1,7 +1,9 @@
 The Particle-In-Cell Modeling Interface (PICMI) Standard
 ==================================================
 
-VERSION: **0.0.2** (November 22th, 2017)
+**WARNING: THIS DOCUMENT IS NOT UP TO DATE. (It is being slowly updated.)**
+
+**FOR THE MOST RECENT CHANGES: SEE THE FILE IN EXAMPLE/PLASMA_ACCELERATION.**
 
 Code specific specifications
 ----------------------------

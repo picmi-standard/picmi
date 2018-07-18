@@ -53,7 +53,7 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
                  centroid_position = [0.,0.,0.],
                  centroid_velocity = [0.,0.,0.],
                  velocity_divergence = [0.,0.,0.],
-                 **kw)
+                 **kw):
         self.n_physical_particles = n_physical_particles
         self.rms_bunch_size = rms_bunch_size
         self.rms_velocity = rms_velocity

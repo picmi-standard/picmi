@@ -5,160 +5,123 @@ import math
 import sys
 
 
+class _ClassWithInit(object):
+    def init(self, **kw):
+        raise NotImplementedError
+
+
 # Physics objects
 # ---------------
 
 
-class PICMI_Species(object):
+class PICMI_Species(_ClassWithInit):
     """
     Species
-      - type: a string specifying an elementary particle, atom, or other, as defined in the openPMD species type extension
-      - name: name of the species (optional)
-      - charge_state: charge state of the species (applies to atoms) (optional)
-      - charge: particle charge, required when type is not specified, otherwise determined from type [C]
-      - mass: particle mass, required when type is not specified, otherwise determined from type [kg]
+      - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
+      - name=None: Name of the species
+      - charge_state=None: Charge state of the species (applies to atoms) [1]
+      - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
+      - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
+      - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
     """
 
-    def __init__(self, type=None, name=None, charge_state=None, charge=None, mass=None,
+    def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
+                 initial_distribution=None,
                  **kw):
-
-        self.type = type
+        self.particle_type = particle_type
         self.name = name
         self.charge = charge
         self.charge_state = charge_state
         self.mass = mass
+        self.initial_distribution = initial_distribution
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
 
-
-class PICMI_GaussianBeam(object):
+class PICMI_GaussianBunchDistribution(_ClassWithInit):
     """
     Describes a Gaussian distribution of particles
-      - species: Particle species
-      - number_real_particles: Number of real particles in the beam.
-      - number_sim_particles: Number of simulation particles in the beam.
-      - T0=0.: Time at which parameters are specified [s]
-      - Xmean=0.: Mean X position [m]
-      - Ymean=0.: Mean Y position [m]
-      - Zmean=0.: Mean Z position [m]
-      - Xrms=0.: R.M.S. size along X [m]
-      - Yrms=0.: R.M.S. size along Y [m]
-      - Zrms=0.: R.M.S. size along Z [m]
-      - UXmean=0.: Mean velocity (gamma*V) along X [m/s]
-      - UYmean=0.: Mean velocity (gamma*V) along X [m/s]
-      - UZmean=0.: Mean velocity (gamma*V) along X [m/s]
-      - UXrms=0.: R.M.S. velocity (gamma*V) spread along X [m/s]
-      - UYrms=0.: R.M.S. velocity (gamma*V) spread along Y [m/s]
-      - UZrms=0.: R.M.S. velocity (gamma*V) spread along Z [m/s]
-      - UXdiv=0.: Velocity (gamma*V) divergence along X [m/s/m]
-      - UYdiv=0.: Velocity (gamma*V) divergence along Y [m/s/m]
-      - UZdiv=0.: Velocity (gamma*V) divergence along Z [m/s/m]
-      - density_func=None: Function modulating density as a function of x, y, z and/or time
-      - array_func=None: Array modulating density as a function of x, y, z and/or time
+      - n_physical_particles: Number of physical particles in the bunch
+      - rms_bunch_size: RMS bunch size at t=0 (vector) [m]
+      - rms_velocity=[0,0,0]: RMS velocity spread at t=0 (vector) [m/s]
+      - centroid_position=[0,0,0]: Position of the bunch centroid at t=0 (vector) [m]
+      - centroid_velocity=[0,0,0]: Velocity (gamma*V) of the bunch centroid at t=0 (vector) [m/s]
+      - velocity_divergence=[0,0,0]: Expansion rate of the bunch at t=0 (vector) [m/s/m]
     """
-    def __init__(self, species, number_real_particles, number_sim_particles, T0=0.,
-                 Xmean=0., Ymean=0., Zmean=0.,
-                 Xrms=0., Yrms=0., Zrms=0.,
-                 UXmean=0., UYmean=0., UZmean=0.,
-                 UXrms=0., UYrms=0., UZrms=0.,
-                 UXdiv=0., UYdiv=0., UZdiv=0.,
-                 density_func=None, array_func=None,
-                 **kw):
-        self.species = species
-        self.number_real_particles = number_real_particles
-        self.number_sim_particles = number_sim_particles
-        self.T0 = T0
-        self.Xmean = Xmean
-        self.Ymean = Ymean
-        self.Zmean = Zmean
-        self.Xrms = Xrms
-        self.Yrms = Yrms
-        self.Zrms = Zrms
-        self.UXmean = UXmean
-        self.UYmean = UYmean
-        self.UZmean = UZmean
-        self.UXrms = UXrms
-        self.UYrms = UYrms
-        self.UZrms = UZrms
-        self.UXdiv = UXdiv
-        self.UYdiv = UYdiv
-        self.UZdiv = UZdiv
-        self.density_func = density_func
-        self.array_func = array_func
+    def __init__(self,n_physical_particles, rms_bunch_size,
+                 rms_velocity = [0.,0.,0.],
+                 centroid_position = [0.,0.,0.],
+                 centroid_velocity = [0.,0.,0.],
+                 velocity_divergence = [0.,0.,0.],
+                 **kw)
+        self.n_physical_particles = n_physical_particles
+        self.rms_bunch_size = rms_bunch_size
+        self.rms_velocity = rms_velocity
+        self.centroid_position = centroid_position
+        self.centroid_velocity = centroid_velocity
+        self.velocity_divergence = velocity_divergence
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
 
-
-class PICMI_Plasma(object):
+class PICMI_UniformDistribution(_ClassWithInit):
     """
-    Describes a uniform density plasma
-      - species: Particle species or list of species
-      - density: Plasma density [m^-3].
-      - xmin=-infinity: Min position of box along X [m]
-      - xmax=+infinity: Max position of box along X [m]
-      - ymin=-infinity: Min position of box along Y [m]
-      - ymax=+infinity: Max position of box along Y [m]
-      - zmin=-infinity: Min position of box along Z [m]
-      - zmax=+infinity: Max position of box along Z [m]
-      - vthx=0.: Thermal velocity along X [m/s]
-      - vthy=0.: Thermal velocity along Y [m/s]
-      - vthz=0.: Thermal velocity along Z [m/s]
-      - vxmean=0.: Mean velocity along X [m/s]
-      - vymean=0.: Mean velocity along Y [m/s]
-      - vzmean=0.: Mean velocity along Z [m/s]
-      - number_per_cell: Number of particles per cell (randomly placed)
-                         Only one of number_per_cell or number_per_cell_each_dim should be specified.
-      - number_per_cell_each_dim: Number of particles along each axis (for regularly placed particles)
-                                  Only one of number_per_cell or number_per_cell_each_dim should be specified.
-      - density_func=None: Function modulating density as a function of x, y, z and/or time.
-      - array_func=None: Array modulating density as a function of x, y, z and/or time.
+    Describes a uniform density distribution of particles
+      - density: Physical number density [m^-3]
+      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
+      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
+      - rms_velocity_spread=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
       - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
-
     """
 
-    def __init__(self, species, density,
-                 xmin=None, xmax=None,
-                 ymin=None, ymax=None,
-                 zmin=None, zmax=None,
-                 vthx=0., vthy=0., vthz=0., vxmean=0., vymean=0., vzmean=0.,
-                 number_per_cell=None, number_per_cell_each_dim=None, density_func=None, array_func=None,
-                 fill_in=False,
+    def __init__(self, density,
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 rms_velocity_spread = [0.,0.,0.],
+                 directed_velocity = [0.,0.,0.],
+                 fill_in = False,
                  **kw):
-        if not isinstance(species, list):
-            species = [species]
-        self.species = species
         self.density = density
-        self.xmin = xmin
-        self.xmax = xmax
-        self.ymin = ymin
-        self.ymax = ymax
-        self.zmin = zmin
-        self.zmax = zmax
-        self.vthx = vthx
-        self.vthy = vthy
-        self.vthz = vthz
-        self.vxmean = vxmean
-        self.vymean = vymean
-        self.vzmean = vzmean
-        self.number_per_cell = number_per_cell
-        self.number_per_cell_each_dim = number_per_cell_each_dim
-        self.density_func = density_func
-        self.array_func = array_func
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity_spread = rms_velocity_spread
+        self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
+
+class PICMI_AnalyticDistribution(_ClassWithInit):
+    """
+    Describes a uniform density plasma
+      - density_expression: Analytic expression describing physical number density (string) [m^-3]
+                            Expression should be in terms of the position, written as 'x', 'y', and 'z'.
+      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
+      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
+      - rms_velocity_spread=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
+      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+    """
+
+    def __init__(self, density,
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 rms_velocity_spread = [0.,0.,0.],
+                 directed_velocity = [0.,0.,0.],
+                 fill_in = False,
+                 **kw):
+        self.density = density
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity_spread = rms_velocity_spread
+        self.directed_velocity = directed_velocity
+        self.fill_in = fill_in
+
+        self.init(**kw)
 
 
-class PICMI_ParticleList(object):
+class PICMI_ParticleList(_ClassWithInit):
     """
     Load particles at the specified positions and velocities
       - species: Particle species
@@ -212,135 +175,274 @@ class PICMI_ParticleList(object):
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
-
 
 # ------------------
-# Numerics Objects
+# Numeric Objects
 # ------------------
 
 
-class PICMI_ParticleDistributionInjector(object):
+class PICMI_ParticleDistributionInjector(_ClassWithInit):
     """
     Describes the injection of particles from a plane
-      - species: Particle species to inject
-      - distribution: Particle distribution to inject
+      - position: Position of the particle centroid (vector) [m]
+      - plane_normal: Vector normal to the plane of injection (vector) [1]
+      - plane_velocity: Velocity of the plane of injection (vector) [m/s]
       - method: InPlace - method of injection. One of 'InPlace', or 'Plane'
-      - X0=0.: Position of the particle centroid in X [m]
-      - Y0=0.: Position of the particle centroid in Y [m]
-      - Z0=0.: Position of the particle centroid in Z [m]
-      - Xplane=0.: Position of the plane of injection in X [m]
-      - Yplane=0.: Position of the plane of injection in Y [m]
-      - Zplane=0.: Position of the plane of injection in Z [m]
-      - VXplane=0.: Velocity of the plane of injection in X [m/s]
-      - VYplane=0.: Velocity of the plane of injection in Y [m/s]
-      - VZplane=0.: Velocity of the plane of injection in Z [m/s]
-      - XVecPlane=0.: Component along X of vector normal to injection plane
-      - YVecPlane=0.: Component along Y of vector normal to injection plane
-      - ZVecPlane=1.: Component along Z of vector normal to injection plane
     """
-    def __init__(self, species, distribution, method='InPlace', X0=0., Y0=0., Z0=0.,
-                 Xplane=0., Yplane=0., Zplane=0.,
-                 VXplane=0., VYplane=0., VZplane=0.,
-                 XVecPlane=0., YVecPlane=0., ZVecPlane=1.,
-                 **kw):
-        self.species = species
-        self.distribution = distribution
+    def __init__(self, position, plane_normal, plane_velocity=[0.,0.,0.], method='InPlace', **kw):
+        self.position = position
+        self.plane_normal = plane_normal
+        self.plane_velocity = plane_velocity
         self.method = method
-        self.X0 = X0
-        self.Y0 = Y0
-        self.Z0 = Z0
-        self.Xplane = Xplane
-        self.Yplane = Yplane
-        self.Zplane = Zplane
-        self.VXplane = VXplane
-        self.VYplane = VYplane
-        self.VZplane = VZplane
-        self.XVecPlane = XVecPlane
-        self.YVecPlane = YVecPlane
-        self.ZVecPlane = ZVecPlane
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
 
-
-class PICMI_Grid(object):
+class GriddedLayout(_ClassWithInit):
     """
-    Grid
-      - nx: Number of cells along X (Nb nodes=nx+1)
-      - ny: Number of cells along Y (Nb nodes=ny+1)
-      - nr: Number of cells along R (Nb nodes=nr+1)
-      - nz: Number of cells along Z (Nb nodes=nz+1)
-      - nm: Number of azimuthal modes
+    Specifies a gridded layout of particles
+    - grid: grid object specifying the grid to follow
+    - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
+    """
+    def __init__(self, grid, n_macroparticle_per_cell, **kw):
+        self.grid = grid
+        self.n_macroparticle_per_cell = n_macroparticle_per_cell
+
+        self.init(**kw)
+
+
+class PsuedoRandomLayout(_ClassWithInit):
+    """
+    Specifies a psuedo-random layout of the particles
+    - n_macroparticles: total number of macroparticles to load
+    - seed: psuedo-random number generator seed
+    """
+    def __init__(self, n_macroparticles, seed=None, **kw):
+        self.n_macroparticles = n_macroparticles
+        self.seed = seed
+
+        self.init(**kw)
+
+
+class PICMI_BinomialSmoother(_ClassWithInit):
+    """
+    Descibes a binomial smoother operator (applied to grids)
+    - n_pass: Number of passes along each axis (vector)
+    - compensator: Flags whether to apply comensation
+    """
+    def __init__(self, n_pass=None, compensator=None, **kw):
+        self.n_pass = n_pass
+        self.compensator = compensator
+
+        self.init(**kw)
+
+
+class PICMI_CylindricalGrid(_ClassWithInit):
+    """
+    Axisymmetric, cylindrical grid
+    Parameters can be specified either as vectors or separately.
+
+      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector)
+      - lower_bound: Position of the node at the lower bound (vector) [m]
+      - upper_bound: Position of the node at the upper bound (vector) [m]
+      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector)
+      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
+
+      - nr: Number of cells along R (number of nodes=nr+1)
+      - nz: Number of cells along Z (number of nodes=nz+1)
+      - n_azimuthal_modes: Number of azimuthal modes
+      - rmin: Position of first node along R [m]
+      - rmax: Position of last node along R [m]
+      - zmin: Position of first node along Z [m]
+      - zmax: Position of last node along Z [m]
+      - bcrmin: Boundary condition at min R: One of open, dirichlet, or neumann
+      - bcrmax: Boundary condition at max R: One of open, dirichlet, or neumann
+      - bczmin: Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
+      - bczmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+
+      - moving_window_velocity: Moving frame Z velocity [m/s]
+    """
+
+    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
+                 lower_boundary_conditions=None, upper_boundary_conditions=None,
+                 nr=None, nz=None, n_azimuthal_modes=None,
+                 rmin=None, rmax=None, zmin=None, zmax=None,
+                 bcrmin=None, bcrmax=None, bczmin=None, bczmax=None,
+                 moving_window_velocity=None,  **kw):
+
+        assert (number_of_cells is None) and (nr is not None and nz is not None) or \
+               (number_of_cells is not None) and (nr is None and nz is None), \
+                Exception('Either number_of_cells or nr and nz must be specified')
+        assert (lower_bound is None) and (rmin is not None and zmin is not None) or \
+               (lower_bound is not None) and (rmin is None and zmin is None), \
+                Exception('Either lower_bound or rmin and zmin must be specified')
+        assert (upper_bound is None) and (rmax is not None and zmax is not None) or \
+               (upper_bound is not None) and (rmax is None and zmax is None), \
+                Exception('Either upper_bound or rmax and zmax must be specified')
+        assert (lower_boundary_conditions is None) and (bcrmin is not None and bczmin is not None) or \
+               (lower_boundary_conditions is not None) and (bcrmin is None and bczmin is None), \
+                Exception('Either lower_boundary_conditions or bcrmin and bczmin must be specified')
+        assert (upper_boundary_conditions is None) and (bcrmax is not None and bczmax is not None) or \
+               (upper_boundary_conditions is not None) and (bcrmax is None and bczmax is None), \
+                Exception('Either upper_boundary_conditions or bcrmax and bczmax must be specified')
+
+        if number_of_cells is None:
+            number_of_cells = [nr, nz]
+        else:
+            nr, nz = number_of_cells
+        if lower_bound is None:
+            lower_bound = [rmin, zmin]
+        else:
+            rmin, zmin = lower_bound
+        if upper_bound is None:
+            upper_bound = [rmax, zmax]
+        else:
+            rmax, zmax = upper_bound
+        if lower_boundary_conditions is None:
+            lower_boundary_conditions = [bcrmin, bczmin]
+        else:
+            bcrmin, bczmin = lower_boundary_conditions
+        if upper_boundary_conditions is None:
+            upper_boundary_conditions = [bcrmax, bczmax]
+        else:
+            bcrmax, bczmax = upper_boundary_conditions
+
+        self.number_of_cells = number_of_cells
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.lower_boundary_conditions = lower_boundary_conditions
+        self.upper_boundary_conditions = upper_boundary_conditions
+
+        self.nr = nr
+        self.nz = nz
+        self.n_azimuthal_modes = n_azimuthal_modes
+        self.rmin = rmin
+        self.rmax = rmax
+        self.zmin = zmin
+        self.zmax = zmax
+        self.bcrmin = bcrmin
+        self.bcrmax = bcrmax
+        self.bczmin = bczmin
+        self.bczmax = bczmax
+
+        self.moving_window_velocity = moving_window_velocity
+
+        self.init(**kw)
+
+
+class PICMI_Cartesian3DGrid(_ClassWithInit):
+    """
+    Three dimensional Carteisan grid
+    Parameters can be specified either as vectors or separately.
+
+      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector)
+      - lower_bound: Position of the node at the lower bound (vector) [m]
+      - upper_bound: Position of the node at the upper bound (vector) [m]
+      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector)
+      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
+
+      - nx: Number of cells along X (number of nodes=nx+1)
+      - ny: Number of cells along Y (number of nodes=ny+1)
+      - nz: Number of cells along Z (number of nodes=nz+1)
       - xmin: Position of first node along X [m]
       - xmax: Position of last node along X [m]
       - ymin: Position of first node along Y [m]
       - ymax: Position of last node along Y [m]
-      - rmax: Position of last node along R [m]
       - zmin: Position of first node along Z [m]
       - zmax: Position of last node along Z [m]
       - bcxmin: Boundary condition at min X: One of periodic, open, dirichlet, or neumann
       - bcxmax: Boundary condition at max X: One of periodic, open, dirichlet, or neumann
       - bcymin: Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
       - bcymax: Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
-      - bcrmax: Boundary condition at max R: One of open, dirichlet, or neumann
       - bczmin: Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
       - bczmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
-      - moving_window_velocity: An array of the moving frame velocity in each direction [m/s]
+
+      - moving_window_velocity: Moving frame velocity (vector) [m/s]
     """
 
-    def __init__(self, nx=None, ny=None, nr=None, nz=None, nm=None,
-                 xmin=None, xmax=None, ymin=None, ymax=None, rmax=None, zmin=None, zmax=None,
-                 bcxmin=None, bcxmax=None, bcymin=None, bcymax=None, bcrmax=None, bczmin=None, bczmax=None,
-                 moving_window_velocity=None,  **kw):
+    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
+                 lower_boundary_conditions=None, upper_boundary_conditions=None,
+                 nx=None, ny=None, nz=None,
+                 xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
+                 bcxmin=None, bcxmax=None, bcymin=None, bcymax=None, bczmin=None, bczmax=None,
+                 moving_window_velocity=None,
+                 **kw):
+
+        assert (number_of_cells is None) and (nx is not None and ny is not None and nz is not None) or \
+               (number_of_cells is not None) and (nx is None and ny is None and nz is None), \
+                Exception('Either number_of_cells or nx, ny, and nz must be specified')
+        assert (lower_bound is None) and (xmin is not None and ymin is not None and zmin is not None) or \
+               (lower_bound is not None) and (xmin is None and ymin is None and zmin is None), \
+                Exception('Either lower_bound or xmin, ymin, and zmin must be specified')
+        assert (upper_bound is None) and (xmax is not None and ymax is not None and zmax is not None) or \
+               (upper_bound is not None) and (xmax is None and ymax is None and zmax is None), \
+                Exception('Either upper_bound or xmax, ymax, and zmax must be specified')
+        assert (lower_boundary_conditions is None) and (bcxmin is not None and bcymin is not None and bczmin is not None) or \
+               (lower_boundary_conditions is not None) and (bcxmin is None and bcymin is None and bczmin is None), \
+                Exception('Either lower_boundary_conditions or bcxmin, bcymin, and bczmin must be specified')
+        assert (upper_boundary_conditions is None) and (bcxmax is not None and bcymax is not None and bczmax is not None) or \
+               (upper_boundary_conditions is not None) and (bcxmax is None and bcymax is None and bczmax is None), \
+                Exception('Either upper_boundary_conditions or bcxmax, bcymax, and bczmax must be specified')
+
+        if number_of_cells is None:
+            number_of_cells = [nx, ny, nz]
+        else:
+            nx, ny, nz = number_of_cells
+        if lower_bound is None:
+            lower_bound = [xmin, ymin, zmin]
+        else:
+            xmin, ymin, zmin = lower_bound
+        if upper_bound is None:
+            upper_bound = [xmax, ymax, zmax]
+        else:
+            xmax, ymax, zmax = upper_bound
+        if lower_boundary_conditions is None:
+            lower_boundary_conditions = [bcxmin, bcymin, bczmin]
+        else:
+            bcxmin, bcymin, bczmin = lower_boundary_conditions
+        if upper_boundary_conditions is None:
+            upper_boundary_conditions = [bcxmax, bcymax, bczmax]
+        else:
+            bcxmax, bcymax, bczmax = upper_boundary_conditions
+
+        self.number_of_cells = number_of_cells
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.lower_boundary_conditions = lower_boundary_conditions
+        self.upper_boundary_conditions = upper_boundary_conditions
+
         self.nx = nx
         self.ny = ny
-        self.nr = nr
         self.nz = nz
         self.nm = nm
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
-        self.rmax = rmax
         self.zmin = zmin
         self.zmax = zmax
         self.bcxmin = bcxmin
         self.bcxmax = bcxmax
         self.bcymin = bcymin
         self.bcymax = bcymax
-        self.bcrmax = bcrmax
         self.bczmin = bczmin
         self.bczmax = bczmax
+
         self.moving_window_velocity = moving_window_velocity
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
 
-    def getmins(self, **kw):
-        raise NotImplementedError
-
-    def getmaxs(self, **kw):
-        raise NotImplementedError
-
-    def getdims(self, **kw):
-        raise NotImplementedError
-
-
-class PICMI_EM_solver(object):
+class PICMI_ElectromagneticSolver(_ClassWithInit):
     """
-    EM_solver
+    Electromagnetic field solver
+      - grid: grid object to be used by the solver
       - method: One of Yee, CK, CKC, Lehe, PSTD, PSATD, or GPSTD
-      - norderx: Order of stencil in X (-1=infinite)
-      - nordery: Order of stencil in Y (-1=infinite)
-      - norderr: Order of stencil in R (-1=infinite)
-      - norderz: Order of stencil in Z (-1=infinite)
+      - stencil_order: Order of stencil for each axis (-1=infinite) (vector)
+      - cfl: Fraction of the Courant-Friedrich-Lewy criteria [1]
       - l_nodal: Quantities are at nodes if True, staggered otherwise
+      - source_smoother: Smoother to apply to the sources
+      - field_smoother: Smoother to apply to the fields
 
     Methods:
       - add: Add object to solver (e.g. laser)
@@ -348,123 +450,75 @@ class PICMI_EM_solver(object):
 
     methods_list = ['Yee', 'CK', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
 
-    def __init__(self, method=None,
-                 norderx=None, nordery=None, norderr=None, norderz=None,
-                 l_nodal=None, **kw):
+    def __init__(self, grid, method=None, cfl=None, stencil_order=None, l_nodal=None,
+                 source_smoother=None, field_smoother=None,
+                 **kw):
 
-        assert method is None or method in EM_solver.Methods_list, Exception('method has incorrect value')
+        assert method is None or method in PICMI_ElectromagneticSolver.Methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))
 
+        self.grid = grid
         self.method = method
-        self.norderx = norderx
-        self.nordery = nordery
-        self.norderr = norderr
-        self.norderz = norderz
+        self.cfl = cfl
+        self.stencil_order = stencil_order
         self.l_nodal = l_nodal
+        self.source_smoother = source_smoother
+        self.field_smoother = field_smoother
 
         self.objects = []
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
-
     def add(self, object):
         self.objects.append(object)
 
 
-class PICMI_ES_solver(object):
+class PICMI_Electrostatic_solver(_ClassWithInit):
     """
-    ES_solver
+    Electrostatic field solver
+      - grid: grid object to be used by the solver
       - method: One of FFT, or Multigrid
     """
 
     methods_list = ['FFT', 'Multigrid']
 
-    def __init__(self, method=None):
+    def __init__(self, grid, method=None):
 
-        assert method is None or method in ES_solver.methods_list, Exception('method has incorrect value')
+        assert method is None or method in PICMI_Electrostatic_solver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_Electrostatic_solver.methods_list))
 
+        self.grid = grid
         self.method = method
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
+
+# Laser related objects
 
 
-class PICMI_Simulation(object):
+class PICMI_GaussianLaser(_ClassWithInit):
     """
-    Simulation
-      - timestep=0.: Absolute time step size of the simulation [s]
-                     (set to 0 to have the timestep relative to the CFL limit)
-      - timestep_over_cfl=1.: Ratio of the time step size to the Courant-Friedrich-Lewy limit
-                              (used only if timestep is 0; should raise an error when the code does not have a well-defined CFL)
-      - max_step: Maximum number of time steps
-      - max_time: Maximum time to run the simulation [s]
-      - verbose: Verbosity flag
+    Specifies a Gaussian laser distribution
+      - wavelength: Laser wavelength
+      - waist: Waist of the Gaussian pulse at focus [m]
+      - duration: Duration of the Gaussian pulse [s]
+      - focal_position=[0,0,0]: Position of the laser focus (vector) [m]
+      - centroid_position=[0,0,0]: Position of the laser centroid at time 0 (vector) [m]
+      - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
+      - polarization_angle=0: Angle of polarization (relative to X) [radians]
+      - a0: Normalized vector potential at focus
+            Specify either a0 or E0 (E0 takes precedence).
+      - E0: Maximum amplitude of the laser field [V/m]
+            Specify either a0 or E0 (E0 takes precedence).
     """
-
-    def __init__(self, timestep=0., timestep_over_cfl=1., max_step=None, max_time=None, verbose=None,
+    def __init__(self, wavelength, waist, duration,
+                 focal_position = [0., 0., 0.],
+                 centroid_position = [0., 0., 0.],
+                 propagation_direction = [0., 0., 1.],
+                 polarization_angle = 0.,
+                 a0 = None, E0 = None,
                  **kw):
-        self.timestep = timestep
-        self.timestep_over_cfl = timestep_over_cfl
-        self.verbose = verbose
-        self.max_step = max_step
-        self.max_time = max_time
 
-        self.init(**kw)
-
-    def init(self, **kw):
-        raise NotImplementedError
-
-    def step(self, nsteps=1):
-        raise NotImplementedError
-
-
-# -----------------------------------------
-# Injecting a laser pulse in the Simulation
-# -----------------------------------------
-
-
-def add_laser_pulse(simulation, laser_profile, injection_method):
-    """
-    Specify laser pulses that are injected in the simulation
-      - simulation: a Simulation object, which contains all the relevant data for a simulation.
-      - laser_profile: one of laser profile objects
-                       Specifies the **physical** properties of the laser pulse.
-                       (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
-      - injection_method: a laser injector object (optional)
-                          Specifies how the laser is injected (numerically) into the simulation
-                          (e.g. through a laser antenna, or directly added to the mesh).
-                          This argument describes an **algorithm**, not a physical object.
-                          It is optional. (It is up to each code to define the default method
-                          of injection, if the user does not provide injection_method)
-    """
-    raise NotImplementedError
-
-
-# Laser profile objects
-
-
-class PICMI_Gaussian_laser(object):
-    """
-    Gaussian Laser
-      - wavelength: Laser wavelength.
-      - waist: Waist of the Gaussian pulse at focus [m].
-      - duration: Duration of the Gaussian pulse [s].
-      - focal_position: Position of the laser focus. [m]
-      - x0: Position of the laser centroid in X at time 0. [m]
-      - y0: Position of the laser centroid in Y at time 0. [m]
-      - z0: Position of the laser centroid in Z at time 0. [m]
-      - pol_angle: Angle of polarization (relative to X). [radians]
-      - a0: Normalized vector potential at focus.
-            Specify either a0 or E0 (E0 takes precedence)
-      - E0: Maximum amplitude of the laser field. [V/m]
-            Specify either a0 or E0 (E0 takes precedence)
-    """
-    def __init__(self, wavelength, waist, duration, focal_position=0., x0=0., y0=0., z0=0.,
-                 pol_angle=None, a0=None, E0=None,
-                 **kw):
         k0 = 2.*math.pi/wavelength
         if E0 is None:
             from scipy import constants
@@ -478,45 +532,90 @@ class PICMI_Gaussian_laser(object):
         self.waist = waist
         self.duration = duration
         self.focal_position = focal_position
-        self.x0 = x0
-        self.y0 = y0
-        self.z0 = z0
-        self.pol_angle = pol_angle
+        self.centroid_position = centroid_position
+        self.propagation_direction = propagation_direction
+        self.polarization_angle = polarization_angle
         self.a0 = a0
         self.E0 = E0
 
         self.init(**kw)
 
-    def init(self, **kw):
-        raise NotImplementedError
 
-
-# Laser injection methods
-
-
-class PICMI_Laser_antenna(object):
+class PICMI_LaserAntenna(_ClassWithInit):
     """
-    Laser antenna injection method
-      - laser: Laser object to be injected
-      - antenna_x0=0.: Position of antenna launching the laser along X. [m]
-      - antenna_y0=0.: Position of antenna launching the laser along Y. [m]
-      - antenna_z0=0.: Position of antenna launching the laser along Z. [m]
-      - antenna_xvec=0.: Component along X of vector normal to antenna plane.
-      - antenna_yvec=0.: Component along Y of vector normal to antenna plane.
-      - antenna_zvec=1.: Component along Z of vector normal to antenna plane.
+    Specifies the laser antenna injection method
+      - antenna_position: Position of antenna launching the laser (vector) [m]
+      - antenna_normal: Vector normal to antenna plane (vector) [1]
     """
-    def __init__(self, laser, antenna_x0=0., antenna_y0=0., antenna_z0=0.,
-                 antenna_xvec=0., antenna_yvec=0., antenna_zvec=1., **kw):
+    def __init__(self, antenna_position, antenna_normal, **kw):
 
-        self.laser = laser
-        self.antenna_x0 = antenna_x0
-        self.antenna_y0 = antenna_y0
-        self.antenna_z0 = antenna_z0
-        self.antenna_xvec = antenna_xvec
-        self.antenna_yvec = antenna_yvec
-        self.antenna_zvec = antenna_zvec
+        self.antenna_position = antenna_position
+        self.antenna_normal = antenna_normal
 
         self.init(**kw)
 
-    def init(self, **kw):
+
+# Main simuation object
+
+
+class PICMI_Simulation(_ClassWithInit):
+    """
+    Simulation
+      - solver: Field solver to be used in the simulation (an instance of one of the implemented solvers)
+      - time_step_size: Absolute time step size of the simulation [s]
+                        (needed if the CFL is not specified elsewhere)
+      - max_steps: Maximum number of time steps
+      - max_time: Maximum time to run the simulation [s]
+      - verbose: Verbosity flag
+    """
+
+    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
+                 **kw):
+
+        self.solver = solver
+        self.time_step_size = time_step_size
+        self.verbose = verbose
+        self.max_steps = max_steps
+        self.max_time = max_time
+
+        self.species = []
+        self.layouts = []
+        self.calculate_self_fields = []
+
+        self.laser = []
+        self.laser_antennas = []
+
+        self.init(**kw)
+
+    def add_species(self, species, layout, calculate_self_field=True):
+        """
+        Add species to be used in the simulation
+        - species: species object
+        - layout: particle layout for initial distribution
+        - calculate_self_field=True: Flags whether self fields are calculated and applied to species
+        """
+        self.species.append(species)
+        self.layouts.append(layout)
+        self.calculate_self_fields.append(calculate_self_field)
+
+    def add_laser(self, laser, injection_method):
+        """
+        Add a laser pulses that to be injected in the simulation
+          - laser_profile: one of laser profile objects
+                           Specifies the **physical** properties of the laser pulse.
+                           (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
+          - injection_method: a laser injector object (optional)
+                              Specifies how the laser is injected (numerically) into the simulation
+                              (e.g. through a laser antenna, or directly added to the mesh).
+                              This argument describes an **algorithm**, not a physical object.
+                              It is optional. (It is up to each code to define the default method
+                              of injection, if the user does not provide injection_method)
+        """
+        self.lasers.append(laser)
+        self.injection_methods.append(injection_method)
+
+    def write_input_file(self):
+        raise NotImplementedError
+
+    def step(self, nsteps=1):
         raise NotImplementedError

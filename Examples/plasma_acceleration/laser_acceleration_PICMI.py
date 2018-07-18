@@ -17,45 +17,46 @@ from fbpic import picmi
 
 # Define the laser profile laser
 laser = picmi.GaussianLaser(
-    a0=laser_a0,
-    wavelength=0.8e-6,  # The wavelength of the laser (in meters)
-    waist=laser_waist,  # The waist of the laser (in meters)
-    duration=laser_duration,  # The duration of the laser (in seconds)
-    polarization_angle = np.pi/2,  # The main polarization vector
-    focal_position=(0., 0., 100.e-6),  # Focal position (m)
-    centroid_position=(0., 0., 0.),  # Position of the laser centroid at t=0 (m)
-    propagation_direction=(0., 0., 1.) )
+            a0 = laser_a0,
+            wavelength = 0.8e-6,  # The wavelength of the laser (in meters)
+            waist = laser_waist,  # The waist of the laser (in meters)
+            duration = laser_duration,  # The duration of the laser (in seconds)
+            polarization_angle = np.pi/2,  # The main polarization vector
+            focal_position = [0., 0., 100.e-6],  # Focal position (m)
+            centroid_position = [0., 0., 0.],  # Position of the laser centroid at t=0 (m)
+            propagation_direction = [0., 0., 1.])
 
 # Define the electron beam
 beam_dist = picmi.GaussianBunchDistribution(
-                n_physical_particles=1.e9,
-                gamma=1000,
-                x_rms=2.e-6, y_rms=2.e-6, z_rms=1.e-6,
-                x_emittance=1.e-6, y_emittance=1.e-6, z_emittance=1.e-6,
-                z_focus=100.e-6, t_focus=10.e-15 )
-                # Initializes the beam so that it will focus at z_focus,
-                # at time t_focus (should we use Twiss parameters instead?)
+                n_physical_particles = 1.e9,
+                rms_bunch_size = [2.e-6, 2.e-6, 1.e-6],
+                rms_velocity = [0.,0.,10.],
+                centroid_position = [0.,0.,100.e-6],
+                centroid_velocity = [0.,0.,1000.],
+                velocity_divergence = [0.,0.,0.])
+
 beam = picmi.Species(
-            particle_type='electron',
-            initial_distribution=beam_dist )
+            particle_type = 'electron',
+            initial_distribution = beam_dist)
 
 # Define plasma
-plasma_dist = picmi.DistributionFromParsedExpression(
-                density_expression="1.e23*tanh((z - 20.e-6)/100.e-6)" )
+plasma_dist = picmi.AnalyticDistribution(
+                density_expression = "1.e23*tanh((z - 20.e-6)/100.e-6)",
+                fill_in=True)
+
 plasma = picmi.MultiSpecies(
-                particle_types=       [ 'He',    'Ar', 'electron'],
-                # `particle_types` follows the openPMD 2.0 convention
-                species_names=        ['He+', 'Argon',       'e-'],
-                # `species_names` are optional, and free format
-                initial_charge_states=[    1,       5,      None ],
-                proportions=          [  0.2,     0.8,  0.2 + 5*0.8 ],
-                initial_distribution=plasma_dist )
+                particle_types = [ 'He', 'Ar', 'electron'],
+                species_names = ['He+', 'Argon', 'e-'],
+                initial_charge_states = [1, 5, None],
+                proportions = [0.2, 0.8, 0.2 + 5*0.8],
+                initial_distribution=plasma_dist)
+
 # Individual species in a `MultiSpecies` can be addressed either
 # with their index (using Python indexing conventions) or with their name
 # (if the user provided a name)
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
-plasma['Argon'].activate_ionization( model="ADK", target_species=plasma['e-'] )
+plasma['Argon'].activate_ionization(model="ADK", target_species=plasma['e-'])
 
 """
 Numerics part - can be in separate file
@@ -83,7 +84,7 @@ if picmi.code == 'fbpic':
         nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
-        moving_window_velocity=v_window )
+        moving_window_velocity=v_window)
 elif picmi.code in ['warp', 'warpx']:
     grid_specific_arguments = {}
     if  picmi.code == 'warpx':
@@ -92,12 +93,12 @@ elif picmi.code in ['warp', 'warpx']:
         nx=nx, xmin=xmin, xmax=xmax, bc_xmin='periodic', bc_xmax='periodic',
         ny=ny, ymin=ymin, ymax=ymax, bc_ymin='periodic', bc_ymax='periodic',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
-        moving_window_velocity=v_window, **grid_specific_arguments )
+        moving_window_velocity=v_window, **grid_specific_arguments)
 
 # Setup the electromagnetic solver
-smoother = picmi.BinomialSmoother( n_pass=2, compensator=True )
-solver = picmi.ElectromagneticSolver( grid=grid, cfl=1.0,
-                                      source_smoother=smoother )
+smoother = picmi.BinomialSmoother(n_pass=2, compensator=True)
+solver = picmi.ElectromagneticSolver(grid=grid, cfl=1.0,
+                                      source_smoother=smoother)
 
 # Initialize the simulation object
 if picmi.code == 'warp':
@@ -113,32 +114,31 @@ else:
 sim = picmi.Simulation(
         solver=solver,
         **sim_specific_arguments,
-        dt=None )  # Takes dt from the solver
+        dt=None)  # Takes dt from the solver
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
-                position=(0, 0, 9.e-6),
-                normal_vector=(0, 0, 1.) )
-sim.add_laser( laser, injection_method=antenna )
+                position = (0, 0, 9.e-6),
+                normal_vector = (0, 0, 1.))
+sim.add_laser(laser, injection_method = antenna)
 
 # Add the plasma: continuously injected by the moving window
 if picmi.code == 'fbpic':
-    n_macroparticle_per_cell={'r':2, 'z':2, 'theta':4}
+    n_macroparticle_per_cell = {'r':2, 'z':2, 'theta':4}
 else:
-    n_macroparticle_per_cell={'x':2, 'y':2, 'z':2}
+    n_macroparticle_per_cell = {'x':2, 'y':2, 'z':2}
 
-plasma_layout = picmi.EvenlySpacedLayout(
-                    grid=grid,
-                    n_macroparticle_per_cell=n_macroparticle_per_cell,
-                    continuous_injection=True )
-sim.add_species( species=plasma, layout=plasma_layout )
+plasma_layout = picmi.GriddedLayout(
+                    grid = grid,
+                    n_macroparticle_per_cell = n_macroparticle_per_cell)
+sim.add_species(species=plasma, layout=plasma_layout)
 # For Python-driven codes: macroparticles are created at this point
 
 # Add the beam
-beam_layout = picmi.RandomDraw(
-                n_macroparticles=10**5,
-                seed=0 )
-sim.add_species( species=beam, layout=beam_layout, calculate_self_field=True )
+beam_layout = picmi.PsuedoRandomLayout(
+                n_macroparticles = 10**5,
+                seed = 0)
+sim.add_species(species=beam, layout=beam_layout, calculate_self_field=True)
 
 """
 picmi input script
@@ -147,7 +147,7 @@ import numpy as np
 from pywarpx import picmi
 
 if picmi.code == 'warpx':
-    sim.set_max_step( 1000 )
-    sim.write_input_file( file_name='warpx_input_script' )
+    sim.set_max_step(1000)
+    sim.write_input_file(file_name='warpx_input_script')
 else:
-    sim.step( 1000 )
+    sim.step(1000)

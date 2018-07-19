@@ -170,7 +170,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
       - density: Physical number density [m^-3]
       - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
-      - rms_velocity_spread=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
       - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
     """
@@ -178,14 +178,14 @@ class PICMI_UniformDistribution(_ClassWithInit):
     def __init__(self, density,
                  lower_bound = [None,None,None],
                  upper_bound = [None,None,None],
-                 rms_velocity_spread = [0.,0.,0.],
+                 rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
                  fill_in = False,
                  **kw):
         self.density = density
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.rms_velocity_spread = rms_velocity_spread
+        self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
@@ -199,7 +199,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
                             Expression should be in terms of the position, written as 'x', 'y', and 'z'.
       - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
-      - rms_velocity_spread=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
       - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
     """
@@ -207,14 +207,14 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
     def __init__(self, density_expression,
                  lower_bound = [None,None,None],
                  upper_bound = [None,None,None],
-                 rms_velocity_spread = [0.,0.,0.],
+                 rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
                  fill_in = False,
                  **kw):
         self.density_expression = density_expression
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.rms_velocity_spread = rms_velocity_spread
+        self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
@@ -520,7 +520,6 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
 
         self.nx = nx
         self.ny = ny
-        self.nm = nm
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
@@ -619,7 +618,6 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         self.nx = nx
         self.ny = ny
         self.nz = nz
-        self.nm = nm
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin

@@ -12,8 +12,7 @@ Physics part - can be in separate file
 import numpy as np
 
 # This should be the only line that needs to be changed for different codes
-from fbpic import picmi
-# from warp import picmi
+from plasma_code import picmi
 
 # Define the laser profile laser
 laser = picmi.GaussianLaser(
@@ -45,9 +44,9 @@ plasma_dist = picmi.AnalyticDistribution(
                 fill_in=True)
 
 plasma = picmi.MultiSpecies(
-                particle_types = [ 'He', 'Ar', 'electron'],
-                species_names = ['He+', 'Argon', 'e-'],
-                initial_charge_states = [1, 5, None],
+                particle_types = ['He', 'Ar', 'electron'],
+                names = ['He+', 'Argon', 'e-'],
+                charge_states = [1, 5, None],
                 proportions = [0.2, 0.8, 0.2 + 5*0.8],
                 initial_distribution=plasma_dist)
 
@@ -63,7 +62,7 @@ Numerics part - can be in separate file
 """
 import numpy as np
 from scipy.constants import c
-import picmi
+from plasma_code import picmi
 
 # Define the grid
 nx = 64
@@ -78,16 +77,16 @@ zmax = +12.e-6
 v_window = (0., 0., c)
 
 # Setup the grid ; this may be code dependent
-if picmi.code == 'fbpic':
+if picmi.code == 'plasma_code':
     nr = nx/2.
     grid = picmi.CylindricalGrid(
         nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
         moving_window_velocity=v_window)
-elif picmi.code in ['warp', 'warpx']:
+elif picmi.code in ['plasma_code_3D', 'AMRplasma_code']:
     grid_specific_arguments = {}
-    if  picmi.code == 'warpx':
+    if  picmi.code == 'AMRplasma_code':
         grid_specific_arguments = {'max_grid_size':32, 'max_level':0}
     grid = picmi.Cartesian3DGrid(
         nx=nx, xmin=xmin, xmax=xmax, bc_xmin='periodic', bc_xmax='periodic',
@@ -96,25 +95,14 @@ elif picmi.code in ['warp', 'warpx']:
         moving_window_velocity=v_window, **grid_specific_arguments)
 
 # Setup the electromagnetic solver
-smoother = picmi.BinomialSmoother(n_pass=2, compensator=True)
+smoother = picmi.BinomialSmoother(n_pass=2, compensation=True)
 solver = picmi.ElectromagneticSolver(grid=grid, cfl=1.0,
-                                      source_smoother=smoother)
+                                     source_smoother=smoother)
 
 # Initialize the simulation object
-if picmi.code == 'warp':
-    sim_specific_arguments = {
-        'current_deposition_algo':'Esirkepov',
-        'charge_deposition_algo':'Direct',
-        'field_gathering_algo':'Energy_conserving',
-        'particle_pusher_algo':'Boris' }
-else:
-    sim_specific_arguments = {
-        'current_correction':'curl-free'}
-
+# Note that the time step size is obtained from the solver
 sim = picmi.Simulation(
-        solver=solver,
-        **sim_specific_arguments,
-        dt=None)  # Takes dt from the solver
+        solver=solver)
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -123,7 +111,7 @@ antenna = picmi.LaserAntenna(
 sim.add_laser(laser, injection_method = antenna)
 
 # Add the plasma: continuously injected by the moving window
-if picmi.code == 'fbpic':
+if picmi.code == 'plasma_code':
     n_macroparticle_per_cell = {'r':2, 'z':2, 'theta':4}
 else:
     n_macroparticle_per_cell = {'x':2, 'y':2, 'z':2}
@@ -135,7 +123,7 @@ sim.add_species(species=plasma, layout=plasma_layout)
 # For Python-driven codes: macroparticles are created at this point
 
 # Add the beam
-beam_layout = picmi.PsuedoRandomLayout(
+beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
 sim.add_species(species=beam, layout=beam_layout, calculate_self_field=True)
@@ -144,10 +132,12 @@ sim.add_species(species=beam, layout=beam_layout, calculate_self_field=True)
 picmi input script
 """
 import numpy as np
-from pywarpx import picmi
+from plasma_code import picmi
 
-if picmi.code == 'warpx':
-    sim.set_max_step(1000)
-    sim.write_input_file(file_name='warpx_input_script')
-else:
+run_python_simulation = True
+
+if run_python_simulation:
     sim.step(1000)
+else:
+    sim.set_max_step(1000)
+    sim.write_input_file(file_name='input_script')

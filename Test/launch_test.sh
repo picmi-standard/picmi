@@ -1,4 +1,3 @@
 #! /bin/bash
 
-python prepare_test.py
-python laser_acceleration_PICMI.py
+env PYTHONPATH=.  python ../Examples/plasma_acceleration/laser_acceleration_PICMI.py 

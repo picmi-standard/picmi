@@ -24,11 +24,11 @@ class PICMI_Species(_ClassWithInit):
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
       - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
+      - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used.
     """
 
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None,
-                 **kw):
+                 initial_distribution=None, particle_shape=None, **kw):
         self.particle_type = particle_type
         self.name = name
         self.charge = charge
@@ -765,10 +765,11 @@ class PICMI_Simulation(_ClassWithInit):
       - max_steps: Maximum number of time steps
       - max_time: Maximum time to run the simulation [s]
       - verbose: Verbosity flag
+      - particle_shape: Default particle shape for species added to this simulation
     """
 
     def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                 **kw):
+                particle_shape='linear', **kw):
 
         self.solver = solver
         self.time_step_size = time_step_size
@@ -778,23 +779,24 @@ class PICMI_Simulation(_ClassWithInit):
 
         self.species = []
         self.layouts = []
-        self.calculate_self_fields = []
+        self.initialize_self_fields = []
 
         self.lasers = []
         self.laser_injection_methods = []
 
         self.init(**kw)
 
-    def add_species(self, species, layout, calculate_self_field=True):
+    def add_species(self, species, layout, initialize_self_field=False):
         """
         Add species to be used in the simulation
         - species: species object
         - layout: particle layout for initial distribution
-        - calculate_self_field=True: Flags whether self fields are calculated and applied to species
+        - initialize_self_field=True: whether the initial space-charge fields
+        of this species is calculated and added to the simulation.
         """
         self.species.append(species)
         self.layouts.append(layout)
-        self.calculate_self_fields.append(calculate_self_field)
+        self.initialize_self_fields.append(initialize_self_field)
 
     def add_laser(self, laser, injection_method):
         """

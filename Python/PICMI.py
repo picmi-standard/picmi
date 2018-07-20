@@ -24,7 +24,7 @@ class PICMI_Species(_ClassWithInit):
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
       - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
-      - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used.
+      - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
@@ -765,7 +765,7 @@ class PICMI_Simulation(_ClassWithInit):
       - max_steps: Maximum number of time steps
       - max_time: Maximum time to run the simulation [s]
       - verbose: Verbosity flag
-      - particle_shape: Default particle shape for species added to this simulation
+      - particle_shape: Default particle shape for species added to this simulation. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
     def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,

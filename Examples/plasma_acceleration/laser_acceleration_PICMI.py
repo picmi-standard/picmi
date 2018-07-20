@@ -126,7 +126,7 @@ sim.add_species(species=plasma, layout=plasma_layout)
 beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
-sim.add_species(species=beam, layout=beam_layout, calculate_self_field=True)
+sim.add_species(species=beam, layout=beam_layout, initialize_self_field=True)
 
 """
 picmi input script

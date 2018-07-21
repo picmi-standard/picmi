@@ -791,7 +791,7 @@ class PICMI_Simulation(_ClassWithInit):
         Add species to be used in the simulation
         - species: species object
         - layout: particle layout for initial distribution
-        - initialize_self_field=True: whether the initial space-charge fields
+        - initialize_self_field=False: whether the initial space-charge fields
         of this species is calculated and added to the simulation.
         """
         self.species.append(species)

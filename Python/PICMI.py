@@ -7,7 +7,14 @@ import sys
 code = None
 
 class _ClassWithInit(object):
-    def init(self, **kw):
+    def handle_init(self, kw):
+        self.init(kw)
+        if kw:
+            raise TypeError("got an unexpected keyword argument '%s'"%list(kw)[0])
+
+    def init(self, kw):
+        # --- The implementation of this routine should use kw.pop() to retrieve input arguments.
+        # --- This allows testing for any unused arguments and raising an error if found.
         pass
 
 
@@ -39,7 +46,7 @@ class PICMI_Species(_ClassWithInit):
 
         self.interactions = []
 
-        self.init(**kw)
+        self.handle_init(kw)
 
     def activate_ionization(self, model, target_species):
         # --- TODO: One way of handling interactions is to add a class for each type
@@ -122,7 +129,7 @@ class PICMI_MultiSpecies(_ClassWithInit):
             if name is not None:
                 self.species_instances_dict[name] = specie
 
-        self.init(**kw)
+        self.handle_init(kw)
 
     def check_nspecies(self, var):
         if len(var) > 0:
@@ -162,7 +169,7 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
         self.centroid_velocity = centroid_velocity
         self.velocity_divergence = velocity_divergence
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_UniformDistribution(_ClassWithInit):
@@ -190,7 +197,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_AnalyticDistribution(_ClassWithInit):
@@ -219,7 +226,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_ParticleList(_ClassWithInit):
@@ -275,7 +282,7 @@ class PICMI_ParticleList(_ClassWithInit):
         self.uy = uy
         self.uz = uz
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 # ------------------
@@ -297,7 +304,7 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
         self.plane_velocity = plane_velocity
         self.method = method
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_GriddedLayout(_ClassWithInit):
@@ -310,7 +317,7 @@ class PICMI_GriddedLayout(_ClassWithInit):
         self.grid = grid
         self.n_macroparticle_per_cell = n_macroparticle_per_cell
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_PseudoRandomLayout(_ClassWithInit):
@@ -333,7 +340,7 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
         self.n_macroparticles_per_cell = n_macroparticles_per_cell
         self.seed = seed
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_BinomialSmoother(_ClassWithInit):
@@ -346,7 +353,7 @@ class PICMI_BinomialSmoother(_ClassWithInit):
         self.n_pass = n_pass
         self.compensation = compensation
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_CylindricalGrid(_ClassWithInit):
@@ -440,7 +447,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
 
         self.moving_window_velocity = moving_window_velocity
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_Cartesian2DGrid(_ClassWithInit):
@@ -532,7 +539,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
 
         self.moving_window_velocity = moving_window_velocity
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_Cartesian3DGrid(_ClassWithInit):
@@ -634,7 +641,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
 
         self.moving_window_velocity = moving_window_velocity
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_ElectromagneticSolver(_ClassWithInit):
@@ -669,7 +676,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         self.source_smoother = source_smoother
         self.field_smoother = field_smoother
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_Electrostatic_solver(_ClassWithInit):
@@ -689,7 +696,7 @@ class PICMI_Electrostatic_solver(_ClassWithInit):
         self.grid = grid
         self.method = method
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 # Laser related objects
@@ -737,7 +744,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.a0 = a0
         self.E0 = E0
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 class PICMI_LaserAntenna(_ClassWithInit):
@@ -751,7 +758,7 @@ class PICMI_LaserAntenna(_ClassWithInit):
         self.position = position
         self.normal_vector = normal_vector
 
-        self.init(**kw)
+        self.handle_init(kw)
 
 
 # Main simuation object
@@ -786,7 +793,7 @@ class PICMI_Simulation(_ClassWithInit):
         self.lasers = []
         self.laser_injection_methods = []
 
-        self.init(**kw)
+        self.handle_init(kw)
 
     def add_species(self, species, layout, initialize_self_field=False):
         """

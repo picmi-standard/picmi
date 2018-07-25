@@ -77,13 +77,16 @@ zmax = +12.e-6
 v_window = (0., 0., c)
 
 # Setup the grid ; this may be code dependent
-if picmi.code == 'plasma_code':
+if picmi.code in ['plasma_code', 'plasma_code_mode0']:
     nr = nx/2.
+    grid_specific_arguments = {}
+    if  picmi.code == 'plasma_code':
+        grid_specific_arguments = {'mode_phase':0.}
     grid = picmi.CylindricalGrid(
         nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
-        moving_window_velocity=v_window)
+        moving_window_velocity=v_window, **grid_specific_arguments)
 elif picmi.code in ['plasma_code_3D', 'AMRplasma_code']:
     grid_specific_arguments = {}
     if  picmi.code == 'AMRplasma_code':

@@ -35,6 +35,7 @@ class PICMI_Species(_ClassWithInit):
         self.charge_state = charge_state
         self.mass = mass
         self.initial_distribution = initial_distribution
+        self.particle_shape = particle_shape
 
         self.interactions = []
 
@@ -776,6 +777,7 @@ class PICMI_Simulation(_ClassWithInit):
         self.verbose = verbose
         self.max_steps = max_steps
         self.max_time = max_time
+        self.particle_shape = particle_shape
 
         self.species = []
         self.layouts = []

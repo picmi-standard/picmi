@@ -654,9 +654,6 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - l_nodal=None: Quantities are at nodes if True, staggered otherwise
       - source_smoother=None: Smoother to apply to the sources
       - field_smoother=None: Smoother to apply to the fields
-
-    Methods:
-      - add: Add object to solver (e.g. laser)
     """
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
@@ -777,7 +774,7 @@ class PICMI_Simulation(_ClassWithInit):
     """
 
     def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', **kw):
+                 particle_shape='linear', **kw):
 
         self.solver = solver
         self.time_step_size = time_step_size

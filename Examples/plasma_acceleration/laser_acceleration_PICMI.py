@@ -77,25 +77,22 @@ zmax = +12.e-6
 v_window = (0., 0., c)
 
 # Setup the grid ; this may be code dependent
-if picmi.code in ['plasma_code', 'plasma_code_mode0']:
+# Note that code specific arguments use the code name as a prefix.
+if picmi.codename == 'plasma_code':
     nr = nx/2.
-    grid_specific_arguments = {}
-    if  picmi.code == 'plasma_code':
-        grid_specific_arguments = {'mode_phase':0.}
     grid = picmi.CylindricalGrid(
         nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
-        moving_window_velocity=v_window, **grid_specific_arguments)
-elif picmi.code in ['plasma_code_3D', 'AMRplasma_code']:
-    grid_specific_arguments = {}
-    if  picmi.code == 'AMRplasma_code':
-        grid_specific_arguments = {'max_grid_size':32, 'max_level':0}
+        moving_window_velocity=v_window,
+        plasma_code_mode_phase = 0.)
+elif picmi.codename in ['plasma_code_3D', 'AMRplasma_code']:
     grid = picmi.Cartesian3DGrid(
         nx=nx, xmin=xmin, xmax=xmax, bc_xmin='periodic', bc_xmax='periodic',
         ny=ny, ymin=ymin, ymax=ymax, bc_ymin='periodic', bc_ymax='periodic',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
-        moving_window_velocity=v_window, **grid_specific_arguments)
+        moving_window_velocity=v_window,
+        AMRplasma_code_max_grid_size=32, AMRplasma_code_max_level=0)
 
 # Setup the electromagnetic solver
 smoother = picmi.BinomialSmoother(n_pass=2, compensation=True)
@@ -114,7 +111,7 @@ antenna = picmi.LaserAntenna(
 sim.add_laser(laser, injection_method = antenna)
 
 # Add the plasma: continuously injected by the moving window
-if picmi.code == 'plasma_code':
+if picmi.codename == 'plasma_code':
     n_macroparticle_per_cell = {'r':2, 'z':2, 'theta':4}
 else:
     n_macroparticle_per_cell = {'x':2, 'y':2, 'z':2}

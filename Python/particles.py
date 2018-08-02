@@ -1,0 +1,333 @@
+"""Classes following the PICMI standard
+These should be the base classes for Python implementation of the PICMI standard
+The classes in the file are all particle related
+"""
+import math
+import sys
+
+from .base import _ClassWithInit
+
+# ---------------
+# Physics objects
+# ---------------
+
+
+class PICMI_Species(_ClassWithInit):
+    """
+    Species
+      - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
+      - name=None: Name of the species
+      - charge_state=None: Charge state of the species (applies to atoms) [1]
+      - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
+      - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
+      - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
+      - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
+    """
+
+    def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
+                 initial_distribution=None, particle_shape=None, **kw):
+        self.particle_type = particle_type
+        self.name = name
+        self.charge = charge
+        self.charge_state = charge_state
+        self.mass = mass
+        self.initial_distribution = initial_distribution
+        self.particle_shape = particle_shape
+
+        self.interactions = []
+
+        self.handle_init(kw)
+
+    def activate_ionization(self, model, target_species):
+        # --- TODO: One way of handling interactions is to add a class for each type
+        # ---       of interaction. Instances would be added to the interactions list
+        # ---       instead of the list of parameters.
+        self.interactions.append(['ionization', model, target_species])
+
+
+class PICMI_MultiSpecies(_ClassWithInit):
+    """
+    INCOMPLETE: proportions argument is not implemented
+    Multiple species that are initialized with the same distribution
+      - particle_types: A list of strings specifying for each species an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
+      - names: Names of the species (optional)
+      - charge_states: Charge states of the species (applies to atoms) (optional)
+      - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
+      - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
+      - proportions: Proportions of the initial distribution made up by each species
+    """
+    # --- Note to developer: This class attribute needs to be set to the Species class
+    # --- defined in the codes PICMI implementation.
+    Species_class = None
+
+    def __init__(self, particle_types=[], names=[], charge_states=[], charges=[], masses=[],
+                 initial_distribution=None, proportions=[],
+                 **kw):
+
+        self.particle_types = particle_types
+        self.names = names
+        self.charges = charges
+        self.charge_states = charge_states
+        self.masses = masses
+        self.initial_distribution = initial_distribution
+        self.proportions = proportions
+
+        self.nspecies = 0
+        self.check_nspecies(particle_types)
+        self.check_nspecies(names)
+        self.check_nspecies(charges)
+        self.check_nspecies(charge_states)
+        self.check_nspecies(masses)
+        self.check_nspecies(proportions)
+
+        # --- Create the instances of each species
+        self.species_instances_list = []
+        self.species_instances_dict = {}
+        for i in range(self.nspecies):
+            if particle_types:
+                particle_type = particle_types[i]
+            else:
+                particle_type = None
+            if names:
+                name = names[i]
+            else:
+                name = None
+            if charges:
+                charge = charges[i]
+            else:
+                charge = None
+            if charge_states:
+                charge_state = charge_states[i]
+            else:
+                charge_state = None
+            if masses:
+                mass = masses[i]
+            else:
+                mass = None
+            if proportions:
+                proportion = proportions[i]
+            else:
+                proportion = None
+            specie = PICMI_MultiSpecies.Species_class(particle_type = particle_type,
+                                                      name = name,
+                                                      charge = charge,
+                                                      charge_state = charge_state,
+                                                      mass = mass,
+                                                      initial_distribution = initial_distribution)
+                                                      #proportion = proportion)
+            self.species_instances_list.append(specie)
+            if name is not None:
+                self.species_instances_dict[name] = specie
+
+        self.handle_init(kw)
+
+    def check_nspecies(self, var):
+        if len(var) > 0:
+            assert self.nspecies == 0 or self.nspecies == len(var), Exception('All inputs must have the same length')
+            self.nspecies = len(var)
+
+    def __len__(self):
+        return self.nspecies
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.species_instances_dict[key]
+        else:
+            return self.species_instances_list[key]
+
+
+class PICMI_GaussianBunchDistribution(_ClassWithInit):
+    """
+    Describes a Gaussian distribution of particles
+      - n_physical_particles: Number of physical particles in the bunch
+      - rms_bunch_size: RMS bunch size at t=0 (vector) [m]
+      - rms_velocity=[0,0,0]: RMS velocity spread at t=0 (vector) [m/s]
+      - centroid_position=[0,0,0]: Position of the bunch centroid at t=0 (vector) [m]
+      - centroid_velocity=[0,0,0]: Velocity (gamma*V) of the bunch centroid at t=0 (vector) [m/s]
+      - velocity_divergence=[0,0,0]: Expansion rate of the bunch at t=0 (vector) [m/s/m]
+    """
+    def __init__(self,n_physical_particles, rms_bunch_size,
+                 rms_velocity = [0.,0.,0.],
+                 centroid_position = [0.,0.,0.],
+                 centroid_velocity = [0.,0.,0.],
+                 velocity_divergence = [0.,0.,0.],
+                 **kw):
+        self.n_physical_particles = n_physical_particles
+        self.rms_bunch_size = rms_bunch_size
+        self.rms_velocity = rms_velocity
+        self.centroid_position = centroid_position
+        self.centroid_velocity = centroid_velocity
+        self.velocity_divergence = velocity_divergence
+
+        self.handle_init(kw)
+
+
+class PICMI_UniformDistribution(_ClassWithInit):
+    """
+    Describes a uniform density distribution of particles
+      - density: Physical number density [m^-3]
+      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
+      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
+      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
+      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+    """
+
+    def __init__(self, density,
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 rms_velocity = [0.,0.,0.],
+                 directed_velocity = [0.,0.,0.],
+                 fill_in = False,
+                 **kw):
+        self.density = density
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity = rms_velocity
+        self.directed_velocity = directed_velocity
+        self.fill_in = fill_in
+
+        self.handle_init(kw)
+
+
+class PICMI_AnalyticDistribution(_ClassWithInit):
+    """
+    Describes a uniform density plasma
+      - density_expression: Analytic expression describing physical number density (string) [m^-3]
+                            Expression should be in terms of the position, written as 'x', 'y', and 'z'.
+      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
+      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
+      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
+      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
+      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+    """
+
+    def __init__(self, density_expression,
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 rms_velocity = [0.,0.,0.],
+                 directed_velocity = [0.,0.,0.],
+                 fill_in = False,
+                 **kw):
+        self.density_expression = density_expression
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity = rms_velocity
+        self.directed_velocity = directed_velocity
+        self.fill_in = fill_in
+
+        self.handle_init(kw)
+
+
+class PICMI_ParticleList(_ClassWithInit):
+    """
+    Load particles at the specified positions and velocities
+      - x=0.: List of x positions of the particles [m]
+      - y=0.: List of y positions of the particles [m]
+      - z=0.: List of z positions of the particles [m]
+      - ux=0.: List of ux positions of the particles (ux = gamma*vx) [m/s]
+      - uy=0.: List of uy positions of the particles (uy = gamma*vy) [m/s]
+      - uz=0.: List of uz positions of the particles (uz = gamma*vz) [m/s]
+      - weight: Particle weight or list of weights, number of real particles per simulation particle
+    """
+    def __init__(self, x=0., y=0., z=0., ux=0., uy=0., uz=0., weight=0.,
+                 **kw):
+        # --- Get length of arrays, set to one for scalars
+        lenx = np.size(x)
+        leny = np.size(y)
+        lenz = np.size(z)
+        lenux = np.size(ux)
+        lenuy = np.size(uy)
+        lenuz = np.size(uz)
+        lenw = np.size(weight)
+
+        maxlen = max(lenx, leny, lenz, lenux, lenuy, lenuz, lenw)
+        assert lenx==maxlen or lenx==1, "Length of x doesn't match len of others"
+        assert leny==maxlen or leny==1, "Length of y doesn't match len of others"
+        assert lenz==maxlen or lenz==1, "Length of z doesn't match len of others"
+        assert lenux==maxlen or lenux==1, "Length of ux doesn't match len of others"
+        assert lenuy==maxlen or lenuy==1, "Length of uy doesn't match len of others"
+        assert lenuz==maxlen or lenuz==1, "Length of uz doesn't match len of others"
+        assert lenw==maxlen or lenw==1, "Length of weight doesn't match len of others"
+
+        if lenx == 1:
+            x = np.array(x)*np.ones(maxlen)
+        if leny == 1:
+            y = np.array(y)*np.ones(maxlen)
+        if lenz == 1:
+            z = np.array(z)*np.ones(maxlen)
+        if lenux == 1:
+            ux = np.array(ux)*np.ones(maxlen)
+        if lenuy == 1:
+            uy = np.array(uy)*np.ones(maxlen)
+        if lenuz == 1:
+            uz = np.array(uz)*np.ones(maxlen,'d')
+        # --- Note that weight can be a scalar
+
+        self.weight = weight
+        self.x = x
+        self.y = y
+        self.z = z
+        self.ux = ux
+        self.uy = uy
+        self.uz = uz
+
+        self.handle_init(kw)
+
+
+# ------------------
+# Numeric Objects
+# ------------------
+
+
+class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
+    """
+    Describes the injection of particles from a plane
+      - position: Position of the particle centroid (vector) [m]
+      - plane_normal: Vector normal to the plane of injection (vector) [1]
+      - plane_velocity: Velocity of the plane of injection (vector) [m/s]
+      - method: InPlace - method of injection. One of 'InPlace', or 'Plane'
+    """
+    def __init__(self, position, plane_normal, plane_velocity=[0.,0.,0.], method='InPlace', **kw):
+        self.position = position
+        self.plane_normal = plane_normal
+        self.plane_velocity = plane_velocity
+        self.method = method
+
+        self.handle_init(kw)
+
+
+class PICMI_GriddedLayout(_ClassWithInit):
+    """
+    Specifies a gridded layout of particles
+    - grid: grid object specifying the grid to follow
+    - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
+    """
+    def __init__(self, grid, n_macroparticle_per_cell, **kw):
+        self.grid = grid
+        self.n_macroparticle_per_cell = n_macroparticle_per_cell
+
+        self.handle_init(kw)
+
+
+class PICMI_PseudoRandomLayout(_ClassWithInit):
+    """
+    Specifies a pseudo-random layout of the particles
+
+    Only one of these should be specified:
+    - n_macroparticles: total number of macroparticles to load
+    - n_macroparticles_per_cell: number of macroparticles to load per cell
+
+    Optional argument
+    - seed: pseudo-random number generator seed
+    """
+    def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, **kw):
+
+        assert (n_macroparticles is not None)^(n_macroparticles_per_cell is not None), \
+               Exception('Only one of n_macroparticles and n_macroparticles_per_cell must be specified')
+
+        self.n_macroparticles = n_macroparticles
+        self.n_macroparticles_per_cell = n_macroparticles_per_cell
+        self.seed = seed
+
+        self.handle_init(kw)

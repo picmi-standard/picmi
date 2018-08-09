@@ -4,6 +4,7 @@ The classes in the file are all particle related
 """
 import math
 import sys
+import re
 
 from .base import _ClassWithInit
 
@@ -195,11 +196,18 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
     Describes a uniform density plasma
       - density_expression: Analytic expression describing physical number density (string) [m^-3]
                             Expression should be in terms of the position, written as 'x', 'y', and 'z'.
+                            Parameters can be used in the expression with the values given as keyword arguments.
       - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
       - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+
+      # This will create a distribution where the density is n0 below rmax and zero elsewhere.
+      dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
+                                  rmax = 1.,
+                                  n0 = 1.e20,
+                                  ...)
     """
 
     def __init__(self, density_expression,
@@ -215,6 +223,16 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
+
+        # --- Find any user defined keywords in the kw dictionary.
+        # --- Save them and delete them from kw.
+        # --- It's up to the code to make sure that all parameters
+        # --- used in the expression are defined.
+        self.user_defined_kw = {}
+        for k in list(kw.keys()):
+            if re.search(r'\b%s\b'%k, density_expression):
+              self.user_defined_kw[k] = kw[k]
+              del kw[k]
 
         self.handle_init(kw)
 

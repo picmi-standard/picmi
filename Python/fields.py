@@ -28,7 +28,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
                  source_smoother=None, field_smoother=None,
                  **kw):
 
-        assert method is None or method in PICMI_ElectromagneticSolver.Methods_list, \
+        assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))
 
         self.grid = grid

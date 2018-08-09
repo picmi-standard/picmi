@@ -20,10 +20,11 @@ class PICMI_Simulation(_ClassWithInit):
       - max_time: Maximum time to run the simulation [s]
       - verbose: Verbosity flag
       - particle_shape: Default particle shape for species added to this simulation. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
+      - gamma_boost=1: Gamma of the boosted simulation frame (note that all input values should be in the lab frame)
     """
 
     def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                 particle_shape='linear', **kw):
+                 particle_shape='linear', gamma_boost=None, **kw):
 
         self.solver = solver
         self.time_step_size = time_step_size
@@ -31,6 +32,7 @@ class PICMI_Simulation(_ClassWithInit):
         self.max_steps = max_steps
         self.max_time = max_time
         self.particle_shape = particle_shape
+        self.gamma_boost = gamma_boost
 
         self.species = []
         self.layouts = []

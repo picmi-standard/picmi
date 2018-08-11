@@ -71,11 +71,15 @@ class PICMI_BinomialSmoother(_ClassWithInit):
     """
     Descibes a binomial smoother operator (applied to grids)
     - n_pass: Number of passes along each axis (vector)
-    - compensation: Flags whether to apply comensation (logical)
+    - compensation: Flags whether to apply comensation along each axis (vector of logicals)
+    - stride: Stride along each axis. (vector)
+    - alpha: Smoothing coefficients along each axis. (vector)
     """
-    def __init__(self, n_pass=None, compensation=None, **kw):
+    def __init__(self, n_pass=None, compensation=None, stride=None, alpha=None, **kw):
         self.n_pass = n_pass
         self.compensation = compensation
+        self.stride = stride
+        self.alpha = alpha
 
         self.handle_init(kw)
 
@@ -105,6 +109,8 @@ class PICMI_CylindricalGrid(_ClassWithInit):
 
       - moving_window_velocity: Moving frame Z velocity [m/s]
     """
+
+    number_of_dimensions = 2
 
     def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
                  lower_boundary_conditions=None, upper_boundary_conditions=None,
@@ -150,6 +156,12 @@ class PICMI_CylindricalGrid(_ClassWithInit):
             upper_boundary_conditions = [bc_rmax, bc_zmax]
         else:
             bc_rmax, bc_zmax = upper_boundary_conditions
+
+        assert len(number_of_cells) == 2, Exception('Wrong nunber of cells specified')
+        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
+        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
+        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
+        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
 
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
@@ -199,6 +211,8 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
       - moving_window_velocity: Moving frame velocity (vector) [m/s]
     """
 
+    number_of_dimensions = 2
+
     def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
                  lower_boundary_conditions=None, upper_boundary_conditions=None,
                  nx=None, ny=None,
@@ -243,6 +257,12 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
             upper_boundary_conditions = [bc_xmax, bc_ymax]
         else:
             bc_xmax, bc_ymax = upper_boundary_conditions
+
+        assert len(number_of_cells) == 2, Exception('Wrong nunber of cells specified')
+        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
+        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
+        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
+        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
 
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
@@ -296,6 +316,8 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
       - moving_window_velocity: Moving frame velocity (vector) [m/s]
     """
 
+    number_of_dimensions = 3
+
     def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
                  lower_boundary_conditions=None, upper_boundary_conditions=None,
                  nx=None, ny=None, nz=None,
@@ -340,6 +362,12 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
             upper_boundary_conditions = [bc_xmax, bc_ymax, bc_zmax]
         else:
             bc_xmax, bc_ymax, bc_zmax = upper_boundary_conditions
+
+        assert len(number_of_cells) == 3, Exception('Wrong nunber of cells specified')
+        assert len(lower_bound) == 3, Exception('Wrong number of lower bounds specified')
+        assert len(upper_bound) == 3, Exception('Wrong number of upper bounds specified')
+        assert len(lower_boundary_conditions) == 3, Exception('Wrong number of lower boundary conditions specified')
+        assert len(upper_boundary_conditions) == 3, Exception('Wrong number of upper boundary conditions specified')
 
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound

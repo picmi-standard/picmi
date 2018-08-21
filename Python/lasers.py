@@ -24,13 +24,20 @@ class PICMI_GaussianLaser(_ClassWithInit):
             Specify either a0 or E0 (E0 takes precedence).
       - E0: Maximum amplitude of the laser field [V/m]
             Specify either a0 or E0 (E0 takes precedence).
+      - zeta: Spatial chirp at focus (in the lab frame) [m.s]
+      - beta: Angular dispersion at focus (in the lab frame) [rad.s]
+      - phi2: Temporal chirp at focus (in the lab frame) [s^2]
     """
     def __init__(self, wavelength, waist, duration,
                  focal_position = [0., 0., 0.],
                  centroid_position = [0., 0., 0.],
                  propagation_direction = [0., 0., 1.],
                  polarization_angle = 0.,
-                 a0 = None, E0 = None,
+                 a0 = None, 
+                 E0 = None,
+                 zeta = None,
+                 beta = None,
+                 phi2 = None,
                  **kw):
 
         k0 = 2.*math.pi/wavelength
@@ -51,6 +58,9 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.polarization_angle = polarization_angle
         self.a0 = a0
         self.E0 = E0
+        self.zeta = zeta
+        self.beta = beta
+        self.phi2 = phi2
 
         self.handle_init(kw)
 

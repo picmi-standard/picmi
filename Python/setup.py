@@ -13,12 +13,12 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-setup(name = 'PICMI_Base',
+setup(name = 'picmistandard',
       version = '1.0.0',
       description = 'Python base classes for PICMI standard',
       platforms = 'any',
-      packages = ['PICMI_Base'],
-      package_dir = {'PICMI_Base': '.'},
+      packages = ['picmistandard'],
+      package_dir = {'picmistandard': '.'},
       cmdclass = {'build_py':build_py}
       )
 

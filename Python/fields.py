@@ -42,7 +42,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_Electrostatic_solver(_ClassWithInit):
+class PICMI_ElectrostaticSolver(_ClassWithInit):
     """
     Electrostatic field solver
       - grid: grid object to be used by the solver

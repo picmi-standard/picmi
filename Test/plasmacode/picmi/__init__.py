@@ -1,5 +1,5 @@
 import PICMI_Base
-codename = 'plasma_code'
+codename = 'plasmacode'
 PICMI_Base.register_codename(codename)
 
 picmi_classes = [ cls for cls in PICMI_Base.__dir__() \
@@ -21,7 +21,7 @@ PICMI_Base.PICMI_MultiSpecies.Species_class = Species
 
 class CylindricalGrid(PICMI_Base.PICMI_CylindricalGrid):
     def init(self, kw):
-        self.mode_phase = kw.pop('plasma_code_mode_phase', 0.)
+        self.mode_phase = kw.pop('plasmacode_mode_phase', 0.)
 
 class Simulation(PICMI_Base.PICMI_Simulation):
     def init(self, kw):

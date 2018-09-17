@@ -209,6 +209,11 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
       - bc_ymax: Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
 
       - moving_window_velocity: Moving frame velocity (vector) [m/s]
+
+      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+                         lo and hi being vectors of length 2 specifying the extent of the region,
+                         and refinement_factor defaulting to [2,2] (relative to next lower level)
     """
 
     number_of_dimensions = 2
@@ -218,7 +223,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
                  nx=None, ny=None,
                  xmin=None, xmax=None, ymin=None, ymax=None,
                  bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None,
-                 moving_window_velocity=None,
+                 moving_window_velocity=None, refined_regions=[],
                  **kw):
 
         assert (number_of_cells is None) and (nx is not None and ny is not None) or \
@@ -282,8 +287,23 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         self.bc_ymax = bc_ymax
 
         self.moving_window_velocity = moving_window_velocity
+        self.refined_regions = refined_regions
+        for region in self.refined_regions:
+            if len(region) == 3:
+                region.append([2,2])
+            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
+            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
+            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
 
         self.handle_init(kw)
+
+    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
+        """Add a refined region.
+        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        lo, hi: vectors of length 2 specifying the extent of the region
+        refinement_factor: defaulting to [2,2] (relative to next lower level)
+        """
+        self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
 class PICMI_Cartesian3DGrid(_ClassWithInit):
@@ -314,6 +334,11 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
       - bc_zmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
 
       - moving_window_velocity: Moving frame velocity (vector) [m/s]
+
+      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+                         lo and hi being vectors of length 3 specifying the extent of the region,
+                         and refinement_factor defaulting to [2,2,2] (relative to next lower level)
     """
 
     number_of_dimensions = 3
@@ -323,7 +348,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
                  nx=None, ny=None, nz=None,
                  xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
                  bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None,
+                 moving_window_velocity=None, refined_regions=[],
                  **kw):
 
         assert (number_of_cells is None) and (nx is not None and ny is not None and nz is not None) or \
@@ -392,5 +417,20 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         self.bc_zmax = bc_zmax
 
         self.moving_window_velocity = moving_window_velocity
+        self.refined_regions = refined_regions
+        for region in self.refined_regions:
+            if len(region) == 3:
+                region.append([2,2,2])
+            assert len(region[1]) == 3, Exception('The lo extent of the refined region must be a vector of length 3')
+            assert len(region[2]) == 3, Exception('The hi extent of the refined region must be a vector of length 3')
+            assert len(region[3]) == 3, Exception('The refinement factor of the refined region must be a vector of length 3')
 
         self.handle_init(kw)
+
+    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2,2]):
+        """Add a refined region.
+        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        lo, hi: vectors of length 3 specifying the extent of the region
+        refinement_factor: defaulting to [2,2,2] (relative to next lower level)
+        """
+        self.refined_regions.append([level, lo, hi, refinement_factor])

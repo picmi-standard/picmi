@@ -18,8 +18,10 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
       - period=1: Period of time steps that the diagnostic is performed
       - data_list=["rho", "E", "B", "J"]: List of quantities to write out
       - write_dir='.': Directory where data is to be written
-      - step_min=None: Minimum step at which diagnostics could be written
-      - step_max=None: Maximum step at which diagnostics could be written
+      - step_min=None: Minimum step at which diagnostics could be written (optional)
+                       Defaults to step 0.
+      - step_max=None: Maximum step at which diagnostics could be written (optional)
+                       Defaults to no limit.
       - number_of_cells=None: Number of cells in each dimension (optional)
                               If not given, will be obtained from grid.
       - lower_bound=None: Lower corner of diagnostics box in each direction (optional)
@@ -66,8 +68,10 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
       - period=1: Period of time steps that the diagnostic is performed
       - data_list=["rho", "phi"]: List of quantities to write out
       - write_dir='.': Directory where data is to be written
-      - step_min=None: Minimum step at which diagnostics could be written
-      - step_max=None: Maximum step at which diagnostics could be written
+      - step_min=None: Minimum step at which diagnostics could be written (optional)
+                       Defaults to step 0.
+      - step_max=None: Maximum step at which diagnostics could be written (optional)
+                       Defaults to no limit.
       - number_of_cells=None: Number of cells in each dimension (optional)
                               If not given, will be obtained from grid.
       - lower_bound=None: Lower corner of diagnostics box in each direction (optional)
@@ -114,8 +118,10 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
                  Note that the name attribute must be defined for the species.
       - data_list=["position", "momentum", "weighting"]: The data to be written out
       - write_dir='.': Directory where data is to be written
-      - step_min=None: Minimum step at which diagnostics could be written
-      - step_max=None: Maximum step at which diagnostics could be written
+      - step_min=None: Minimum step at which diagnostics could be written (optional)
+                       Defaults to step 0.
+      - step_max=None: Maximum step at which diagnostics could be written (optional)
+                       Defaults to no limit.
     """
 
     def __init__(self, period = 1,

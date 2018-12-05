@@ -41,6 +41,8 @@ class PICMI_Simulation(_ClassWithInit):
         self.lasers = []
         self.laser_injection_methods = []
 
+        self.diagnostics = []
+
         self.handle_init(kw)
 
     def add_species(self, species, layout, initialize_self_field=False):
@@ -70,6 +72,13 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
+
+    def add_diagnostic(self, diagnostic):
+        """
+        Add a diagnostic
+          - diagnostic: one of the diagnostic objects
+        """
+        self.diagnostics.append(diagnostic)
 
     def write_input_file(self, file_name):
         raise NotImplementedError

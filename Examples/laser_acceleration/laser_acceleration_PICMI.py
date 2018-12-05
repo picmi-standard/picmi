@@ -128,6 +128,20 @@ beam_layout = picmi.PseudoRandomLayout(
                 seed = 0)
 sim.add_species(species=beam, layout=beam_layout, initialize_self_field=True)
 
+# Add field and particle diagnostics
+field_diag_slicexz = picmi.FieldDiagnostic(grid = grid,
+                                           data_list = ['E', 'rho'],
+                                           number_of_cells = [128, 1, 64],
+                                           lower_bound = [-1.e-6, 0.e-6, -10.e-6],
+                                           upper_bound = [ 1.e-6, 0.e-6, 10.e-6],
+                                           period = 100)
+sim.add_diagnostic(field_diag_slicexz)
+
+particle_diag_beam = picmi.ParticleDiagnostic(grid = grid,
+                                              species = [beam],
+                                              period = 100)
+sim.add_diagnostic(particle_diag_beam)
+
 """
 picmi input script
 """

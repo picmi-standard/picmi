@@ -29,7 +29,7 @@ This repository contains:
   pip install picmistandard
   ```
 
-- The sources to generate the **Sphinx documentation** for the PICMI standard (in the directory `Docs`). In order to generate the Sphinx documentation, first install [Sphinx](), as well as the version of the PICMI standard that you would like to document (e.g. via `python setup.py`). Then type:
+- The sources to generate the **Sphinx documentation** for the PICMI standard (in the directory `Docs`). In order to generate the Sphinx documentation, first install [Sphinx](http://www.sphinx-doc.org/en/master/), as well as the version of the PICMI standard that you would like to document (e.g. via `python setup.py`). Then type:
   ```
   cd Docs
   make html

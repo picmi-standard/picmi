@@ -17,6 +17,10 @@ Just as two persons do generally not use the exact same set of words from a dict
 
 For example, it is expected that most PIC codes can share the same syntax to define a grid, a commonly-used field solver, a set of particles, etc. On the other hand, only a subset of the codes will offer, e.g. mesh refinement, field ionization, or code steering by the user. In this case, it is up to the implementation with each code to decide whether to ignore, raise a warning or an error, when an undefined statement is encountered. For more flexibility and robustness, conditional statements are available to the user to execute or read lines of the input script, based on the targeted code.
 
+.. warning::
+
+   The standard is still evolving at this point. The most basic components of the standard have been defined and are being refined. New components are being added.
+
 Contents
 --------
 

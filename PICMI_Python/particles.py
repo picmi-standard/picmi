@@ -237,7 +237,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_ParticleList(_ClassWithInit):
+class PICMI_ParticleListDistribution(_ClassWithInit):
     """
     Load particles at the specified positions and velocities
       - x=0.: List of x positions of the particles [m]
@@ -318,12 +318,13 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
 class PICMI_GriddedLayout(_ClassWithInit):
     """
     Specifies a gridded layout of particles
-    - grid: grid object specifying the grid to follow
     - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
+    - grid: grid object specifying the grid to follow (optional)
+            If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, grid, n_macroparticle_per_cell, **kw):
-        self.grid = grid
+    def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
         self.n_macroparticle_per_cell = n_macroparticle_per_cell
+        self.grid = grid
 
         self.handle_init(kw)
 
@@ -335,11 +336,11 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
     Only one of these should be specified:
     - n_macroparticles: total number of macroparticles to load
     - n_macroparticles_per_cell: number of macroparticles to load per cell
-
-    Optional argument
-    - seed: pseudo-random number generator seed
+    - seed: pseudo-random number generator seed (optional)
+    - grid: grid object specifying the grid to follow for n_macroparticles_per_cell (optional)
+            If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, **kw):
+    def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
 
         assert (n_macroparticles is not None)^(n_macroparticles_per_cell is not None), \
                Exception('Only one of n_macroparticles and n_macroparticles_per_cell must be specified')
@@ -347,5 +348,6 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
         self.n_macroparticles = n_macroparticles
         self.n_macroparticles_per_cell = n_macroparticles_per_cell
         self.seed = seed
+        self.grid = grid
 
         self.handle_init(kw)

@@ -13,4 +13,4 @@ Electromagnetic
 Electrostatic
 -------------
 
-.. autoclass:: picmistandard.PICMI_Electrostatic_solver
+.. autoclass:: picmistandard.PICMI_ElectrostaticSolver

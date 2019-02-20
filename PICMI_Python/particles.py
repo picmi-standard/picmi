@@ -50,12 +50,12 @@ class PICMI_MultiSpecies(_ClassWithInit):
     """
     INCOMPLETE: proportions argument is not implemented
     Multiple species that are initialized with the same distribution
-      - particle_types: A list of strings specifying for each species an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
-      - names: Names of the species (optional)
-      - charge_states: Charge states of the species (applies to atoms) (optional)
-      - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
-      - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
-      - proportions: Proportions of the initial distribution made up by each species
+    - particle_types: A list of strings specifying for each species an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
+    - names: Names of the species (optional)
+    - charge_states: Charge states of the species (applies to atoms) (optional)
+    - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
+    - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
+    - proportions: Proportions of the initial distribution made up by each species
     """
     # --- Note to developer: This class attribute needs to be set to the Species class
     # --- defined in the codes PICMI implementation.
@@ -320,7 +320,7 @@ class PICMI_GriddedLayout(_ClassWithInit):
     Specifies a gridded layout of particles
     - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
     - grid: grid object specifying the grid to follow (optional)
-            If not specified, the underlying grid of the code is used.
+    If not specified, the underlying grid of the code is used.
     """
     def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
         self.n_macroparticle_per_cell = n_macroparticle_per_cell
@@ -338,7 +338,7 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
     - n_macroparticles_per_cell: number of macroparticles to load per cell
     - seed: pseudo-random number generator seed (optional)
     - grid: grid object specifying the grid to follow for n_macroparticles_per_cell (optional)
-            If not specified, the underlying grid of the code is used.
+    If not specified, the underlying grid of the code is used.
     """
     def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
 

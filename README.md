@@ -13,5 +13,3 @@ The intent is for the standard to be agnostic of the language of implementation,
 ### Current status ###
 
 The most basic components of the standard have been defined and are being refined. New components are being added.
-
-Input scripts using part of the PICMI standard are being developed for [Langmuir waves](https://bitbucket.org/berkeleylab/warpx/src/c4b6d2762eb18438c5099131e1ab58eb1bb05897/tests/Langmuir/langmuir_PICMI.py?at=master)  or [plasma acceleration](https://bitbucket.org/berkeleylab/warpx/src/c4b6d2762eb18438c5099131e1ab58eb1bb05897/Example/laser_acceleration/laser_acceleration_PICMI.py?at=master) simulations for Warp and WarpX. The goal is to convert them to PICMI entirely, as the standard matures.

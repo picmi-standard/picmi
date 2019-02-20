@@ -1,6 +1,6 @@
 # PICMI
 
-The *Particle-In-Cell Modeling Interface* (**PICMI**) standards establish conventions for the naming and structuring of input files for Particle-In-Cell and particle accelerator simulations.
+The *Particle-In-Cell Modeling Interface* (**PICMI**) standard establishes conventions for the naming and structuring of input files for Particle-In-Cell simulations.
 
 The goal of the standard is to propose a set (or dictionary) of names and definitions that can be used in simulations, with as little changes as possible between codes.
 

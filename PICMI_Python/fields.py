@@ -134,7 +134,11 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                  nr=None, nz=None, n_azimuthal_modes=None,
                  rmin=None, rmax=None, zmin=None, zmax=None,
                  bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, guard_cells=None, pml_cells=None, **kw):
+                 moving_window_velocity=None, lower_bound_particles=None, upper_bound_particles=None, 
+                 rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None, 
+                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None, 
+                 bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None, 
+                 guard_cells=None, pml_cells=None, **kw):
 
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nr is not None and nz is not None) or \

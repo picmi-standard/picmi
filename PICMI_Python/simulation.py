@@ -7,35 +7,35 @@ import sys
 from .base import _ClassWithInit
 
 # ---------------------
-# Main simuation object
+# Main simulation object
 # ---------------------
 
 class PICMI_Simulation(_ClassWithInit):
     """
-    Create a Simulation object
-
+    Creates a Simulation object
+    
     Parameters
     ----------
-
-    solver: an instance of one of the PICMI field solvers ; see :doc:`field`
-        Field solver to be used in the simulation
-
-    time_step_size: float [s]
-        Absolute time step size of the simulation
+    solver: object 
+        An instance of one of the PICMI field solvers ; see :doc:`field`
+        This is the field solver to be used in the simulation
+  
+    time_step_size: float 
+        Absolute time step size of the simulation [s]
         (needed if the CFL is not specified elsewhere)
 
     max_steps: int
         Maximum number of time steps
         (Specify either this, or `max_time`, or use the `step` function directly)
 
-    max_time: float [s]
-        Maximum physical time to run the simulation
+    max_time: float 
+        Maximum physical time to run the simulation [s]
         (Specify either this, or `max_steps`, or use the `step` function directly)
 
     verbose: int
         Verbosity flag (A larger integer results in more verbose output.)
 
-    particle_shape: string
+    particle_shape: str
         Default particle shape for species added to this simulation.
         Possible values are 'NGP', 'linear', 'quadratic', 'cubic'.
 
@@ -47,9 +47,8 @@ class PICMI_Simulation(_ClassWithInit):
         Code specific arguments ; should be prefixed with the `codename`
     """
 
-    def __init__(self, solver=None, time_step_size=None, max_steps=None,
-                max_time=None, verbose=None, particle_shape='linear',
-                gamma_boost=None, **kw):
+    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
+                particle_shape='linear', gamma_boost=None, cpu_split=None, load_balancing, **kw):
 
         self.solver = solver
         self.time_step_size = time_step_size
@@ -67,25 +66,31 @@ class PICMI_Simulation(_ClassWithInit):
         self.laser_injection_methods = []
 
         self.diagnostics = []
+        
+        self.cpu_split = cpu_split
+        self.load_balancing = load_balancing
+        
 
         self.handle_init(kw)
 
     def add_species(self, species, layout, initialize_self_field=False):
         """
         Add species to be used in the simulation
-
+        
         Parameters
         ----------
-        species: an instance of one of the PICMI species object ; see :doc:`species`
-            Defines added species from the *physical* point of view
-            (e.g. charge, mass, initial distribution of particles)
+        - species : object 
+              an instance of one of the PICMI species object ; see :doc:`species`
+              Defines added species from the *physical* point of view
+              (e.g. charge, mass, initial distribution of particles) 
 
-        layout: an instance of one of the PICMI layout object ; see :doc:`layout`
-            Defines how particles are added into the simulation, from the *numerical* point of view
+        - layout : object 
+              an instance of one of the PICMI layout object ; see :doc:`layout`
+              Defines how particles are added into the simulation, from the *numerical* point of view
 
-        initialize_self_field: bool
-            Whether the initial space-charge fields of this species
-            is calculated and added to the simulation.
+        - initialize_self_field : bool
+              Whether the initial space-charge fields of this species
+              is calculated and added to the simulation
         """
         self.species.append(species)
         self.layouts.append(layout)
@@ -97,16 +102,18 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-        laser_profile: one of the PICMI laser profile objects ; see :doc:`laser_profiles`
-            Specifies the **physical** properties of the laser pulse
-            (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
+          - laser_profile: object 
+                one of laser profile objects
+                Specifies the **physical** properties of the laser pulse.
+                (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
 
-        injection_method: one of the PICMI laser injector object ; see :doc:`laser_injectors`
-            Specifies how the laser is injected **numerically** into the simulation
-            (e.g. through a laser antenna, or directly added to the mesh).
-            This argument describes an **algorithm**, not a physical object.
-            It is optional. (It is up to each code to define the default method
-            of injection, if the user does not provide injection_method)
+          - injection_method: object (optional)
+                a laser injector object (optional)
+                Specifies how the laser is injected (numerically) into the simulation
+                (e.g. through a laser antenna, or directly added to the mesh).
+                This argument describes an **algorithm**, not a physical object.
+                It is optional. (It is up to each code to define the default method
+                of injection, if the user does not provide injection_method)
         """
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
@@ -114,7 +121,8 @@ class PICMI_Simulation(_ClassWithInit):
     def add_diagnostic(self, diagnostic):
         """
         Add a diagnostic
-          - diagnostic: one of the diagnostic objects
+          - diagnostic: object 
+                One of the diagnostic objects. 
         """
         self.diagnostics.append(diagnostic)
 
@@ -128,7 +136,7 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-        file_name: string
+        file_name: str
             The path to the file that will be created.
         """
         raise NotImplementedError

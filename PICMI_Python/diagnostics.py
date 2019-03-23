@@ -159,20 +159,27 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
 class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
     """
     Defines the electromagnetic field diagnostics in the lab frame
+      - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
-      - dt_snapshots: Time between each snapshot
+      - dt_snapshots: Time between each snapshot in lab frame
+      - z_subsampling=1: A factor which is applied on the resolution of the lab frame reconstruction. (integer)
+      - time_start=0.: Time for the first snapshot in lab frame
       - data_list=["rho", "E", "B", "J"]: List of quantities to write out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
     """
-    def __init__(self, num_snapshots, dt_snapshots,
+    def __init__(self, grid, num_snapshots, dt_snapshots,
+                 z_subsampling = 1, time_start = 0.,
                  data_list = ["rho", "E", "B", "J"],
                  write_dir = None,
                  parallelio = None,
                  **kw):
 
+        self.grid = grid
         self.num_snapshots = num_snapshots
         self.dt_snapshots = dt_snapshots
+        self.z_subsampling = z_subsampling
+        self.time_start = time_start
         self.data_list = data_list
         self.write_dir = write_dir
         self.parallelio = parallelio
@@ -183,23 +190,28 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
 class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
     """
     Defines the particle diagnostics in the lab frame
+      - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
-      - dt_snapshots: Time between each snapshot
+      - dt_snapshots: Time between each snapshot in lab frame
+      - time_start=0.: Time for the first snapshot in lab frame
       - species: Species or list of species to write out
                  Note that the name attribute must be defined for the species.
       - data_list=["position", "momentum", "weighting"]: The data to be written out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, particle diagnostics are dumped in parallel (optional)
     """
-    def __init__(self, num_snapshots, dt_snapshots,
+    def __init__(self, grid, num_snapshots, dt_snapshots,
+                 time_start = 0.,
                  species = None,
                  data_list = ["position", "momentum", "weighting"],
                  write_dir = None,
                  parallelio = None,
                  **kw):
 
+        self.grid = grid
         self.num_snapshots = num_snapshots
         self.dt_snapshots = dt_snapshots
+        self.time_start = time_start
         self.species = species
         self.data_list = data_list
         self.write_dir = write_dir

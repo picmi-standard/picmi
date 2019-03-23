@@ -48,7 +48,7 @@ class PICMI_Simulation(_ClassWithInit):
     """
 
     def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', gamma_boost=None, cpu_split=None, load_balancing, **kw):
+                particle_shape='linear', gamma_boost=None, cpu_split=None, load_balancing=None, **kw):
 
         self.solver = solver
         self.time_step_size = time_step_size

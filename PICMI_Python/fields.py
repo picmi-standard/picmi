@@ -110,6 +110,11 @@ class PICMI_CylindricalGrid(_ClassWithInit):
       - bc_zmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
 
       - moving_window_velocity: Moving frame Z velocity [m/s]
+
+      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+                         lo and hi being vectors of length 2 specifying the extent of the region,
+                         and refinement_factor defaulting to [2,2] (relative to next lower level)
       
       - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
       - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
@@ -134,7 +139,8 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                  nr=None, nz=None, n_azimuthal_modes=None,
                  rmin=None, rmax=None, zmin=None, zmax=None,
                  bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, lower_bound_particles=None, upper_bound_particles=None, 
+                 moving_window_velocity=None, refined_regions=[],
+                 lower_bound_particles=None, upper_bound_particles=None, 
                  rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None, 
                  lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None, 
                  bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None, 
@@ -257,8 +263,24 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         self.bc_zmax_particles = bc_zmax_particles
 
         self.moving_window_velocity = moving_window_velocity
-        
+
+        self.refined_regions = refined_regions
+        for region in self.refined_regions:
+            if len(region) == 3:
+                region.append([2,2])
+            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
+            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
+            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
+
         self.handle_init(kw)
+
+    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
+        """Add a refined region.
+        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        lo, hi: vectors of length 2 specifying the extent of the region
+        refinement_factor: defaulting to [2,2] (relative to next lower level)
+        """
+        self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
 class PICMI_Cartesian2DGrid(_ClassWithInit):
@@ -438,6 +460,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         self.bc_ymax_particles = bc_ymax_particles
 
         self.moving_window_velocity = moving_window_velocity
+
         self.refined_regions = refined_regions
         
         for region in self.refined_regions:
@@ -652,6 +675,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         self.bc_zmax_particles = bc_zmax_particles
 
         self.moving_window_velocity = moving_window_velocity
+
         self.refined_regions = refined_regions
         for region in self.refined_regions:
             if len(region) == 3:

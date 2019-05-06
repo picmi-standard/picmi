@@ -24,6 +24,7 @@ Particles
    :maxdepth: 1
 
    species
+   distribution
    layout
 
 

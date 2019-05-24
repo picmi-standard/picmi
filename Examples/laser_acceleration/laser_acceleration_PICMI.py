@@ -12,6 +12,7 @@ Physics part - can be in separate file
 import numpy as np
 
 # This should be the only line that needs to be changed for different codes
+# (e.g. `from warpx import picmi` or `from fbpic import picmi`)
 from plasmacode import picmi
 
 # Define the laser profile laser
@@ -27,20 +28,21 @@ laser = picmi.GaussianLaser(
 
 # Define the electron beam
 beam_dist = picmi.GaussianBunchDistribution(
-                n_physical_particles = 1.e9,
-                rms_bunch_size = [2.e-6, 2.e-6, 1.e-6],
+                n_physical_particles = 1.e8,
+                rms_bunch_size = [1.e-6, 1.e-6, 1.e-6],
                 rms_velocity = [0.,0.,10.],
-                centroid_position = [0.,0.,100.e-6],
+                centroid_position = [0.,0.,-35.e-6],
                 centroid_velocity = [0.,0.,1000.],
                 velocity_divergence = [0.,0.,0.])
 
 beam = picmi.Species(
             particle_type = 'electron',
+            name = 'beam',
             initial_distribution = beam_dist)
 
 # Define plasma
 plasma_dist = picmi.AnalyticDistribution(
-                density_expression = "1.e23*tanh((z - 20.e-6)/100.e-6)",
+                density_expression = "1.e23*(1+tanh((z - 20.e-6)/10.e-6))/2.",
                 fill_in=True)
 
 plasma = picmi.MultiSpecies(
@@ -78,21 +80,21 @@ v_window = (0., 0., c)
 
 # Setup the grid ; this may be code dependent
 # Note that code specific arguments use the code name as a prefix.
-if picmi.codename == 'plasmacode':
+if picmi.codename == 'fbpic':
     nr = nx/2.
     grid = picmi.CylindricalGrid(
         nr=nr, rmin=0., rmax=xmax, bc_rmax='reflective',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2,
-        moving_window_velocity=v_window,
-        plasmacode_mode_phase = 0.) # "mode_phase" is a specific argument for the code plasmacode
-elif picmi.codename in ['plasmacode3D', 'AMRplasmacode']:
+        moving_window_velocity=v_window)
+elif picmi.codename in ['warp', 'warpx']:
     grid = picmi.Cartesian3DGrid(
         nx=nx, xmin=xmin, xmax=xmax, bc_xmin='periodic', bc_xmax='periodic',
         ny=ny, ymin=ymin, ymax=ymax, bc_ymin='periodic', bc_ymax='periodic',
         nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         moving_window_velocity=v_window,
-        AMRplasmacode_max_grid_size=32, AMRplasmacode_max_level=0) # "max_grid" and "max_level" are specific arguments for the code AMRplasmacode
+        warpx_max_grid_size=32, warpx_max_level=0)
+        # "max_grid" and "max_level" are specific arguments for the code warpX
 
 # Setup the electromagnetic solver
 smoother = picmi.BinomialSmoother(n_pass=2, compensation=True)
@@ -101,8 +103,7 @@ solver = picmi.ElectromagneticSolver(grid=grid, cfl=1.0,
 
 # Initialize the simulation object
 # Note that the time step size is obtained from the solver
-sim = picmi.Simulation(
-        solver=solver)
+sim = picmi.Simulation(solver=solver)
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -111,10 +112,12 @@ antenna = picmi.LaserAntenna(
 sim.add_laser(laser, injection_method = antenna)
 
 # Add the plasma: continuously injected by the moving window
-if picmi.codename == 'plasmacode':
-    n_macroparticle_per_cell = {'r':2, 'z':2, 'theta':4}
+if picmi.codename == 'fbpic':
+    n_macroparticle_per_cell = [2, 4, 2]
+    # number of particle per cell in the r, theta, z direction respectively
 else:
-    n_macroparticle_per_cell = {'x':2, 'y':2, 'z':2}
+    n_macroparticle_per_cell = [2, 2, 2]
+    # number of particle per cell in the x, y, z direction respectively
 
 plasma_layout = picmi.GriddedLayout(
                     grid = grid,

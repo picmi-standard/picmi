@@ -33,7 +33,7 @@ beam_dist = picmi.GaussianBunchDistribution(
                 rms_bunch_size = [1.e-6, 1.e-6, 1.e-6],
                 rms_velocity = [0.,0.,10.*constants.speed_of_light],
                 centroid_position = [0.,0.,-35.e-6],
-                centroid_velocity = [0.,0.,1000.],
+                centroid_velocity = [0.,0.,1000.*constants.speed_of_light],
                 velocity_divergence = [0.,0.,0.])
 
 beam = picmi.Species(

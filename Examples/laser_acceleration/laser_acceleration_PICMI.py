@@ -10,6 +10,7 @@ laser_a0 = 4. # Amplitude of the normalized vector potential
 Physics part - can be in separate file
 """
 import numpy as np
+from scipy import constants
 
 # This should be the only line that needs to be changed for different codes
 # (e.g. `from warpx import picmi` or `from fbpic import picmi`)
@@ -30,7 +31,7 @@ laser = picmi.GaussianLaser(
 beam_dist = picmi.GaussianBunchDistribution(
                 n_physical_particles = 1.e8,
                 rms_bunch_size = [1.e-6, 1.e-6, 1.e-6],
-                rms_velocity = [0.,0.,10.],
+                rms_velocity = [0.,0.,10.*constants.speed_of_light],
                 centroid_position = [0.,0.,-35.e-6],
                 centroid_velocity = [0.,0.,1000.],
                 velocity_divergence = [0.,0.,0.])

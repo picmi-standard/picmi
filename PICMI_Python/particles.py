@@ -197,6 +197,10 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
       - density_expression: Analytic expression describing physical number density (string) [m^-3]
                             Expression should be in terms of the position, written as 'x', 'y', and 'z'.
                             Parameters can be used in the expression with the values given as keyword arguments.
+      - momentum_expressions=[None, None, None]: Analytic expressions describing the gamma*velocity for each axis (vector of strings) [m/s]
+                                                 Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
+                                                 Parameters can be used in the expression with the values given as keyword arguments.
+                                                 For any axis not supplied, directed_velocity will be used.
       - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
@@ -211,18 +215,28 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
     """
 
     def __init__(self, density_expression,
+                 momentum_expressions = [None, None, None],
                  lower_bound = [None,None,None],
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
                  fill_in = False,
                  **kw):
-        self.density_expression = density_expression
+        self.density_expression = '{}'.format(density_expression).replace('\n', '')
+        self.momentum_expressions = momentum_expressions
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
+
+        # --- Convert momentum_expressions to string if needed.
+        if self.momentum_expressions[0] is not None:
+            self.momentum_expressions[0] = '{}'.format(self.momentum_expressions[0]).replace('\n', '')
+        if self.momentum_expressions[1] is not None:
+            self.momentum_expressions[1] = '{}'.format(self.momentum_expressions[1]).replace('\n', '')
+        if self.momentum_expressions[2] is not None:
+            self.momentum_expressions[2] = '{}'.format(self.momentum_expressions[2]).replace('\n', '')
 
         # --- Find any user defined keywords in the kw dictionary.
         # --- Save them and delete them from kw.
@@ -230,9 +244,18 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         # --- used in the expression are defined.
         self.user_defined_kw = {}
         for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, density_expression):
-              self.user_defined_kw[k] = kw[k]
-              del kw[k]
+            if re.search(r'\b%s\b'%k, self.density_expression):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
+            elif self.momentum_expressions[0] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[0]):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
+            elif self.momentum_expressions[1] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[1]):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
+            elif self.momentum_expressions[2] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[2]):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
 
         self.handle_init(kw)
 

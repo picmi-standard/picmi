@@ -2,7 +2,7 @@
 # e.g. `from pywarpx import picmi`
 #      `from fbpic import picmi`
 #      `from warp import picmi`
-from pywarpx import picmi
+from fbpic import picmi
 
 # Create alias fror constants
 cst = picmi.constants
@@ -85,9 +85,9 @@ laser = picmi.GaussianLaser(
 # --- plasma
 plasma_dist = picmi.AnalyticDistribution(
                 density_expression = plasma_density_expression,
-                lower_bound = plasma_min,
-                upper_bound = plasma_max,
-                fill_in=True)
+                lower_bound        = plasma_min,
+                upper_bound        = plasma_max,
+                fill_in            = True)
 plasma = picmi.MultiSpecies(
                 particle_types = ['He', 'Ar', 'electron'],
                 names          = ['He+', 'Argon', 'e-'],
@@ -129,8 +129,8 @@ if geometry == '3D':
         # Note that code-specific arguments use the code name as a prefix.
 elif geometry == 'RZ':
     grid = picmi.CylindricalGrid(
-        nr=nx/2., rmin=0., rmax=xmax, bc_rmax='reflective',
-        nz=nz, zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
+        nr=nx/2., rmin=0.,   rmax=xmax, bc_rmax='reflective',
+        nz=nz,    zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
         n_azimuthal_modes=2, moving_window_velocity=moving_window_velocity,
         warpx_max_grid_size=32)
 

@@ -61,7 +61,15 @@ zmin = -38.e-6
 zmax = 10.e-6
 moving_window_velocity = [0., 0., cst.c]
 n_macroparticle_per_cell = [2, 2, 2]
-if geometry == 'RZ':
+
+# --- geometry and solver
+em_solver_method = 'CKC'  # Cole-Karkkainen-Cowan stencil
+geometry = '3D'
+
+# Note that code-specific changes can be introduced with `picmi.codename`
+if picmi.codename == 'fbpic':
+    em_solver_method = 'PSATD' # Pseudo-Spectral Analytical Time Domain solver
+    geometry = 'RZ'
     n_macroparticle_per_cell = [2, 4, 2]
     # number of particle per cell in the r, theta, z direction respectively
 
@@ -100,8 +108,9 @@ plasma = picmi.MultiSpecies(
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
 if picmi.codename != 'pywarpx':
-    plasma['Argon'].activate_field_ionization( model           = "ADK",
-                                               product_species = plasma['e-'])
+    plasma['Argon'].activate_field_ionization(
+        model           = "ADK", # Ammosov-Delone-Krainov model
+        product_species = plasma['e-'])
 
 # --- electron bunch
 beam_dist = picmi.GaussianBunchDistribution(
@@ -128,16 +137,25 @@ if geometry == '3D':
         warpx_max_grid_size       = 32)
         # Note that code-specific arguments use the code name as a prefix.
 elif geometry == 'RZ':
+    # In the following lists:
+    # - the first element corresponds to the radial direction
+    # - the second element corresponds to the longitudinal direction
     grid = picmi.CylindricalGrid(
-        nr=nx/2., rmin=0.,   rmax=xmax, bc_rmax='reflective',
-        nz=nz,    zmin=zmin, zmax=zmax, bc_zmin='open', bc_zmax='open',
-        n_azimuthal_modes=2, moving_window_velocity=moving_window_velocity,
-        warpx_max_grid_size=32)
+        number_of_cells           = [nx//2, nz],
+        lower_bound               = [0., zmin],
+        upper_bound               = [xmax, zmax],
+        lower_boundary_conditions = [ None, 'open'],
+        upper_boundary_conditions = ['reflective', 'open'],
+        n_azimuthal_modes         = 2,
+        moving_window_velocity    = moving_window_velocity,
+        warpx_max_grid_size       = 32)
 
-smoother = picmi.BinomialSmoother(n_pass=1, compensation=True)
-solver = picmi.ElectromagneticSolver(grid=grid, cfl=1.,
-                                     method=em_solver_method,
-                                     source_smoother=smoother)
+smoother = picmi.BinomialSmoother( n_pass       = 1,
+                                   compensation = True )
+solver = picmi.ElectromagneticSolver( grid            = grid,
+                                      cfl             = 1.,
+                                      method          = em_solver_method,
+                                      source_smoother = smoother)
 
 # Diagnostics
 # -----------

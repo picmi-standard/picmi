@@ -39,11 +39,11 @@ class PICMI_Species(_ClassWithInit):
 
         self.handle_init(kw)
 
-    def activate_ionization(self, model, target_species):
+    def activate_ionization(self, model, product_species):
         # --- TODO: One way of handling interactions is to add a class for each type
         # ---       of interaction. Instances would be added to the interactions list
         # ---       instead of the list of parameters.
-        self.interactions.append(['ionization', model, target_species])
+        self.interactions.append(['ionization', model, product_species])
 
 
 class PICMI_MultiSpecies(_ClassWithInit):

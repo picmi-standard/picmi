@@ -2,9 +2,10 @@
 # e.g. `from pywarpx import picmi`
 #      `from fbpic import picmi`
 #      `from warp import picmi`
-from pywarpx import picmi
+from fbpic import picmi
 
-import picmi.constants as cst
+# Create alias fror constants
+cst = picmi.constants
 
 # Run parameters - can be in separate file
 # ========================================
@@ -28,14 +29,22 @@ plasma_min     = [-20.e-6, -20.e-6,  0.0e-6]
 plasma_max     = [ 20.e-6,  20.e-6,  1.e-3]
 
 # --- electron bunch
-bunch_physical_particles  = 1.e8,
+bunch_physical_particles  = 1.e8
 bunch_rms_size            = [1.e-6, 1.e-6, 1.e-6]
 bunch_rms_velocity        = [0.,0.,10.*cst.c]
-bunch_centroid_position   = [0.,0.,-35.e-6],
+bunch_centroid_position   = [0.,0.,-22.e-6]
 bunch_centroid_velocity   = [0.,0.,1000.*cst.c]
 
 # Numerics parameters
 # -------------------
+
+# --- geometry and solver
+em_solver_method = 'CKC'
+geometry = '3D'
+# Note that code-specific changes can be introduced with `picmi.codename`
+if picmi.codename == 'fbpic':
+    em_solver_method = 'PSATD'
+    geometry = 'RZ'
 
 # --- Nb time steps
 max_steps = 1000
@@ -48,19 +57,11 @@ xmin = 1.5*plasma_min[0]
 xmax = 1.5*plasma_max[0]
 ymin = 1.5*plasma_min[1]
 ymax = 1.5*plasma_max[1]
-zmin = -56.e-6
-zmax = 12.e-6
+zmin = -38.e-6
+zmax = 10.e-6
 moving_window_velocity = [0., 0., cst.c]
 n_macroparticle_per_cell = [2, 2, 2]
-
-# --- geometry and solver
-em_solver_method = 'CKC'
-geometry = '3D'
-
-# Note that code-specific changes can be introduced with `picmi.codename`
-if picmi.codename == 'fbpic':
-    em_solver_method = 'PSATD'
-    geometry = 'RZ'
+if geometry == 'RZ':
     n_macroparticle_per_cell = [2, 4, 2]
     # number of particle per cell in the r, theta, z direction respectively
 

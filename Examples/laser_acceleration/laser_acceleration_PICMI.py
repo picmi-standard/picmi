@@ -2,7 +2,7 @@
 # e.g. `from pywarpx import picmi`
 #      `from fbpic import picmi`
 #      `from warp import picmi`
-from fbpic import picmi
+from pywarpx import picmi
 
 # Create alias fror constants
 cst = picmi.constants
@@ -100,8 +100,8 @@ plasma = picmi.MultiSpecies(
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
 if picmi.codename != 'pywarpx':
-    plasma['Argon'].activate_ionization( model           = "ADK",
-                                         product_species = plasma['e-'])
+    plasma['Argon'].activate_field_ionization( model           = "ADK",
+                                               product_species = plasma['e-'])
 
 # --- electron bunch
 beam_dist = picmi.GaussianBunchDistribution(

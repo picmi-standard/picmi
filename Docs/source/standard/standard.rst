@@ -16,6 +16,7 @@ Simulation and grid setup
    simulation
    field
    grid
+   constants
 
 Particles
 ---------

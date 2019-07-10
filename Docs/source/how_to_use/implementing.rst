@@ -22,9 +22,9 @@ the following step:
 
 - Create a sub-module ``picmi.constants``, that defines the constants described in :doc:`../standard/constants`.
 
-- Define the **PICMI classes** that a user of this code would typically us, among those defined in :doc:`../standard/standard`.
+- Define the **PICMI classes** that a user of this code would typically use, among those defined in :doc:`../standard/standard`.
 
-    This is should be done by defining a subclass of the corresponding class in the package ``picmistandard``,
+    This should be done by defining a subclass of the corresponding class in the package ``picmistandard``,
     and defining its ``init`` method. For instance:
 
     ::

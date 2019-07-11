@@ -14,11 +14,12 @@ cst = picmi.constants
 # ------------------
 
 # --- laser
+import math
+laser_polarization   = math.pi/2 # Polarization angle (in rad)
 laser_a0             = 4.        # Normalized potential vector
 laser_wavelength     = 8e-07     # Wavelength of the laser (in meters)
 laser_waist          = 5e-06     # Waist of the laser (in meters)
 laser_duration       = 15e-15    # Duration of the laser (in seconds)
-laser_polarization   = cst.pi/2. # Polarization angle (in rad)
 laser_injection_loc  = 9.e-6     # Position of injection (in meters, along z)
 laser_focal_distance = 100.e-6   # Focal distance from the injection (in meters)
 laser_t_peak         = 30.e-15   # The time at which the laser reaches its peak

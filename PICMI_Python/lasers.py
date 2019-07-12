@@ -19,7 +19,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
       - focal_position=[0,0,0]: Position of the laser focus (vector) [m]
       - centroid_position=[0,0,0]: Position of the laser centroid at time 0 (vector) [m]
       - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
-      - polarization_angle=0: Angle of polarization (relative to X) [radians]
+      - polarization_direction=[1,0,0]: Direction of polarization (unit vector) [1]
       - a0: Normalized vector potential at focus
             Specify either a0 or E0 (E0 takes precedence).
       - E0: Maximum amplitude of the laser field [V/m]
@@ -32,7 +32,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  focal_position = [0., 0., 0.],
                  centroid_position = [0., 0., 0.],
                  propagation_direction = [0., 0., 1.],
-                 polarization_angle = 0.,
+                 polarization_direction = [1., 0., 0.],
                  a0 = None, 
                  E0 = None,
                  zeta = None,
@@ -55,7 +55,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.focal_position = focal_position
         self.centroid_position = centroid_position
         self.propagation_direction = propagation_direction
-        self.polarization_angle = polarization_angle
+        self.polarization_direction = polarization_direction
         self.a0 = a0
         self.E0 = E0
         self.zeta = zeta

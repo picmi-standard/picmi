@@ -82,14 +82,14 @@ if picmi.codename == 'fbpic':
 
 # --- laser
 laser = picmi.GaussianLaser(
-    wavelength            = laser_wavelength,
-    waist                 = laser_waist,
-    duration              = laser_duration,
-    focal_position        = [0., 0., laser_focal_distance + laser_injection_loc],
-    centroid_position     = [0., 0., laser_injection_loc - cst.c*laser_t_peak],
-    polarization_angle    = laser_polarization,
-    propagation_direction = [0,0,1],
-    a0                    = laser_a0)
+    wavelength             = laser_wavelength,
+    waist                  = laser_waist,
+    duration               = laser_duration,
+    focal_position         = [0., 0., laser_focal_distance + laser_injection_loc],
+    centroid_position      = [0., 0., laser_injection_loc - cst.c*laser_t_peak],
+    polarization_direction = [math.cos(laser_polarization), math.sin(laser_polarization), 0.],
+    propagation_direction  = [0,0,1],
+    a0                     = laser_a0)
 
 # --- plasma
 plasma_dist = picmi.AnalyticDistribution(

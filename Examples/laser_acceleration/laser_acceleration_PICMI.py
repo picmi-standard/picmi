@@ -108,7 +108,7 @@ plasma = picmi.MultiSpecies(
 # (if the user provided a name)
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
-if picmi.codename != 'pywarpx':
+if picmi.codename != 'warpx':
     plasma['Argon'].activate_field_ionization(
         model           = "ADK", # Ammosov-Delone-Krainov model
         product_species = plasma['e-'])
@@ -174,7 +174,9 @@ part_diag = picmi.ParticleDiagnostic(period = 100,
 
 # Initialize the simulation object
 # Note that the time step size is obtained from the solver
-sim = picmi.Simulation(solver=solver, verbose=1)
+sim = picmi.Simulation(solver = solver,
+                       max_steps = max_steps,
+                       verbose = 1)
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -192,7 +194,7 @@ sim.add_species(species=plasma, layout=plasma_layout)
 beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
-sim.add_species(species=beam, layout=beam_layout, initialize_self_field=True)
+sim.add_species(species=beam, layout=beam_layout, initialize_self_field=False)
 
 # Add the diagnostics
 sim.add_diagnostic(field_diag)
@@ -205,9 +207,8 @@ run_python_simulation = True
 
 if run_python_simulation:
     # `sim.step` will run the code, controlling it from Python
-    sim.step(max_steps)
+    sim.step()
 else:
     # `write_inputs` will create an input file that can be used to run
     # with the compiled version.
-    sim.set_max_step(max_steps)
     sim.write_input_file(file_name='input_script')

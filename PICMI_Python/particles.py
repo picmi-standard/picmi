@@ -22,6 +22,7 @@ class PICMI_Species(_ClassWithInit):
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
       - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
+      - density_scale=None: A scale factor on the density given by the initial_distribution (optional)
       - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 

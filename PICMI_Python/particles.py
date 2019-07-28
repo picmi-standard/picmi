@@ -16,17 +16,18 @@ from .base import _ClassWithInit
 class PICMI_Species(_ClassWithInit):
     """
     Species
-      - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
+      - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - name=None: Name of the species
       - charge_state=None: Charge state of the species (applies to atoms) [1]
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
       - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
+      - density_scale=None: A scale factor on the density given by the initial_distribution (optional)
       - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, **kw):
+                 initial_distribution=None, particle_shape=None, density_scale=None, **kw):
         self.particle_type = particle_type
         self.name = name
         self.charge = charge
@@ -34,6 +35,7 @@ class PICMI_Species(_ClassWithInit):
         self.mass = mass
         self.initial_distribution = initial_distribution
         self.particle_shape = particle_shape
+        self.density_scale = density_scale
 
         self.interactions = []
 
@@ -50,19 +52,23 @@ class PICMI_MultiSpecies(_ClassWithInit):
     """
     INCOMPLETE: proportions argument is not implemented
     Multiple species that are initialized with the same distribution
-    - particle_types: A list of strings specifying for each species an elementary particle, atom, or other, as defined in the openPMD 2 species type extension
-    - names: Names of the species (optional)
-    - charge_states: Charge states of the species (applies to atoms) (optional)
-    - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
-    - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
-    - proportions: Proportions of the initial distribution made up by each species
+    Each parameter can be list, giving a value for each species, or a single value which is given to all species.
+      - particle_types: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
+      - names: Names of the species (optional)
+      - charge_states: Charge states of the species (applies to atoms, use None otherwise) (optional)
+      - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
+      - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
+      - proportions: Proportions of the initial distribution made up by each species
+
+      - initial_distribution: Initial particle distribution, applied to all species
+      - particle_shape: Particle shape for all speecies used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
     # --- Note to developer: This class attribute needs to be set to the Species class
     # --- defined in the codes PICMI implementation.
     Species_class = None
 
-    def __init__(self, particle_types=[], names=[], charge_states=[], charges=[], masses=[],
-                 initial_distribution=None, proportions=[],
+    def __init__(self, particle_types=None, names=None, charge_states=None, charges=None, masses=None,
+                 proportions=None, initial_distribution=None, particle_shape=None,
                  **kw):
 
         self.particle_types = particle_types
@@ -70,10 +76,11 @@ class PICMI_MultiSpecies(_ClassWithInit):
         self.charges = charges
         self.charge_states = charge_states
         self.masses = masses
-        self.initial_distribution = initial_distribution
         self.proportions = proportions
+        self.initial_distribution = initial_distribution
+        self.particle_shape = particle_shape
 
-        self.nspecies = 0
+        self.nspecies = None
         self.check_nspecies(particle_types)
         self.check_nspecies(names)
         self.check_nspecies(charges)
@@ -85,37 +92,19 @@ class PICMI_MultiSpecies(_ClassWithInit):
         self.species_instances_list = []
         self.species_instances_dict = {}
         for i in range(self.nspecies):
-            if particle_types:
-                particle_type = particle_types[i]
-            else:
-                particle_type = None
-            if names:
-                name = names[i]
-            else:
-                name = None
-            if charges:
-                charge = charges[i]
-            else:
-                charge = None
-            if charge_states:
-                charge_state = charge_states[i]
-            else:
-                charge_state = None
-            if masses:
-                mass = masses[i]
-            else:
-                mass = None
-            if proportions:
-                proportion = proportions[i]
-            else:
-                proportion = None
+            particle_type = self.get_input_item(particle_types, i)
+            name = self.get_input_item(names, i)
+            charge = self.get_input_item(charges, i)
+            charge_state = self.get_input_item(charge_states, i)
+            mass = self.get_input_item(masses, i)
+            proportion = self.get_input_item(proportions, i)
             specie = PICMI_MultiSpecies.Species_class(particle_type = particle_type,
                                                       name = name,
                                                       charge = charge,
                                                       charge_state = charge_state,
                                                       mass = mass,
-                                                      initial_distribution = initial_distribution)
-                                                      #proportion = proportion)
+                                                      initial_distribution = initial_distribution,
+                                                      density_scale = proportion)
             self.species_instances_list.append(specie)
             if name is not None:
                 self.species_instances_dict[name] = specie
@@ -123,9 +112,24 @@ class PICMI_MultiSpecies(_ClassWithInit):
         self.handle_init(kw)
 
     def check_nspecies(self, var):
-        if len(var) > 0:
-            assert self.nspecies == 0 or self.nspecies == len(var), Exception('All inputs must have the same length')
-            self.nspecies = len(var)
+        if var is not None:
+            try:
+                nvars = len(var)
+            except TypeError:
+                nvars = 1
+            assert self.nspecies is None or self.nspecies == nvars, Exception('All inputs must have the same length')
+            self.nspecies = nvars
+
+    def get_input_item(self, var, i):
+        if var is None:
+            return None
+        else:
+            try:
+                len(var)
+            except TypeError:
+                return var
+            else:
+                return var[i]
 
     def __len__(self):
         return self.nspecies

@@ -174,9 +174,7 @@ part_diag = picmi.ParticleDiagnostic(period = 100,
 
 # Initialize the simulation object
 # Note that the time step size is obtained from the solver
-sim = picmi.Simulation(solver = solver,
-                       max_steps = max_steps,
-                       verbose = 1)
+sim = picmi.Simulation(solver = solver, verbose = 1)
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -194,7 +192,11 @@ sim.add_species(species=plasma, layout=plasma_layout)
 beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
-sim.add_species(species=beam, layout=beam_layout, initialize_self_field=False)
+initialize_self_field = True
+if picmi.codename != 'warpx':
+    initialize_self_field = False
+sim.add_species(species=beam, layout=beam_layout, 
+                initialize_self_field=initialize_self_field)
 
 # Add the diagnostics
 sim.add_diagnostic(field_diag)
@@ -207,8 +209,9 @@ run_python_simulation = True
 
 if run_python_simulation:
     # `sim.step` will run the code, controlling it from Python
-    sim.step()
+    sim.step(max_steps)
 else:
     # `write_inputs` will create an input file that can be used to run
     # with the compiled version.
+    sim.set_max_step(max_steps)
     sim.write_input_file(file_name='input_script')

@@ -108,7 +108,7 @@ plasma = picmi.MultiSpecies(
 # (if the user provided a name)
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
-if picmi.codename != 'pywarpx':
+if picmi.codename != 'warpx':
     plasma['Argon'].activate_field_ionization(
         model           = "ADK", # Ammosov-Delone-Krainov model
         product_species = plasma['e-'])
@@ -174,7 +174,7 @@ part_diag = picmi.ParticleDiagnostic(period = 100,
 
 # Initialize the simulation object
 # Note that the time step size is obtained from the solver
-sim = picmi.Simulation(solver=solver, verbose=1)
+sim = picmi.Simulation(solver = solver, verbose = 1)
 
 # Inject the laser through an antenna
 antenna = picmi.LaserAntenna(
@@ -192,7 +192,11 @@ sim.add_species(species=plasma, layout=plasma_layout)
 beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
-sim.add_species(species=beam, layout=beam_layout, initialize_self_field=True)
+initialize_self_field = True
+if picmi.codename == 'warpx':
+    initialize_self_field = False
+sim.add_species(species=beam, layout=beam_layout, 
+                initialize_self_field=initialize_self_field)
 
 # Add the diagnostics
 sim.add_diagnostic(field_diag)

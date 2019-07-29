@@ -193,7 +193,7 @@ beam_layout = picmi.PseudoRandomLayout(
                 n_macroparticles = 10**5,
                 seed = 0)
 initialize_self_field = True
-if picmi.codename != 'warpx':
+if picmi.codename == 'warpx':
     initialize_self_field = False
 sim.add_species(species=beam, layout=beam_layout, 
                 initialize_self_field=initialize_self_field)

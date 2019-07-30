@@ -26,7 +26,7 @@ class PICMI_Species(_ClassWithInit):
     """
 
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, **kw):
+                 initial_distribution=None, particle_shape=None, density_scale=None, **kw):
         self.particle_type = particle_type
         self.name = name
         self.charge = charge
@@ -34,6 +34,7 @@ class PICMI_Species(_ClassWithInit):
         self.mass = mass
         self.initial_distribution = initial_distribution
         self.particle_shape = particle_shape
+        self.density_scale = density_scale
 
         self.interactions = []
 

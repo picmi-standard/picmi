@@ -126,6 +126,21 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.diagnostics.append(diagnostic)
 
+    def set_max_step(self, max_steps):
+        """
+        Set the default number of steps for the simulation (i.e. the number 
+        of steps that gets written when calling `write_input_file`)
+
+        Note: this is equivalent to passing `max_steps` as an argument, 
+        when initializing the `Simulation` object
+
+        Parameter
+        ---------
+        max_steps: int
+            Maximum number of time steps
+        """
+        self.max_steps = max_steps
+
     def write_input_file(self, file_name):
         """
         Write the parameters of the simulation, as defined in the PICMI input,

@@ -5,6 +5,7 @@ The classes in the file are all particle related
 import math
 import sys
 import re
+import numpy as np
 
 from .base import _ClassWithInit
 

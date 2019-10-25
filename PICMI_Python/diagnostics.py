@@ -2,7 +2,6 @@
 These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all diagnostics related
 """
-import numpy as np
 
 from .base import _ClassWithInit
 

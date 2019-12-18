@@ -140,7 +140,7 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_velocity    = moving_window_velocity[-1],
+        moving_window_zvelocity   = moving_window_velocity[-1],
         warpx_max_grid_size       = 32)
 
 smoother = picmi.BinomialSmoother( n_pass       = 1,
@@ -187,7 +187,7 @@ beam_layout = picmi.PseudoRandomLayout(
 initialize_self_field = True
 if picmi.codename == 'warpx':
     initialize_self_field = False
-sim.add_species(species=beam, layout=beam_layout, 
+sim.add_species(species=beam, layout=beam_layout,
                 initialize_self_field=initialize_self_field)
 
 # Add the diagnostics

@@ -39,14 +39,6 @@ bunch_centroid_velocity   = [0.,0.,1000.*cst.c]
 # Numerics parameters
 # -------------------
 
-# --- geometry and solver
-em_solver_method = 'CKC'
-geometry = '3D'
-# Note that code-specific changes can be introduced with `picmi.codename`
-if picmi.codename == 'fbpic':
-    em_solver_method = 'PSATD'
-    geometry = 'RZ'
-
 # --- Nb time steps
 max_steps = 1000
 
@@ -148,7 +140,7 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_velocity    = moving_window_velocity,
+        moving_window_velocity    = moving_window_velocity[-1],
         warpx_max_grid_size       = 32)
 
 smoother = picmi.BinomialSmoother( n_pass       = 1,

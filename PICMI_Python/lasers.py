@@ -65,6 +65,65 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.handle_init(kw)
 
 
+class PICMI_AnalyticLaser(_ClassWithInit):
+    """
+    Specifies a laser with an analytically described distribution
+      - field_expression: Analytic expression describing the electric field of the laser(string) [V/m]
+                            Expression should be in terms of the position, 'X', 'Y', in the plane orthogonal
+                            to the propagation direction, and 't' the time. The expression should describe
+                            the full field, including the oscillitory component.
+                            Parameters can be used in the expression with the values given as keyword arguments.
+      - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
+      - polarization_direction=[1,0,0]: Direction of polarization (unit vector) [1]
+
+      Even though the parameters below should be built into the expression, some codes require
+      specified values for numerical purposes.
+
+      - wavelength: Laser wavelength
+      - amax: Maximum normalized vector potential
+              Specify either amax or Emax (Emax takes precedence).
+      - Emax: Maximum amplitude of the laser field [V/m]
+              Specify either amax or Emax (Emax takes precedence).
+    """
+    def __init__(self, field_expression,
+                 wavelength,
+                 propagation_direction = [0., 0., 1.],
+                 polarization_direction = [1., 0., 0.],
+                 amax = None, 
+                 Emax = None,
+                 **kw):
+
+        k0 = 2.*math.pi/wavelength
+        if Emax is None:
+            from scipy import constants
+            Emax = amax*constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge
+        if amax is None:
+            from scipy import constants
+            amax = Emax/(constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge)
+
+        self.wavelength = wavelength
+        self.field_expression = field_expression
+        self.k0 = k0
+        self.propagation_direction = propagation_direction
+        self.polarization_direction = polarization_direction
+        self.amax = amax
+        self.Emax = Emax
+
+        self.field_expression = '{}'.format(field_expression).replace('\n', '')
+
+        # --- Find any user defined keywords in the kw dictionary.
+        # --- Save them and delete them from kw.
+        # --- It's up to the code to make sure that all parameters
+        # --- used in the expression are defined.
+        self.user_defined_kw = {}
+        for k in list(kw.keys()):
+            if re.search(r'\b%s\b'%k, self.field_expression):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
+
+        self.handle_init(kw)
+
+
 # ------------------
 # Numeric Objects
 # ------------------

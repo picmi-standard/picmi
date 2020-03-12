@@ -3,6 +3,7 @@ These should be the base classes for Python implementation of the PICMI standard
 """
 import math
 import sys
+import re
 
 from .base import _ClassWithInit
 

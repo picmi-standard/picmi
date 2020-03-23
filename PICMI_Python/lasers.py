@@ -41,6 +41,8 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  phi2 = None,
                  **kw):
 
+        assert E0 is not None or a0 is not None, 'One of E0 or a0 must be speficied'
+
         k0 = 2.*math.pi/wavelength
         if E0 is None:
             from scipy import constants
@@ -92,6 +94,8 @@ class PICMI_AnalyticLaser(_ClassWithInit):
                  amax = None, 
                  Emax = None,
                  **kw):
+
+        assert Emax is not None or amax is not None, 'One of Emax or amax must be speficied'
 
         k0 = 2.*math.pi/wavelength
         if Emax is None:

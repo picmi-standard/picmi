@@ -14,6 +14,7 @@ from .base import _ClassWithInit
 class PICMI_GaussianLaser(_ClassWithInit):
     """
     Specifies a Gaussian laser distribution
+      - name=None: Optional name of the laser
       - wavelength: Laser wavelength
       - waist: Waist of the Gaussian pulse at focus [m]
       - duration: Duration of the Gaussian pulse [s]
@@ -39,6 +40,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  zeta = None,
                  beta = None,
                  phi2 = None,
+                 name = None,
                  **kw):
 
         assert E0 is not None or a0 is not None, 'One of E0 or a0 must be speficied'
@@ -64,6 +66,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.zeta = zeta
         self.beta = beta
         self.phi2 = phi2
+        self.name = name
 
         self.handle_init(kw)
 
@@ -71,6 +74,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
 class PICMI_AnalyticLaser(_ClassWithInit):
     """
     Specifies a laser with an analytically described distribution
+      - name=None: Optional name of the laser
       - field_expression: Analytic expression describing the electric field of the laser(string) [V/m]
                             Expression should be in terms of the position, 'X', 'Y', in the plane orthogonal
                             to the propagation direction, and 't' the time. The expression should describe
@@ -93,6 +97,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
                  polarization_direction = [1., 0., 0.],
                  amax = None, 
                  Emax = None,
+                 name = None,
                  **kw):
 
         assert Emax is not None or amax is not None, 'One of Emax or amax must be speficied'
@@ -112,6 +117,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
         self.polarization_direction = polarization_direction
         self.amax = amax
         self.Emax = Emax
+        self.name = name
 
         self.field_expression = '{}'.format(field_expression).replace('\n', '')
 

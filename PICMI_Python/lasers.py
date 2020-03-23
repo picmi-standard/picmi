@@ -82,9 +82,8 @@ class PICMI_AnalyticLaser(_ClassWithInit):
 
       - wavelength: Laser wavelength
       - amax: Maximum normalized vector potential
-              Specify either amax or Emax (Emax takes precedence).
       - Emax: Maximum amplitude of the laser field [V/m]
-              Specify either amax or Emax (Emax takes precedence).
+      Specify either amax or Emax (Emax takes precedence).
     """
     def __init__(self, field_expression,
                  wavelength,
@@ -142,4 +141,3 @@ class PICMI_LaserAntenna(_ClassWithInit):
         self.normal_vector = normal_vector
 
         self.handle_init(kw)
-

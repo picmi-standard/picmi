@@ -28,6 +28,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
       - upper_bound=None: Higher corner of diagnostics box in each direction (optional)
                           If not given, will be obtained from grid.
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
+      - name: Sets the base name for the diagnostic output files (optional)
 
     """
     def __init__(self, grid, period = 1,
@@ -39,6 +40,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
                  lower_bound = None,
                  upper_bound = None,
                  parallelio = None, 
+                 name = None,
                  **kw):
 
         self.grid = grid
@@ -59,6 +61,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.parallelio = parallelio
+        self.name = name
         
         self.handle_init(kw)
 
@@ -81,6 +84,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
       - upper_bound=None: Higher corner of diagnostics box in each direction (optional)
                           If not given, will be obtained from grid.
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
+      - name: Sets the base name for the diagnostic output files (optional)
     """
     def __init__(self, grid, period = 1,
                  data_list = ["rho", "phi"],
@@ -91,6 +95,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
                  lower_bound = None,
                  upper_bound = None,
                  parallelio = None,
+                 name = None,
                  **kw):
 
         self.grid = grid
@@ -111,6 +116,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.parallelio = parallelio
+        self.name = name
         
         self.handle_init(kw)
 
@@ -128,6 +134,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
       - step_max=None: Maximum step at which diagnostics could be written (optional)
                        Defaults to no limit.
       - parallelio=None: If set to True, particle diagnostics are dumped in parallel (optional)
+      - name: Sets the base name for the diagnostic output files (optional)
     """
 
     def __init__(self, period = 1,
@@ -137,6 +144,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
                  step_min = None,
                  step_max = None,
                  parallelio = None,
+                 name = None,
                  **kw):
 
         self.period = period
@@ -146,6 +154,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
         self.step_min = step_min
         self.step_max = step_max
         self.parallelio = parallelio
+        self.name = name
         
         self.handle_init(kw)
 
@@ -166,12 +175,14 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
       - data_list=["rho", "E", "B", "J"]: List of quantities to write out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
+      - name: Sets the base name for the diagnostic output files (optional)
     """
     def __init__(self, grid, num_snapshots, dt_snapshots,
                  z_subsampling = 1, time_start = 0.,
                  data_list = ["rho", "E", "B", "J"],
                  write_dir = None,
                  parallelio = None,
+                 name = None,
                  **kw):
 
         self.grid = grid
@@ -182,6 +193,7 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
         self.data_list = data_list
         self.write_dir = write_dir
         self.parallelio = parallelio
+        self.name = name
         
         self.handle_init(kw)
 
@@ -198,6 +210,7 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
       - data_list=["position", "momentum", "weighting"]: The data to be written out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, particle diagnostics are dumped in parallel (optional)
+      - name: Sets the base name for the diagnostic output files (optional)
     """
     def __init__(self, grid, num_snapshots, dt_snapshots,
                  time_start = 0.,
@@ -205,6 +218,7 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
                  data_list = ["position", "momentum", "weighting"],
                  write_dir = None,
                  parallelio = None,
+                 name = None,
                  **kw):
 
         self.grid = grid
@@ -215,5 +229,6 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
         self.data_list = data_list
         self.write_dir = write_dir
         self.parallelio = parallelio
+        self.name = name
         
         self.handle_init(kw)

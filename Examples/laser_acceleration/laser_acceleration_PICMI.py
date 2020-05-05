@@ -152,14 +152,16 @@ solver = picmi.ElectromagneticSolver( grid            = grid,
 
 # Diagnostics
 # -----------
-field_diag = picmi.FieldDiagnostic(grid = grid,
-                                    period = 100,
-                                    warpx_plot_raw_fields = 1,
-                                    warpx_plot_raw_fields_guards = 1,
-                                    warpx_plot_finepatch = 1,
-                                    warpx_plot_crsepatch = 1)
-part_diag = picmi.ParticleDiagnostic(period = 100,
-                                      species = [beam])
+field_diag = picmi.FieldDiagnostic(name = 'diag1',
+                                   grid = grid,
+                                   period = 100,
+                                   warpx_plot_raw_fields = 1,
+                                   warpx_plot_raw_fields_guards = 1,
+                                   warpx_plot_finepatch = 1,
+                                   warpx_plot_crsepatch = 1)
+part_diag = picmi.ParticleDiagnostic(name = 'diag1',
+                                     period = 100,
+                                     species = [beam])
 
 # Simulation setup
 # -----------------

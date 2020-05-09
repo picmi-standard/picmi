@@ -10,4 +10,5 @@ setup(name = 'picmistandard',
       platforms = 'any',
       packages = ['picmistandard'],
       package_dir = {'picmistandard': '.'},
+      url = 'https://github.com/picmi-standard/picmi'
       )

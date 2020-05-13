@@ -55,8 +55,28 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
 
     def __init__(self, grid, method=None, **kw):
 
-        assert method is None or method in PICMI_Electrostatic_solver.methods_list, \
-               Exception('method must be one of '+', '.join(PICMI_Electrostatic_solver.methods_list))
+        assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
+
+        self.grid = grid
+        self.method = method
+
+        self.handle_init(kw)
+
+
+class PICMI_MagnetostaticSolver(_ClassWithInit):
+    """
+    Magnetostatic field solver
+      - grid: grid object to be used by the solver (grid object)
+      - method = None: One of 'FFT', or 'Multigrid' (string)
+    """
+
+    methods_list = ['FFT', 'Multigrid']
+
+    def __init__(self, grid, method=None, **kw):
+
+        assert method is None or method in PICMI_MagnetostaticSolver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_MagnetostaticSolver.methods_list))
 
         self.grid = grid
         self.method = method

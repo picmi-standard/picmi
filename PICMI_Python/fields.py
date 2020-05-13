@@ -55,8 +55,8 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
 
     def __init__(self, grid, method=None, **kw):
 
-        assert method is None or method in PICMI_Electrostatic_solver.methods_list, \
-               Exception('method must be one of '+', '.join(PICMI_Electrostatic_solver.methods_list))
+        assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
 
         self.grid = grid
         self.method = method

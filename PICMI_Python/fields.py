@@ -63,6 +63,7 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
 
         self.handle_init(kw)
 
+
 class PICMI_MagnetostaticSolver(_ClassWithInit):
     """
     Magnetostatic field solver
@@ -81,6 +82,7 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
         self.method = method
 
         self.handle_init(kw)
+
 
 # ------------------
 # Numeric Objects

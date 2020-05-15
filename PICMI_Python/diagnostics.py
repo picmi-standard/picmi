@@ -49,14 +49,6 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
         self.write_dir = write_dir
         self.step_min = step_min
         self.step_max = step_max
-
-        if number_of_cells is None:
-            number_of_cells = grid.number_of_cells
-        if lower_bound is None:
-            lower_bound = grid.lower_bound
-        if upper_bound is None:
-            upper_bound = grid.upper_bound
-
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -104,14 +96,6 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
         self.write_dir = write_dir
         self.step_min = step_min
         self.step_max = step_max
-
-        if number_of_cells is None:
-            number_of_cells = grid.number_of_cells
-        if lower_bound is None:
-            lower_bound = grid.lower_bound
-        if upper_bound is None:
-            upper_bound = grid.upper_bound
-
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound

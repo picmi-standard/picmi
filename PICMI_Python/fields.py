@@ -135,7 +135,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                          with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
                          lo and hi being vectors of length 2 specifying the extent of the region,
                          and refinement_factor defaulting to [2,2] (relative to next lower level)
-      
+
       - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
       - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
       - rmin_particles: Position of min particle boundary along R [m] (float)
@@ -160,10 +160,10 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                  rmin=None, rmax=None, zmin=None, zmax=None,
                  bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
                  moving_window_zvelocity=None, refined_regions=[],
-                 lower_bound_particles=None, upper_bound_particles=None, 
-                 rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None, 
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None, 
-                 bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None, 
+                 lower_bound_particles=None, upper_bound_particles=None,
+                 rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None,
+                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
+                 bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None,
                  guard_cells=None, pml_cells=None, **kw):
 
         # Sanity check and init of input arguments related to grid parameters
@@ -206,30 +206,30 @@ class PICMI_CylindricalGrid(_ClassWithInit):
             bc_rmax, bc_zmax = upper_boundary_conditions
 
         # Sanity check and init of input arguments related to particle boundary parameters
-        # By default, if not specified, particle boundary values are the same as field boundary values 
-        # By default, if not specified, particle boundary conditions are the same as field boundary conditions   
-        if lower_bound_particles is None: 
-            if (rmin_particles is None) and (zmin_particles is None): 
-                lower_bound_particles = lower_bound 
+        # By default, if not specified, particle boundary values are the same as field boundary values
+        # By default, if not specified, particle boundary conditions are the same as field boundary conditions
+        if lower_bound_particles is None:
+            if (rmin_particles is None) and (zmin_particles is None):
+                lower_bound_particles = lower_bound
                 rmin_particles, zmin_particles = lower_bound_particles
-            else: 
+            else:
                 lower_bound_particles = [rmin_particles, zmin_particles]
-        else: 
+        else:
             rmin_particles, zmin_particles = lower_bound_particles
-        if upper_bound_particles is None: 
-            if (rmax_particles is None) and (zmax_particles is None): 
+        if upper_bound_particles is None:
+            if (rmax_particles is None) and (zmax_particles is None):
                 upper_bound_particles = upper_bound
                 rmax_particles, zmax_particles = upper_bound_particles
-            else: 
+            else:
                 upper_bound_particles=[rmax_particles, zmax_particles]
-        else: 
+        else:
             rmax_particles, zmax_particles = upper_bound_particles
-         
+
         if lower_boundary_conditions_particles is None:
             if (bc_rmin_particles is None) and (bc_zmin_particles is None):
                 lower_boundary_conditions_particles = lower_boundary_conditions
                 bc_rmin_particles, bc_zmin_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 lower_boundary_conditions_particles = [bc_rmin_particles, bc_zmin_particles]
         else:
             bc_rmin_particles, bc_zmin_particles = lower_boundary_conditions_particles
@@ -237,7 +237,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
             if (bc_rmax_particles is None) and (bc_zmax_particles is None):
                 upper_boundary_conditions_particles = upper_boundary_conditions
                 bc_rmax_particles, bc_zmax_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 upper_boundary_conditions_particles = [bc_rmax_particles, bc_zmax_particles]
         else:
             bc_rmax_particles, bc_zmax_particles = upper_boundary_conditions_particles
@@ -250,7 +250,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
 
         self.number_of_cells = number_of_cells
-        
+
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.lower_boundary_conditions = lower_boundary_conditions
@@ -261,7 +261,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
         self.guard_cells = guard_cells
         self.pml_cells = pml_cells
-        
+
         self.nr = nr
         self.nz = nz
         self.n_azimuthal_modes = n_azimuthal_modes
@@ -356,12 +356,12 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
                  xmin=None, xmax=None, ymin=None, ymax=None,
                  bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None,
                  moving_window_velocity=None, refined_regions=[],lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None, 
+                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None,
                  lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
                  bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 guard_cells=None, pml_cells=None, 
+                 guard_cells=None, pml_cells=None,
                  **kw):
-                 
+
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nx is not None and ny is not None) or \
                (number_of_cells is not None) and (nx is None and ny is None), \
@@ -401,30 +401,30 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
             bc_xmax, bc_ymax = upper_boundary_conditions
 
         # Sanity check and init of input arguments related to particle boundary parameters
-        # By default, if not specified, particle boundary values are the same as field boundary values 
-        # By default, if not specified, particle boundary conditions are the same as field boundary conditions   
-        if lower_bound_particles is None: 
-            if (xmin_particles is None) and (ymin_particles is None): 
-                lower_bound_particles = lower_bound 
+        # By default, if not specified, particle boundary values are the same as field boundary values
+        # By default, if not specified, particle boundary conditions are the same as field boundary conditions
+        if lower_bound_particles is None:
+            if (xmin_particles is None) and (ymin_particles is None):
+                lower_bound_particles = lower_bound
                 xmin_particles, ymin_particles = lower_bound_particles
-            else: 
+            else:
                 lower_bound_particles = [xmin_particles, ymin_particles]
-        else: 
+        else:
             xmin_particles, ymin_particles = lower_bound_particles
-        if upper_bound_particles is None: 
-            if (xmax_particles is None) and (ymax_particles is None): 
+        if upper_bound_particles is None:
+            if (xmax_particles is None) and (ymax_particles is None):
                 upper_bound_particles = upper_bound
                 xmax_particles, ymax_particles = upper_bound_particles
-            else: 
+            else:
                 upper_bound_particles=[xmax_particles, ymax_particles]
-        else: 
+        else:
             xmax_particles, ymax_particles = upper_bound_particles
-         
+
         if lower_boundary_conditions_particles is None:
             if (bc_xmin_particles is None) and (bc_ymin_particles is None):
                 lower_boundary_conditions_particles = lower_boundary_conditions
                 bc_xmin_particles, bc_ymin_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles]
         else:
             bc_xmin_particles, bc_ymin_particles = lower_boundary_conditions_particles
@@ -432,7 +432,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
             if (bc_xmax_particles is None) and (bc_ymax_particles is None):
                 upper_boundary_conditions_particles = upper_boundary_conditions
                 bc_xmax_particles, bc_ymax_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles]
         else:
             bc_xmax_particles, bc_ymax_particles = upper_boundary_conditions_particles
@@ -447,7 +447,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         assert len(upper_bound_particles) == 2, Exception('Wrong number of particle upper bounds specified')
         assert len(lower_boundary_conditions_particles) == 2, Exception('Wrong number of lower particle boundary conditions specified')
         assert len(upper_boundary_conditions_particles) == 2, Exception('Wrong number of upper particle boundary conditions specified')
-        
+
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -482,7 +482,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         self.moving_window_velocity = moving_window_velocity
 
         self.refined_regions = refined_regions
-        
+
         for region in self.refined_regions:
             if len(region) == 3:
                 region.append([2,2])
@@ -491,7 +491,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
             assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
 
         self.handle_init(kw)
-        
+
     def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
         """Add a refined region.
         level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
@@ -533,7 +533,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
                          with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
                          lo and hi being vectors of length 3 specifying the extent of the region,
                          and refinement_factor defaulting to [2,2,2] (relative to next lower level)
-      
+
       - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
       - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
       - xmin_particles: Position of min particle boundary along X [m] (float)
@@ -565,7 +565,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
                  xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None, zmin_particles=None, zmax_particles=None,
                  lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
                  bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 bc_zmin_particles=None, bc_zmax_particles=None, guard_cells=None, pml_cells=None, 
+                 bc_zmin_particles=None, bc_zmax_particles=None, guard_cells=None, pml_cells=None,
                  **kw):
 
         # Sanity check and init of input arguments related to grid parameters
@@ -607,30 +607,30 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
             bc_xmax, bc_ymax, bc_zmax = upper_boundary_conditions
 
         # Sanity check and init of input arguments related to particle boundary parameters
-        # By default, if not specified, particle boundary values are the same as field boundary values 
+        # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        if lower_bound_particles is None: 
-            if (xmin_particles is None) and (ymin_particles is None) and (zmin_particles is None): 
-                lower_bound_particles = lower_bound 
+        if lower_bound_particles is None:
+            if (xmin_particles is None) and (ymin_particles is None) and (zmin_particles is None):
+                lower_bound_particles = lower_bound
                 xmin_particles, ymin_particles, zmin_particles = lower_bound_particles
-            else: 
+            else:
                 lower_bound_particles = [xmin_particles, ymin_particles, zmin_particles]
-        else: 
+        else:
             xmin_particles, ymin_particles, zmin_particles = lower_bound_particles
-        if upper_bound_particles is None: 
-            if (xmax_particles is None) and (ymax_particles is None) and (zmax_particles is None): 
+        if upper_bound_particles is None:
+            if (xmax_particles is None) and (ymax_particles is None) and (zmax_particles is None):
                 upper_bound_particles = upper_bound
                 xmax_particles, ymax_particles, zmax_particles = upper_bound_particles
-            else: 
+            else:
                 upper_bound_particles = [xmax_particles, ymax_particles, zmax_particles]
-        else: 
+        else:
             xmax_particles, ymax_particles, zmax_particles = upper_bound_particles
-        
+
         if lower_boundary_conditions_particles is None:
             if (bc_xmin_particles is None) and (bc_ymin_particles is None) and (bc_zmin_particles is None):
                 lower_boundary_conditions_particles = lower_boundary_conditions
                 bc_xmin_particles, bc_ymin_particles, bc_zmin_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles, bc_zmin_particles]
         else:
             bc_xmin_particles, bc_ymin_particles, bc_zmin_particles = lower_boundary_conditions_particles
@@ -638,7 +638,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
             if (bc_xmax_particles is None) and (bc_ymax_particles is None) and (bc_zmax_particles is None):
                 upper_boundary_conditions_particles = upper_boundary_conditions
                 bc_xmax_particles, bc_ymax_particles, bc_zmax_particles = lower_boundary_conditions_particles
-            else: 
+            else:
                 upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles, bc_zmax_particles]
         else:
             bc_xmax_particles, bc_ymax_particles, bc_zmax_particles = upper_boundary_conditions_particles
@@ -653,7 +653,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         assert len(upper_bound_particles) == 3, Exception('Wrong number of particle upper bounds specified')
         assert len(lower_boundary_conditions_particles) == 3, Exception('Wrong number of particle lower boundary conditions specified')
         assert len(upper_boundary_conditions_particles) == 3, Exception('Wrong number of particle upper boundary conditions specified')
-        
+
         self.number_of_cells = number_of_cells
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound

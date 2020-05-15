@@ -35,7 +35,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  centroid_position = [0., 0., 0.],
                  propagation_direction = [0., 0., 1.],
                  polarization_direction = [1., 0., 0.],
-                 a0 = None, 
+                 a0 = None,
                  E0 = None,
                  zeta = None,
                  beta = None,
@@ -95,7 +95,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
                  wavelength,
                  propagation_direction = [0., 0., 1.],
                  polarization_direction = [1., 0., 0.],
-                 amax = None, 
+                 amax = None,
                  Emax = None,
                  name = None,
                  **kw):

@@ -13,14 +13,14 @@ from .base import _ClassWithInit
 class PICMI_Simulation(_ClassWithInit):
     """
     Creates a Simulation object
-    
+
     Parameters
     ----------
-    solver: object 
+    solver: object
         An instance of one of the PICMI field solvers ; see :doc:`field`
         This is the field solver to be used in the simulation
-  
-    time_step_size: float 
+
+    time_step_size: float
         Absolute time step size of the simulation [s]
         (needed if the CFL is not specified elsewhere)
 
@@ -28,7 +28,7 @@ class PICMI_Simulation(_ClassWithInit):
         Maximum number of time steps
         (Specify either this, or `max_time`, or use the `step` function directly)
 
-    max_time: float 
+    max_time: float
         Maximum physical time to run the simulation [s]
         (Specify either this, or `max_steps`, or use the `step` function directly)
 
@@ -66,25 +66,25 @@ class PICMI_Simulation(_ClassWithInit):
         self.laser_injection_methods = []
 
         self.diagnostics = []
-        
+
         self.cpu_split = cpu_split
         self.load_balancing = load_balancing
-        
+
 
         self.handle_init(kw)
 
     def add_species(self, species, layout, initialize_self_field=False):
         """
         Add species to be used in the simulation
-        
+
         Parameters
         ----------
-        - species : object 
+        - species : object
               an instance of one of the PICMI species object ; see :doc:`species`
               Defines added species from the *physical* point of view
-              (e.g. charge, mass, initial distribution of particles) 
+              (e.g. charge, mass, initial distribution of particles)
 
-        - layout : object 
+        - layout : object
               an instance of one of the PICMI layout object ; see :doc:`layout`
               Defines how particles are added into the simulation, from the *numerical* point of view
 
@@ -102,7 +102,7 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-          - laser_profile: object 
+          - laser_profile: object
                 one of laser profile objects
                 Specifies the **physical** properties of the laser pulse.
                 (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
@@ -121,17 +121,17 @@ class PICMI_Simulation(_ClassWithInit):
     def add_diagnostic(self, diagnostic):
         """
         Add a diagnostic
-          - diagnostic: object 
-                One of the diagnostic objects. 
+          - diagnostic: object
+                One of the diagnostic objects.
         """
         self.diagnostics.append(diagnostic)
 
     def set_max_step(self, max_steps):
         """
-        Set the default number of steps for the simulation (i.e. the number 
+        Set the default number of steps for the simulation (i.e. the number
         of steps that gets written when calling `write_input_file`)
 
-        Note: this is equivalent to passing `max_steps` as an argument, 
+        Note: this is equivalent to passing `max_steps` as an argument,
         when initializing the `Simulation` object
 
         Parameter

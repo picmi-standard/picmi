@@ -39,7 +39,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
                  number_of_cells = None,
                  lower_bound = None,
                  upper_bound = None,
-                 parallelio = None, 
+                 parallelio = None,
                  name = None,
                  **kw):
 
@@ -62,7 +62,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
         self.upper_bound = upper_bound
         self.parallelio = parallelio
         self.name = name
-        
+
         self.handle_init(kw)
 
 
@@ -117,7 +117,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
         self.upper_bound = upper_bound
         self.parallelio = parallelio
         self.name = name
-        
+
         self.handle_init(kw)
 
 
@@ -155,7 +155,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
         self.step_max = step_max
         self.parallelio = parallelio
         self.name = name
-        
+
         self.handle_init(kw)
 
 
@@ -194,7 +194,7 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
         self.write_dir = write_dir
         self.parallelio = parallelio
         self.name = name
-        
+
         self.handle_init(kw)
 
 
@@ -230,5 +230,5 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
         self.write_dir = write_dir
         self.parallelio = parallelio
         self.name = name
-        
+
         self.handle_init(kw)

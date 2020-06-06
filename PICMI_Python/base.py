@@ -20,7 +20,8 @@ class _ClassWithInit(object):
             code = k.split('_')[0]
             if code == codename:
                 codekw[k] = v
-            if code in supported_codes:
+                kw.pop(k)
+            elif code in supported_codes:
                 kw.pop(k)
 
         if kw:

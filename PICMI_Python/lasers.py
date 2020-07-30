@@ -26,6 +26,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
             Specify either a0 or E0 (E0 takes precedence).
       - E0: Maximum amplitude of the laser field [V/m]
             Specify either a0 or E0 (E0 takes precedence).
+      - phi0: Carrier envelope phase (CEP) [rad]
       - zeta: Spatial chirp at focus (in the lab frame) [m.s]
       - beta: Angular dispersion at focus (in the lab frame) [rad.s]
       - phi2: Temporal chirp at focus (in the lab frame) [s^2]
@@ -37,6 +38,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  polarization_direction = [1., 0., 0.],
                  a0 = None,
                  E0 = None,
+                 phi0 = None,
                  zeta = None,
                  beta = None,
                  phi2 = None,
@@ -63,6 +65,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.polarization_direction = polarization_direction
         self.a0 = a0
         self.E0 = E0
+        self.phi0 = phi0
         self.zeta = zeta
         self.beta = beta
         self.phi2 = phi2

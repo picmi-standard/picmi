@@ -5,7 +5,7 @@
 from setuptools import setup
 
 setup(name = 'picmistandard',
-      version = '0.0.8',
+      version = '0.0.9',
       description = 'Python base classes for PICMI standard',
       platforms = 'any',
       packages = ['picmistandard'],

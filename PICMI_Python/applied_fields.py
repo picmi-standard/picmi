@@ -35,6 +35,9 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
         self.By_expression = By_expression
         self.Bz_expression = Bz_expression
 
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
         # --- Find any user defined keywords in the kw dictionary.
         # --- Save them and delete them from kw.
         # --- It's up to the code to make sure that all parameters

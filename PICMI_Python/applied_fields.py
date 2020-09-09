@@ -23,7 +23,8 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
       - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """
-    def __init__(self, Ex_expression, Ey_expression, Ez_expression, Bx_expression, By_expression, Bz_expression,
+    def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
+                       Bx_expression=None, By_expression=None, Bz_expression=None,
                  lower_bound=[None,None,None], upper_bound=[None,None,None],
                  **kw):
 
@@ -33,6 +34,21 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
         self.Bx_expression = Bx_expression
         self.By_expression = By_expression
         self.Bz_expression = Bz_expression
+
+        # --- Find any user defined keywords in the kw dictionary.
+        # --- Save them and delete them from kw.
+        # --- It's up to the code to make sure that all parameters
+        # --- used in the expression are defined.
+        self.user_defined_kw = {}
+        for k in list(kw.keys()):
+            if ((self.Ex_expression is not None and re.search(r'\b%s\b'%k, self.Ex_expression)) or
+                (self.Ey_expression is not None and re.search(r'\b%s\b'%k, self.Ey_expression)) or
+                (self.Ez_expression is not None and re.search(r'\b%s\b'%k, self.Ez_expression)) or
+                (self.Bx_expression is not None and re.search(r'\b%s\b'%k, self.Bx_expression)) or
+                (self.By_expression is not None and re.search(r'\b%s\b'%k, self.By_expression)) or
+                (self.Bz_expression is not None and re.search(r'\b%s\b'%k, self.Bz_expression))):
+                self.user_defined_kw[k] = kw[k]
+                del kw[k]
 
         self.handle_init(kw)
 

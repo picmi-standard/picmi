@@ -8,6 +8,35 @@ from .base import _ClassWithInit
 # ---------------
 
 
+class PICMI_ConstantField(_ClassWithInit):
+    """
+    Describes a constant applied field
+      - Ex: Constant Ex field (float) [V/m]
+      - Ey: Constant Ey field (float) [V/m]
+      - Ez: Constant Ez field (float) [V/m]
+      - Bx: Constant Bx field (float) [T]
+      - By: Constant By field (float) [T]
+      - Bz: Constant Bz field (float) [T]
+      - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
+      - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
+    """
+    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
+                 lower_bound=[None,None,None], upper_bound=[None,None,None],
+                 **kw):
+
+        self.Ex = Ex
+        self.Ey = Ey
+        self.Ez = Ez
+        self.Bx = Bx
+        self.By = By
+        self.Bz = Bz
+
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+
+        self.handle_init(kw)
+
+
 class PICMI_AnalyticAppliedField(_ClassWithInit):
     """
     Describes an analytic applied field

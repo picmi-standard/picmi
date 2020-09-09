@@ -60,8 +60,8 @@ beam_number_per_cell_each_dim = [4, 4, 4]
 em_solver_method = 'PSATD'  # Cole-Karkkainen-Cowan stencil
 geometry = '3D'
 
-# Note that code-specific changes can be introduced with `cst.codename`
-if cst.codename == 'fbpic':
+# Note that code-specific changes can be introduced with `picmi.codename`
+if picmi.codename == 'fbpic':
     geometry = 'RZ'
 
 # Physics components
@@ -110,10 +110,8 @@ beam = picmi.Species(particle_type = 'electron',
                      name = 'beam',
                      initial_distribution = beam_dist)
 
-
 # Numerics components
 # -------------------
-
 if geometry == '3D':
     grid = picmi.Cartesian3DGrid(
         number_of_cells = [nx, ny, nz],
@@ -121,8 +119,7 @@ if geometry == '3D':
         upper_bound = [xmax, ymax, zmax],
         lower_boundary_conditions = ['periodic', 'periodic', 'open'],
         upper_boundary_conditions = ['periodic', 'periodic', 'open'],
-        moving_window_velocity = moving_window_velocity,
-        warpx_max_grid_size=32)
+        moving_window_velocity = moving_window_velocity)
 elif geometry == 'RZ':
     plasma_number_per_cell_each_dim[1] = 4
     beam_number_per_cell_each_dim[1] = 4
@@ -133,15 +130,17 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_zvelocity   = moving_window_velocity[-1],
-        warpx_max_grid_size       = 32)
+        moving_window_zvelocity   = moving_window_velocity[-1])
 
 smoother = picmi.BinomialSmoother(n_pass = 1,
                                   compensation = False )
-solver = picmi.ElectromagneticSolver(grid = grid,
-                                     method = em_solver_method,
-                                     cfl = 1.,
-                                     source_smoother = smoother)
+galilean_velocity = [0, 0, -cst.c*(1.-1./gamma_boost**2)**.5]
+solver = picmi.ElectromagneticSolver(
+        grid             = grid,
+        method           = em_solver_method,
+        cfl              = 1.,
+        source_smoother  = smoother,
+        galilean_velocity = galilean_velocity )
 
 # Diagnostics
 # -----------

@@ -126,8 +126,7 @@ if geometry == '3D':
         upper_bound               = [xmax, ymax, zmax],
         lower_boundary_conditions = ['periodic', 'periodic', 'open'],
         upper_boundary_conditions = ['periodic', 'periodic', 'open'],
-        moving_window_velocity    = moving_window_velocity,
-        warpx_max_grid_size       = 32)
+        moving_window_velocity    = moving_window_velocity)
         # Note that code-specific arguments use the code name as a prefix.
 elif geometry == 'RZ':
     # In the following lists:
@@ -140,8 +139,7 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_zvelocity   = moving_window_velocity[-1],
-        warpx_max_grid_size       = 32)
+        moving_window_zvelocity   = moving_window_velocity[-1])
 
 smoother = picmi.BinomialSmoother( n_pass       = 1,
                                    compensation = True )

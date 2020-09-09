@@ -8,7 +8,7 @@ from .base import _ClassWithInit
 # ---------------
 
 
-class PICMI_ConstantField(_ClassWithInit):
+class PICMI_ConstantAppliedField(_ClassWithInit):
     """
     Describes a constant applied field
       - Ex: Constant Ex field (float) [V/m]

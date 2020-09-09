@@ -1,6 +1,8 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
+import re
+
 from .base import _ClassWithInit
 
 # ---------------

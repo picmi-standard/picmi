@@ -97,14 +97,14 @@ ions = picmi.Species(particle_type = 'H',
 
 # --- beam
 beam_dist = picmi.AnalyticDistribution(
-    density_expression = "beam_density*np.maximum(0., (z - beam_zmin)*(beam_zmax - z)*4/(beam_zmax - beam_zmin)**2*(1. - (sqrt(x**2 + y**2)/beam_rmax)**2))",
+    density_expression = "beam_density* (z - beam_zmin)*(beam_zmax - z)*4/(beam_zmax - beam_zmin)**2*(1. - (sqrt(x**2 + y**2)/beam_rmax)**2)",
     beam_density = beam_density,
     beam_rmax = beam_xmax,
     beam_zmin = beam_zmin,
     beam_zmax = beam_zmax,
     lower_bound = [beam_xmin, beam_ymin, beam_zmin],
     upper_bound = [beam_xmax, beam_ymax, beam_zmax],
-    directed_velocity = [0., 0., beam_uz])
+    directed_velocity = [0., 0., beam_uz*cst.c])
 beam = picmi.Species(particle_type = 'electron',
                      particle_shape = 'cubic',
                      name = 'beam',

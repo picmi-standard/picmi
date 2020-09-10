@@ -65,11 +65,12 @@ class PICMI_Simulation(_ClassWithInit):
         self.lasers = []
         self.laser_injection_methods = []
 
+        self.applied_fields = []
+
         self.diagnostics = []
 
         self.cpu_split = cpu_split
         self.load_balancing = load_balancing
-
 
         self.handle_init(kw)
 
@@ -117,6 +118,18 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
+
+    def add_applied_field(self, applied_field):
+        """
+        Add an applied field
+
+        Parameters
+        ----------
+          - applied_field: object
+                one of the applied field objects
+                Specifies the properties of the applied field.
+        """
+        self.applied_fields.append(applied_field)
 
     def add_diagnostic(self, diagnostic):
         """

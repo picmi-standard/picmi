@@ -145,7 +145,7 @@ solver = picmi.ElectromagneticSolver(
 # Diagnostics
 # -----------
 field_diag = picmi.FieldDiagnostic(grid = grid,
-                                   period = 20,
+                                   period = 100,
                                    write_dir = 'diags')
 
 part_diag = picmi.ParticleDiagnostic(period = 100,

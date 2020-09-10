@@ -50,7 +50,7 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
       - Bz_expression: Analytic expression describing Bz field (string) [T]
                Expressions should be in terms of the position and time, written as 'x', 'y', 'z', 't'.
                Parameters can be used in the expression with the values given as additional keyword arguments.
-               Expression should relative to the lab frame.
+               Expressions should be relative to the lab frame.
       - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """

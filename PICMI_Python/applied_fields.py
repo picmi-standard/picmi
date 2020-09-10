@@ -97,7 +97,8 @@ class PICMI_Mirror(_ClassWithInit):
       - depth: Depth of the mirror (float) [m]
       - number_of_cells: Minimum numer of cells zeroed out (integer)
 
-    Only one of the [x,y,z]_front_location should be specified.
+    Only one of the [x,y,z]_front_location should be specified. The mirror will be set
+    perpendicular to the respective direction and infinite in the others.
     The depth of the mirror will be the maximum of the specified depth and number_of_cells,
     or the code's default value if neither are specified.
     """

@@ -141,8 +141,8 @@ elif geometry == 'RZ':
         n_azimuthal_modes         = 2,
         moving_window_zvelocity   = moving_window_velocity[-1])
 
-smoother = picmi.BinomialSmoother( n_pass       = 1,
-                                   compensation = True )
+smoother = picmi.BinomialSmoother( n_pass       = [1, 1, 1]
+                                   compensation = [True, True, True] )
 solver = picmi.ElectromagneticSolver( grid            = grid,
                                       cfl             = 1.,
                                       method          = em_solver_method,

@@ -57,7 +57,7 @@ plasma_number_per_cell_each_dim = [2, 2, 2]
 beam_number_per_cell_each_dim = [4, 4, 4]
 
 # --- geometry and solver
-em_solver_method = 'PSATD'  # Cole-Karkkainen-Cowan stencil
+em_solver_method = 'PSATD'
 geometry = '3D'
 
 # Note that code-specific changes can be introduced with `picmi.codename`
@@ -132,8 +132,8 @@ elif geometry == 'RZ':
         n_azimuthal_modes         = 2,
         moving_window_zvelocity   = moving_window_velocity[-1])
 
-smoother = picmi.BinomialSmoother(n_pass = 1,
-                                  compensation = False )
+smoother = picmi.BinomialSmoother( n_pass = [1, 1, 1],
+                                   compensation = [False, False, False] )
 galilean_velocity = [0, 0, -cst.c*(1.-1./gamma_boost**2)**.5]
 solver = picmi.ElectromagneticSolver(
         grid             = grid,

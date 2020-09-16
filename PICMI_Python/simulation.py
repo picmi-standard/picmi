@@ -61,6 +61,8 @@ class PICMI_Simulation(_ClassWithInit):
         self.species = []
         self.layouts = []
         self.initialize_self_fields = []
+        self.injection_plane_positions = []
+        self.injection_plane_normal_vectors = []
 
         self.lasers = []
         self.laser_injection_methods = []
@@ -95,6 +97,29 @@ class PICMI_Simulation(_ClassWithInit):
         self.species.append(species)
         self.layouts.append(layout)
         self.initialize_self_fields.append(initialize_self_field)
+        self.injection_plane_positions.append(None)
+        self.injection_plane_normal_vectors.append(None)
+
+
+    def add_species_through_plane(self, species, layout,
+        injection_plane_position, injection_plane_normal_vector,
+        initialize_self_field=False ):
+        """
+        Add species to be used in the simulation
+
+        Parameters
+        ----------
+        Same as `add_species`, with the following two possible arguments:
+
+        - injection_plane_position: Position of one point of the injection plane (vector of floats)
+        - injection_plane_normal_vector: Vector normal to injection plane (vector of floats)
+        """
+        self.species.append(species)
+        self.layouts.append(layout)
+        self.initialize_self_fields.append(initialize_self_field)
+        self.injection_plane_positions.append(injection_plane_position)
+        self.injection_plane_normal_vectors.append(injection_plane_normal_vector)
+
 
     def add_laser(self, laser, injection_method):
         """

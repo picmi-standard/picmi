@@ -30,7 +30,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
       - zeta: Spatial chirp at focus (in the lab frame) [m.s]
       - beta: Angular dispersion at focus (in the lab frame) [rad.s]
       - phi2: Temporal chirp at focus (in the lab frame) [s^2]
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
     """
     def __init__(self, wavelength, waist, duration,
                  focal_position = [0., 0., 0.],
@@ -44,7 +44,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  beta = None,
                  phi2 = None,
                  name = None,
-                 fill_in = False,
+                 fill_in = True,
                  **kw):
 
         assert E0 is not None or a0 is not None, 'One of E0 or a0 must be speficied'
@@ -96,7 +96,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
       - amax: Maximum normalized vector potential
       - Emax: Maximum amplitude of the laser field [V/m]
       Specify either amax or Emax (Emax takes precedence).
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
     """
     def __init__(self, field_expression,
                  wavelength,
@@ -105,7 +105,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
                  amax = None,
                  Emax = None,
                  name = None,
-                 fill_in = False,
+                 fill_in = True,
                  **kw):
 
         assert Emax is not None or amax is not None, 'One of Emax or amax must be speficied'

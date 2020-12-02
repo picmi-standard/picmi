@@ -176,7 +176,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
     """
 
     def __init__(self, density,
@@ -184,7 +184,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
-                 fill_in = False,
+                 fill_in = None,
                  **kw):
         self.density = density
         self.lower_bound = lower_bound
@@ -210,7 +210,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
 
       # This will create a distribution where the density is n0 below rmax and zero elsewhere.
       dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
@@ -225,7 +225,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
-                 fill_in = False,
+                 fill_in = None,
                  **kw):
         self.density_expression = '{}'.format(density_expression).replace('\n', '')
         self.momentum_expressions = momentum_expressions

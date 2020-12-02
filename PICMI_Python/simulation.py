@@ -76,7 +76,7 @@ class PICMI_Simulation(_ClassWithInit):
 
         self.handle_init(kw)
 
-    def add_species(self, species, layout, initialize_self_field=False):
+    def add_species(self, species, layout, initialize_self_field=None):
         """
         Add species to be used in the simulation
 
@@ -104,7 +104,7 @@ class PICMI_Simulation(_ClassWithInit):
 
     def add_species_through_plane(self, species, layout,
         injection_plane_position, injection_plane_normal_vector,
-        initialize_self_field=False ):
+        initialize_self_field=None ):
         """
         Add species to be used in the simulation
 

@@ -52,17 +52,22 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
     Electrostatic field solver
       - grid: grid object to be used by the solver (grid object)
       - method = None: One of 'FFT', or 'Multigrid' (string)
+      - required_precision: Level of precision required for iterative solvers (float)
+      - maximum_iterations: Maximum number of iterations for iterative solvers (integer)
     """
 
     methods_list = ['FFT', 'Multigrid']
 
-    def __init__(self, grid, method=None, **kw):
+    def __init__(self, grid, method=None,
+                 required_precision=None, maximum_iterations=None, **kw):
 
         assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
 
         self.grid = grid
         self.method = method
+        self.required_precision = required_precision
+        self.maximum_iterations = maximum_iterations
 
         self.handle_init(kw)
 

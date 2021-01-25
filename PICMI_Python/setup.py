@@ -7,6 +7,7 @@ from setuptools import setup
 setup(name = 'picmistandard',
       version = '0.0.13',
       description = 'Python base classes for PICMI standard',
+      install_requires=['scipy~=1.6.0'],
       platforms = 'any',
       packages = ['picmistandard'],
       package_dir = {'picmistandard': '.'},

@@ -5,7 +5,7 @@ import math
 import sys
 import re
 
-from .base import _ClassWithInit
+from .base import _ClassWithInit, _get_constants
 
 # ---------------
 # Physics objects
@@ -51,11 +51,9 @@ class PICMI_GaussianLaser(_ClassWithInit):
 
         k0 = 2.*math.pi/wavelength
         if E0 is None:
-            from scipy import constants
-            E0 = a0*constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge
+            E0 = a0*_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e
         if a0 is None:
-            from scipy import constants
-            a0 = E0/(constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge)
+            a0 = E0/(_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e)
 
         self.wavelength = wavelength
         self.k0 = k0
@@ -112,11 +110,9 @@ class PICMI_AnalyticLaser(_ClassWithInit):
 
         k0 = 2.*math.pi/wavelength
         if Emax is None:
-            from scipy import constants
-            Emax = amax*constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge
+            Emax = amax*_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e
         if amax is None:
-            from scipy import constants
-            amax = Emax/(constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge)
+            amax = Emax/(_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e)
 
         self.wavelength = wavelength
         self.field_expression = field_expression

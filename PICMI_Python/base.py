@@ -14,15 +14,15 @@ def register_codename(_codename):
 # --- This needs to be set by the implementing package (by calling register_constants).
 # --- It allows constants to be used within the picmi interface, with the constants
 # --- defined in the implementation.
-implementation_constants = None
+_implementation_constants = None
 
-def register_constants(_implementation_constants):
+def register_constants(implementation_constants):
     """This must be called by the implementing code, passing in the constans object"""
-    global implementation_constants
-    implementation_constants = _implementation_constants
+    global _implementation_constants
+    _implementation_constants = implementation_constants
 
 def _get_constants():
-    return implementation_constants
+    return _implementation_constants
 
 class _ClassWithInit(object):
     def handle_init(self, kw):

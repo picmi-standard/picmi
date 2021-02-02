@@ -5,9 +5,8 @@
 from setuptools import setup
 
 setup(name = 'picmistandard',
-      version = '0.0.13',
+      version = '0.0.14',
       description = 'Python base classes for PICMI standard',
-      install_requires=['scipy~=1.5'],
       platforms = 'any',
       packages = ['picmistandard'],
       package_dir = {'picmistandard': '.'},

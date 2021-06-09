@@ -19,6 +19,7 @@ class PICMI_Species(_ClassWithInit):
     Species
       - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - name=None: Name of the species
+      - method: One of 'Boris', 'Vay', 'Higuera', 'Li' (string)
       - charge_state=None: Charge state of the species (applies to atoms) [1]
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
@@ -27,8 +28,14 @@ class PICMI_Species(_ClassWithInit):
       - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
+    methods_list = ['Boris' , 'Vay', 'Higuera', 'Li']
+    
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
                  initial_distribution=None, particle_shape=None, density_scale=None, **kw):
+
+
+        assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
+            Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))         
         self.particle_type = particle_type
         self.name = name
         self.charge = charge

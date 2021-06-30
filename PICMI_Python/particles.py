@@ -19,6 +19,8 @@ class PICMI_Species(_ClassWithInit):
     Species
       - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - name=None: Name of the species
+      - method=None: One of 'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', and 'LLRK4' (Landau-Lifschitz radiation reaction formula with RK-4) (string)
+                     code-specific method can be specified using 'other:<method>'
       - charge_state=None: Charge state of the species (applies to atoms) [1]
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
@@ -27,8 +29,16 @@ class PICMI_Species(_ClassWithInit):
       - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
+    methods_list = ['Boris' , 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4']
+
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, density_scale=None, **kw):
+                 initial_distribution=None, particle_shape=None, density_scale=None, method=None, **kw):
+
+
+        assert method is None or method in PICMI_Species.methods_list or method.startswith('other:'), \
+            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))    
+
+        self.method = method     
         self.particle_type = particle_type
         self.name = name
         self.charge = charge

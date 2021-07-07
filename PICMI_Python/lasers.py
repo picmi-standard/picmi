@@ -35,7 +35,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
 
     Parameters:
     -----------
-      - wavelength: Laser wavelength [m], defined as :math:`\\lamdba_0` in the above formula
+      - wavelength: Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula
       - waist: Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula
       - duration: Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
       - focal_position=[0,0,0]: Position of the laser focus (vector) [m]

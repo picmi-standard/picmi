@@ -22,13 +22,15 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - field_smoother = None: Smoother object to apply to the fields (smoother object)
       - subcycling = None: level of subcycling for the GPSTD solver (integer)
       - galilean_velocity = None: Velocity of Galilean reference frame (vector of floats) [m/s]
+      - divE_cleaning = None: Solver uses div(E) cleaning if True (boolean)
+      - divB_cleaning = None: Solver uses div(B) cleaning if True (boolean)
     """
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
 
     def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
                  source_smoother=None, field_smoother=None, subcycling=None,
-                 galilean_velocity=None,
+                 galilean_velocity=None, divE_cleaning=None, divB_cleaning=None,
                  **kw):
 
         assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
@@ -43,6 +45,8 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         self.field_smoother = field_smoother
         self.subcycling = subcycling
         self.galilean_velocity = galilean_velocity
+        self.divE_cleaning = divE_cleaning
+        self.divB_cleaning = divB_cleaning
 
         self.handle_init(kw)
 

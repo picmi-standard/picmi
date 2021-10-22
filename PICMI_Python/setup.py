@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
     install_requires = [ line.strip('\n') for line in f.readlines() ]
 
 setup(name = 'picmistandard',
-      version = '0.0.14',
+      version = '0.0.15',
       description = 'Python base classes for PICMI standard',
       platforms = 'any',
       packages = ['picmistandard'],

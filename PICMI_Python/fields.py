@@ -24,6 +24,8 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - galilean_velocity = None: Velocity of Galilean reference frame (vector of floats) [m/s]
       - divE_cleaning = None: Solver uses div(E) cleaning if True (boolean)
       - divB_cleaning = None: Solver uses div(B) cleaning if True (boolean)
+      - pml_divE_cleaning = None: Solver uses div(E) cleaning in the PML if True (boolean)
+      - pml_divB_cleaning = None: Solver uses div(B) cleaning in the PML if True (boolean)
     """
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
@@ -31,7 +33,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
                  source_smoother=None, field_smoother=None, subcycling=None,
                  galilean_velocity=None, divE_cleaning=None, divB_cleaning=None,
-                 **kw):
+                 pml_divE_cleaning=None, pml_divB_cleaning=None, **kw):
 
         assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))
@@ -47,6 +49,8 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         self.galilean_velocity = galilean_velocity
         self.divE_cleaning = divE_cleaning
         self.divB_cleaning = divB_cleaning
+        self.pml_divE_cleaning = pml_divE_cleaning
+        self.pml_divB_cleaning = pml_divB_cleaning
 
         self.handle_init(kw)
 

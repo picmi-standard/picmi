@@ -15,7 +15,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
     Defines the electromagnetic field diagnostics in the simulation frame
       - grid: Grid object for the diagnostic
       - period: Period of time steps that the diagnostic is performed
-      - data_list: List of quantities to write out. Possible values "rho", "E", "B", "J", "Ex" etc.
+      - data_list: List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -41,6 +41,8 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        assert isinstance(data_list, list), 'FieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.period = period
@@ -62,7 +64,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
     Defines the electrostatic field diagnostics in the simulation frame
       - grid: Grid object for the diagnostic
       - period: Period of time steps that the diagnostic is performed
-      - data_list: List of quantities to write out. Possible values "rho", "E", "B", "Ex" etc.
+      - data_list: List of quantities to write out. Possible values 'rho', 'E', 'B', 'Ex' etc.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -87,6 +89,8 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        assert isinstance(data_list, list), 'ElectrostaticFieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.period = period
@@ -109,7 +113,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
       - period: Period of time steps that the diagnostic is performed
       - species: Species or list of species to write out
                  Note that the name attribute must be defined for the species.
-      - data_list: The data to be written out. Possible values "position", "momentum", "weighting".
+      - data_list: The data to be written out. Possible values 'position', 'momentum', 'weighting'.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -126,6 +130,8 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
                  parallelio = None,
                  name = None,
                  **kw):
+
+        assert isinstance(data_list, list), 'ParticleDiagnostic: data_list must be a list'
 
         self.period = period
         self.species = species
@@ -150,7 +156,7 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
       - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
       - dt_snapshots: Time between each snapshot in lab frame
-      - data_list: List of quantities to write out. Possible values "rho", "E", "B", "J", "Ex" etc.
+      - data_list: List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc.
       - z_subsampling=1: A factor which is applied on the resolution of the lab frame reconstruction. (integer)
       - time_start=0.: Time for the first snapshot in lab frame
       - write_dir='.': Directory where data is to be written
@@ -163,6 +169,8 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        assert isinstance(data_list, list), 'LabFrameFieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.num_snapshots = num_snapshots
@@ -183,7 +191,7 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
       - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
       - dt_snapshots: Time between each snapshot in lab frame
-      - data_list: The data to be written out. Possible values "position", "momentum", "weighting".
+      - data_list: The data to be written out. Possible values 'position', 'momentum', 'weighting'.
       - time_start=0.: Time for the first snapshot in lab frame
       - species: Species or list of species to write out
                  Note that the name attribute must be defined for the species.
@@ -198,6 +206,8 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        assert isinstance(data_list, list), 'LabFrameParticleDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.num_snapshots = num_snapshots

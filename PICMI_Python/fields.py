@@ -134,15 +134,10 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
       - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
 
       - nx: Number of cells along X (number of nodes=nx+1)
-      - ny: Number of cells along Y (number of nodes=ny+1)
       - xmin: Position of first node along X [m]
       - xmax: Position of last node along X [m]
-      - ymin: Position of first node along Y [m]
-      - ymax: Position of last node along Y [m]
       - bc_xmin: Boundary condition at min X: One of periodic, open, dirichlet, or neumann
       - bc_xmax: Boundary condition at max X: One of periodic, open, dirichlet, or neumann
-      - bc_ymin: Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
-      - bc_ymax: Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
 
       - moving_window_velocity: Moving frame velocity (vector) [m/s]
 
@@ -155,19 +150,15 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
       - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
       - xmin_particles: Position of min particle boundary along X [m] (float)
       - xmax_particles: Position of max particle boundary along X [m] (float)
-      - ymin_particles: Position of min particle boundary along Y [m] (float)
-      - ymax_particles: Position of max particle boundary along Y [m] (float)
       - lower_boundary_conditions_particles: Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
       - upper_boundary_conditions_particles: Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
       - bc_xmin_particles: Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal (string)
       - bc_xmax_particles: Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymin_particles: Boundary condition at min Y for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymax_particles: Boundary condition at max Y for particles: One of periodic, absorbing, reflect, thermal (string)
       - guard_cells = None: number of guard cells used along each direction (vector of integers)
       - pml_cells = None: number of Perfectly Matched Layer (PML) cells along each direction (vector of integers)
     """
 
-    number_of_dimensions = 2
+    number_of_dimensions = 1
 
     def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
                  lower_boundary_conditions=None, upper_boundary_conditions=None,

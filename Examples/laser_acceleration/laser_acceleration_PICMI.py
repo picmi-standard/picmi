@@ -140,7 +140,7 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_zvelocity   = moving_window_velocity[-1],
+        moving_window_velocity    = [0., cst.c],
         warpx_max_grid_size       = 32)
 
 smoother = picmi.BinomialSmoother( n_pass       = 1,

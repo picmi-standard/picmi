@@ -323,7 +323,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
       - bc_zmin: Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
       - bc_zmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
 
-      - moving_window_zvelocity: Moving frame Z velocity [m/s]
+      - moving_window_velocity: Moving frame velocity (vector) [m/s]
 
       - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
                          with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
@@ -353,7 +353,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                  nr=None, nz=None, n_azimuthal_modes=None,
                  rmin=None, rmax=None, zmin=None, zmax=None,
                  bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_zvelocity=None, refined_regions=[],
+                 moving_window_velocity=None, refined_regions=[],
                  lower_bound_particles=None, upper_bound_particles=None,
                  rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None,
                  lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
@@ -476,7 +476,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         self.bc_zmin_particles = bc_zmin_particles
         self.bc_zmax_particles = bc_zmax_particles
 
-        self.moving_window_zvelocity = moving_window_zvelocity
+        self.moving_window_velocity = moving_window_velocity
 
         self.refined_regions = refined_regions
         for region in self.refined_regions:

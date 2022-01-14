@@ -204,3 +204,10 @@ class PICMI_Simulation(_ClassWithInit):
             The number of timesteps
         """
         raise NotImplementedError
+
+    def extension(self):
+        """
+        Reserved for code-specific extensions, for example a class instance
+        that has further methods for manipulating a PIC simulation.
+        """
+        raise NotImplementedError

@@ -14,7 +14,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     """
     Electromagnetic field solver
       - grid: grid object to be used by the solver (grid object)
-      - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', or 'GPSTD' (string)
+      - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD' or 'ECT' (string)
       - stencil_order: Order of stencil for each axis (-1=infinite) (vector of integers)
       - cfl = None: Fraction of the Courant-Friedrich-Lewy criteria [1] (float)
       - l_nodal = None: Quantities are at nodes if True, staggered otherwise (boolean)
@@ -28,7 +28,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - pml_divB_cleaning = None: Solver uses div(B) cleaning in the PML if True (boolean)
     """
 
-    methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD']
+    methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'ECT']
 
     def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
                  source_smoother=None, field_smoother=None, subcycling=None,

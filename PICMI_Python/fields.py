@@ -15,6 +15,13 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     Electromagnetic field solver
       - grid: grid object to be used by the solver (grid object)
       - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD' or 'ECT' (string)
+        - 'Yee': standard solver using the staggered Yee grid
+        - 'CKC': solver with the extended Cole-Karkkainen stencil with better dispersion properties
+        - 'Lehe':
+        - 'PSTD': Spectral solver with finite difference in time domain
+        - 'PSATD': Spectral solver with analytic in time domain
+        - 'GPSTD':
+        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors
       - stencil_order: Order of stencil for each axis (-1=infinite) (vector of integers)
       - cfl = None: Fraction of the Courant-Friedrich-Lewy criteria [1] (float)
       - l_nodal = None: Quantities are at nodes if True, staggered otherwise (boolean)

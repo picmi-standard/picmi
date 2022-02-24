@@ -53,11 +53,11 @@ class _ClassWithInit(object):
         # --- This allows testing for any unused arguments and raising an error if found.
         pass
 
-    def check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
+    def _check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
         """Raise a warning or exception for an unsupported argument."""
         # --- Implementation note: This should be called in the "init" method of the implementing
         # --- class for each unsupported argument. For example, for the 'density_scale' argument of Species:
-        # ---     self.check_unsupported_argument('density_scale', extra_info='My code can not handle a density_scale')
+        # ---     self._check_unsupported_argument('density_scale', extra_info='My code can not handle a density_scale')
         if getattr(self, arg_name) is not None:
             message = f'{self.__name__}: For argument {arg_name} is not supported.'
             if extra_info is not None:
@@ -67,13 +67,15 @@ class _ClassWithInit(object):
             else:
                 warnings.warn(message)
 
-    def unsupported_value(self, arg_name, extra_info='', raise_error=True):
+    def _unsupported_value(self, arg_name, extra_info='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value."""
         # --- Implementation note: This should be called when the implementing code handles
         # --- the input arguments. For example, for 'method' in Species:
         # ---     if self.method not in ['Boris', 'Li']:
-        # ---         self.unsupported_value('method', extra_info='My code only supports Boris and Li')
+        # ---         self._unsupported_value('method', extra_info='My code only supports Boris and Li')
         message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
+        if extra_info is not None:
+            message += f' {extra_info}'
         if raise_error:
             raise Exception(message)
         else:

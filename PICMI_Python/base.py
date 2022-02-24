@@ -58,7 +58,12 @@ class _ClassWithInit(object):
         # --- Implementation note: This should be called in the "init" method of the implementing
         # --- class for each unsupported argument. For example, for the 'density_scale' argument of Species:
         # ---     self._check_unsupported_argument('density_scale', extra_info='My code can not handle a density_scale')
-        if getattr(self, arg_name) is not None:
+
+        # This compares the value of the parameter with the dault value in the __init__ method.
+        # If they differ, this means that the user supplied a value, so a warning or error is raised.
+        signature = inspect.signature(self.__init__)
+        default_value = signature.parameters[arg_name].default
+        if not (getattr(self, arg_name) == default_value):
             message = f'{self.__name__}: For argument {arg_name} is not supported.'
             if extra_info is not None:
                 message += f' {extra_info}'

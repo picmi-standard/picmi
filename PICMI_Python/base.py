@@ -1,5 +1,6 @@
 """base code for the PICMI standard
 """
+import inspect
 import warnings
 
 codename = None

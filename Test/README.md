@@ -9,6 +9,7 @@ To allow `import picmistandard` to refer to the actual source of this repository
 this directory contains a symbolic link named `picmistandard` to the actual source.
 
 By supplying an appropriate `PYTHONPATH` this module is loaded.
+(The current directory is always available for imports, so this is not necessarily required.)
 
 ## Unittests
 Unittests are launched from the `__main__` function from the unittest directory.
@@ -16,10 +17,10 @@ This tests the currently available module `picmistandard`.
 
 The file structure follows the source 1-to-1.
 
-To test the development version run:
+To test the development version run (from this directory):
 
 ```
-PYTHONPATH=.:$PYTHONPATH python -m unit
+python -m unit
 ```
 
 ## E2E

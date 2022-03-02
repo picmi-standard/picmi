@@ -3,12 +3,15 @@ import unittest
 import typing
 
 
+class DummyClass(picmistandard.base._ClassWithInit):
+    # note: refer to .base b/c class name with _ will not be exposed
+    mandatory_attr: typing.Any
+    name = ""
+    optional = None
+    _protected = 1
+
+
 class Test_ClassWithInit(unittest.TestCase):
-    class DummyClass(picmistandard.base._ClassWithInit):
-        # note: refer to .base b/c class name with _ will not be exposed
-        mandatory_attr: typing.Any
-        name = ""
-        optional = None
 
     def setUp(self):
         picmistandard.register_codename("dummypic")
@@ -39,9 +42,13 @@ class Test_ClassWithInit(unittest.TestCase):
         # args beginning with dummypic_ must be accepted
         d1 = DummyClass(mandatory_attr=2,
                         dummypic_foo="bar",
-                        dummypic_baz="xyzzy")
+                        dummypic_baz="xyzzy",
+                        dummypic=1,
+                        dummypic_=3)
         self.assertEqual("bar", d1.dummypic_foo)
         self.assertEqual("xyzzy", d1.dummypic_baz)
+        self.assertEqual(1, d1.dummypic)
+        self.assertEqual(3, d1.dummypic_)
 
         # _ separator is required:
         with self.assertRaisesRegex(NameError, ".*dummypicno_.*"):
@@ -50,9 +57,15 @@ class Test_ClassWithInit(unittest.TestCase):
 
         # args from other supported codes are still accepted
         d2 = DummyClass(mandatory_attr=None,
-                        warpx_anyvar=1)
+                        warpx_anyvar=1,
+                        warpx=2,
+                        warpx_=3,
+                        fbpic=4)
         self.assertEqual(None, d2.mandatory_attr)
         self.assertEqual(1, d2.warpx_anyvar)
+        self.assertEqual(2, d2.warpx)
+        self.assertEqual(3, d2.warpx_)
+        self.assertEqual(4, d2.fbpic)
 
     def test_mandatory_enforced(self):
         """mandatory args must be given"""
@@ -73,3 +86,15 @@ class Test_ClassWithInit(unittest.TestCase):
             # must complain purely b/c typecheck is *there*
             # (even if it would enforceable)
             WithTypecheck(attr="d", num=2)
+
+    def test_protected(self):
+        """protected args may *never* be accessed"""
+        with self.assertRaisesRegex(NameError, ".*_protected.*"):
+            DummyClass(mandatory_attr=1,
+                       _protected=42)
+
+        # though, *technically speaking*, it can be assigned
+        d = DummyClass(mandatory_attr=1)
+        # ... this is evil, never do this!
+        d._protected = 3
+        self.assertEqual(3, d._protected)

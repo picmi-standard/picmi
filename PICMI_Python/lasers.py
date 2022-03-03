@@ -5,7 +5,7 @@ import math
 import sys
 import re
 
-from .base import _ClassWithInit
+from .base import _ClassWithInit, _get_constants
 
 # ---------------
 # Physics objects
@@ -13,11 +13,31 @@ from .base import _ClassWithInit
 
 class PICMI_GaussianLaser(_ClassWithInit):
     """
-    Specifies a Gaussian laser distribution
-      - name=None: Optional name of the laser
-      - wavelength: Laser wavelength
-      - waist: Waist of the Gaussian pulse at focus [m]
-      - duration: Duration of the Gaussian pulse [s]
+    Specifies a Gaussian laser distribution.
+
+    More precisely, the electric field **near the focal plane** is given by:
+
+    .. math::
+
+        E(\\boldsymbol{x},t) = a_0\\times E_0\,
+        \exp\left( -\\frac{r^2}{w_0^2} - \\frac{(z-z_0-ct)^2}{c^2\\tau^2} \\right)
+        \cos[ k_0( z - z_0 - ct ) - \phi_{cep} ]
+
+    where :math:`k_0 = 2\pi/\\lambda_0` is the wavevector and where
+    :math:`E_0 = m_e c^2 k_0 / q_e` is the field amplitude for :math:`a_0=1`.
+
+    .. note::
+
+        The additional terms that arise **far from the focal plane**
+        (Gouy phase, wavefront curvature, ...) are not included in the above
+        formula for simplicity, but are of course taken into account by
+        the code, when initializing the laser pulse away from the focal plane.
+
+    Parameters:
+    -----------
+      - wavelength: Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula
+      - waist: Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula
+      - duration: Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
       - focal_position=[0,0,0]: Position of the laser focus (vector) [m]
       - centroid_position=[0,0,0]: Position of the laser centroid at time 0 (vector) [m]
       - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
@@ -30,6 +50,8 @@ class PICMI_GaussianLaser(_ClassWithInit):
       - zeta: Spatial chirp at focus (in the lab frame) [m.s]
       - beta: Angular dispersion at focus (in the lab frame) [rad.s]
       - phi2: Temporal chirp at focus (in the lab frame) [s^2]
+      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
+      name=None: Optional name of the laser
     """
     def __init__(self, wavelength, waist, duration,
                  focal_position = [0., 0., 0.],
@@ -43,17 +65,16 @@ class PICMI_GaussianLaser(_ClassWithInit):
                  beta = None,
                  phi2 = None,
                  name = None,
+                 fill_in = True,
                  **kw):
 
         assert E0 is not None or a0 is not None, 'One of E0 or a0 must be speficied'
 
         k0 = 2.*math.pi/wavelength
         if E0 is None:
-            from scipy import constants
-            E0 = a0*constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge
+            E0 = a0*_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e
         if a0 is None:
-            from scipy import constants
-            a0 = E0/(constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge)
+            a0 = E0/(_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e)
 
         self.wavelength = wavelength
         self.k0 = k0
@@ -70,6 +91,7 @@ class PICMI_GaussianLaser(_ClassWithInit):
         self.beta = beta
         self.phi2 = phi2
         self.name = name
+        self.fill_in = fill_in
 
         self.handle_init(kw)
 
@@ -93,6 +115,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
       - amax: Maximum normalized vector potential
       - Emax: Maximum amplitude of the laser field [V/m]
       Specify either amax or Emax (Emax takes precedence).
+      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
     """
     def __init__(self, field_expression,
                  wavelength,
@@ -101,17 +124,16 @@ class PICMI_AnalyticLaser(_ClassWithInit):
                  amax = None,
                  Emax = None,
                  name = None,
+                 fill_in = True,
                  **kw):
 
         assert Emax is not None or amax is not None, 'One of Emax or amax must be speficied'
 
         k0 = 2.*math.pi/wavelength
         if Emax is None:
-            from scipy import constants
-            Emax = amax*constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge
+            Emax = amax*_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e
         if amax is None:
-            from scipy import constants
-            amax = Emax/(constants.electron_mass*constants.speed_of_light**2*k0/constants.elementary_charge)
+            amax = Emax/(_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e)
 
         self.wavelength = wavelength
         self.field_expression = field_expression
@@ -121,6 +143,7 @@ class PICMI_AnalyticLaser(_ClassWithInit):
         self.amax = amax
         self.Emax = Emax
         self.name = name
+        self.fill_in = fill_in
 
         self.field_expression = '{}'.format(field_expression).replace('\n', '')
 

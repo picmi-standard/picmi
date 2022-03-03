@@ -139,7 +139,8 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_zvelocity   = moving_window_velocity[-1])
+        moving_window_velocity    = [0., cst.c],
+        warpx_max_grid_size       = 32)
 
 smoother = picmi.BinomialSmoother( n_pass       = [1, 1, 1]
                                    compensation = [True, True, True] )
@@ -153,8 +154,6 @@ solver = picmi.ElectromagneticSolver( grid            = grid,
 field_diag = picmi.FieldDiagnostic(name = 'diag1',
                                    grid = grid,
                                    period = 100,
-                                   warpx_plot_raw_fields = 1,
-                                   warpx_plot_raw_fields_guards = 1,
                                    warpx_plot_finepatch = 1,
                                    warpx_plot_crsepatch = 1)
 part_diag = picmi.ParticleDiagnostic(name = 'diag1',

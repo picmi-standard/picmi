@@ -61,19 +61,22 @@ class PICMI_Simulation(_ClassWithInit):
         self.species = []
         self.layouts = []
         self.initialize_self_fields = []
+        self.injection_plane_positions = []
+        self.injection_plane_normal_vectors = []
 
         self.lasers = []
         self.laser_injection_methods = []
+
+        self.applied_fields = []
 
         self.diagnostics = []
 
         self.cpu_split = cpu_split
         self.load_balancing = load_balancing
 
-
         self.handle_init(kw)
 
-    def add_species(self, species, layout, initialize_self_field=False):
+    def add_species(self, species, layout, initialize_self_field=None):
         """
         Add species to be used in the simulation
 
@@ -95,6 +98,29 @@ class PICMI_Simulation(_ClassWithInit):
         self.species.append(species)
         self.layouts.append(layout)
         self.initialize_self_fields.append(initialize_self_field)
+        self.injection_plane_positions.append(None)
+        self.injection_plane_normal_vectors.append(None)
+
+
+    def add_species_through_plane(self, species, layout,
+        injection_plane_position, injection_plane_normal_vector,
+        initialize_self_field=None ):
+        """
+        Add species to be used in the simulation
+
+        Parameters
+        ----------
+        Same as `add_species`, with the following two possible arguments:
+
+        - injection_plane_position: Position of one point of the injection plane (vector of floats)
+        - injection_plane_normal_vector: Vector normal to injection plane (vector of floats)
+        """
+        self.species.append(species)
+        self.layouts.append(layout)
+        self.initialize_self_fields.append(initialize_self_field)
+        self.injection_plane_positions.append(injection_plane_position)
+        self.injection_plane_normal_vectors.append(injection_plane_normal_vector)
+
 
     def add_laser(self, laser, injection_method):
         """
@@ -117,6 +143,18 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
+
+    def add_applied_field(self, applied_field):
+        """
+        Add an applied field
+
+        Parameters
+        ----------
+          - applied_field: object
+                one of the applied field objects
+                Specifies the properties of the applied field.
+        """
+        self.applied_fields.append(applied_field)
 
     def add_diagnostic(self, diagnostic):
         """
@@ -164,5 +202,12 @@ class PICMI_Simulation(_ClassWithInit):
         ----------
         nsteps: int
             The number of timesteps
+        """
+        raise NotImplementedError
+
+    def extension(self):
+        """
+        Reserved for code-specific extensions, for example a class instance
+        that has further methods for manipulating a PIC simulation.
         """
         raise NotImplementedError

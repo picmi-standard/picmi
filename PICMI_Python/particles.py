@@ -19,6 +19,8 @@ class PICMI_Species(_ClassWithInit):
     Species
       - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - name=None: Name of the species
+      - method=None: One of 'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', and 'LLRK4' (Landau-Lifschitz radiation reaction formula with RK-4) (string)
+                     code-specific method can be specified using 'other:<method>'
       - charge_state=None: Charge state of the species (applies to atoms) [1]
       - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
       - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
@@ -27,8 +29,16 @@ class PICMI_Species(_ClassWithInit):
       - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
     """
 
+    methods_list = ['Boris' , 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4']
+
     def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, density_scale=None, **kw):
+                 initial_distribution=None, particle_shape=None, density_scale=None, method=None, **kw):
+
+
+        assert method is None or method in PICMI_Species.methods_list or method.startswith('other:'), \
+            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))    
+
+        self.method = method     
         self.particle_type = particle_type
         self.name = name
         self.charge = charge
@@ -176,7 +186,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
     """
 
     def __init__(self, density,
@@ -184,7 +194,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
-                 fill_in = False,
+                 fill_in = None,
                  **kw):
         self.density = density
         self.lower_bound = lower_bound
@@ -210,7 +220,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
       - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
       - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in=False: Flags whether to fill in the empty spaced opened up when the grid moves
+      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
 
       # This will create a distribution where the density is n0 below rmax and zero elsewhere.
       dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
@@ -225,7 +235,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
-                 fill_in = False,
+                 fill_in = None,
                  **kw):
         self.density_expression = '{}'.format(density_expression).replace('\n', '')
         self.momentum_expressions = momentum_expressions

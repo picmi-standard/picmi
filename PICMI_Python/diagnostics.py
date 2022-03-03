@@ -14,8 +14,9 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
     """
     Defines the electromagnetic field diagnostics in the simulation frame
       - grid: Grid object for the diagnostic
-      - period=1: Period of time steps that the diagnostic is performed
-      - data_list=["rho", "E", "B", "J"]: List of quantities to write out
+      - period: Period of time steps that the diagnostic is performed
+      - data_list=None: List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc.
+                        Defaults to the output list of the implementing code.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -31,8 +32,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
       - name: Sets the base name for the diagnostic output files (optional)
 
     """
-    def __init__(self, grid, period = 1,
-                 data_list = ["rho", "E", "B", "J"],
+    def __init__(self, grid, period, data_list=None,
                  write_dir = None,
                  step_min = None,
                  step_max = None,
@@ -42,6 +42,9 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'FieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.period = period
@@ -62,8 +65,9 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
     """
     Defines the electrostatic field diagnostics in the simulation frame
       - grid: Grid object for the diagnostic
-      - period=1: Period of time steps that the diagnostic is performed
-      - data_list=["rho", "phi"]: List of quantities to write out
+      - period: Period of time steps that the diagnostic is performed
+      - data_list=None: List of quantities to write out. Possible values 'rho', 'E', 'B', 'Ex' etc.
+                        Defaults to the output list of the implementing code.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -78,8 +82,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, period = 1,
-                 data_list = ["rho", "phi"],
+    def __init__(self, grid, period, data_list=None,
                  write_dir = None,
                  step_min = None,
                  step_max = None,
@@ -89,6 +92,9 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
                  parallelio = None,
                  name = None,
                  **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'ElectrostaticFieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.period = period
@@ -108,10 +114,11 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
 class PICMI_ParticleDiagnostic(_ClassWithInit) :
     """
     Defines the particle diagnostics in the simulation frame
-      - period=1: Period of time steps that the diagnostic is performed
+      - period: Period of time steps that the diagnostic is performed
       - species: Species or list of species to write out
                  Note that the name attribute must be defined for the species.
-      - data_list=["position", "momentum", "weighting"]: The data to be written out
+      - data_list=None: The data to be written out. Possible values 'position', 'momentum', 'weighting'.
+                        Defaults to the output list of the implementing code.
       - write_dir='.': Directory where data is to be written
       - step_min=None: Minimum step at which diagnostics could be written (optional)
                        Defaults to step 0.
@@ -121,15 +128,16 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
       - name: Sets the base name for the diagnostic output files (optional)
     """
 
-    def __init__(self, period = 1,
-                 species = None,
-                 data_list = ["position", "momentum", "weighting"],
+    def __init__(self, period, species, data_list=None,
                  write_dir = None,
                  step_min = None,
                  step_max = None,
                  parallelio = None,
                  name = None,
                  **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'ParticleDiagnostic: data_list must be a list'
 
         self.period = period
         self.species = species
@@ -154,20 +162,23 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
       - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
       - dt_snapshots: Time between each snapshot in lab frame
+      - data_list=None: List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc.
+                        Defaults to the output list of the implementing code.
       - z_subsampling=1: A factor which is applied on the resolution of the lab frame reconstruction. (integer)
       - time_start=0.: Time for the first snapshot in lab frame
-      - data_list=["rho", "E", "B", "J"]: List of quantities to write out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots,
+    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
                  z_subsampling = 1, time_start = 0.,
-                 data_list = ["rho", "E", "B", "J"],
                  write_dir = None,
                  parallelio = None,
                  name = None,
                  **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'LabFrameFieldDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.num_snapshots = num_snapshots
@@ -188,22 +199,25 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
       - grid: Grid object for the diagnostic
       - num_snapshots: Number of lab frame snapshots to make
       - dt_snapshots: Time between each snapshot in lab frame
+      - data_list=None: The data to be written out. Possible values 'position', 'momentum', 'weighting'.
+                        Defaults to the output list of the implementing code.
       - time_start=0.: Time for the first snapshot in lab frame
       - species: Species or list of species to write out
                  Note that the name attribute must be defined for the species.
-      - data_list=["position", "momentum", "weighting"]: The data to be written out
       - write_dir='.': Directory where data is to be written
       - parallelio=None: If set to True, particle diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots,
+    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
                  time_start = 0.,
                  species = None,
-                 data_list = ["position", "momentum", "weighting"],
                  write_dir = None,
                  parallelio = None,
                  name = None,
                  **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'LabFrameParticleDiagnostic: data_list must be a list'
 
         self.grid = grid
         self.num_snapshots = num_snapshots

@@ -17,6 +17,8 @@ Simulation and grid setup
    field
    grid
    constants
+   applied_field
+   diagnostics
 
 Particles
 ---------

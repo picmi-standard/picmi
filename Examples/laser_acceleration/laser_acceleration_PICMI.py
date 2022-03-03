@@ -142,7 +142,7 @@ elif geometry == 'RZ':
         moving_window_velocity    = [0., cst.c],
         warpx_max_grid_size       = 32)
 
-smoother = picmi.BinomialSmoother( n_pass       = [1, 1, 1]
+smoother = picmi.BinomialSmoother( n_pass       = [1, 1, 1],
                                    compensation = [True, True, True] )
 solver = picmi.ElectromagneticSolver( grid            = grid,
                                       cfl             = 1.,

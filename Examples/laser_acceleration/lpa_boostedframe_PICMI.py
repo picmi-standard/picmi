@@ -16,7 +16,6 @@ laser_a0              = 1.        # Normalized potential vector
 laser_wavelength      = 8e-07     # Wavelength of the laser (in meters)
 laser_waist           = 8e-06     # Waist of the laser (in meters)
 laser_length          = 3.e-6     # Length of the laser (in meters)
-laser_polarization    = 0.        # Polarization angle (in rad)
 laser_z0              = -6.e-6    # Initial position of the centroid (meters)
 laser_focal_position  = 0.        # Laser focal position (meters)
 laser_antenna_z       = -0.1e-6   # Position of the antenna (meters)
@@ -74,7 +73,6 @@ laser = picmi.GaussianLaser(
     duration              = laser_length/cst.c,
     focal_position        = [0., 0., laser_focal_position],
     centroid_position     = [0., 0., laser_z0],
-    polarization_angle    = laser_polarization,
     propagation_direction = [0,0,1],
     a0                    = laser_a0)
 
@@ -130,7 +128,7 @@ elif geometry == 'RZ':
         lower_boundary_conditions = [ None, 'open'],
         upper_boundary_conditions = ['reflective', 'open'],
         n_azimuthal_modes         = 2,
-        moving_window_zvelocity   = moving_window_velocity[-1])
+        moving_window_velocity    = [0, moving_window_velocity[-1]])
 
 smoother = picmi.BinomialSmoother( n_pass = [1, 1, 1],
                                    compensation = [False, False, False] )
@@ -171,13 +169,12 @@ part_diag_lab = picmi.LabFrameParticleDiagnostic(grid = grid,
 sim = picmi.Simulation(solver = solver,
                        max_steps = max_steps,
                        gamma_boost = gamma_boost,
-                       verbose = 1,
-                       cfl = 1.0 )
+                       verbose = 1 )
 
 sim.add_species(electrons, layout=picmi.GriddedLayout(grid=grid, n_macroparticle_per_cell=plasma_number_per_cell_each_dim))
 sim.add_species(ions, layout=picmi.GriddedLayout(grid=grid, n_macroparticle_per_cell=plasma_number_per_cell_each_dim))
 sim.add_species(beam, layout=picmi.GriddedLayout(grid=grid, n_macroparticle_per_cell=beam_number_per_cell_each_dim),
-                                                 initialize_self_field = True)
+                                                 initialize_self_field=True)
 
 laser_antenna = picmi.LaserAntenna(position = [0., 0., laser_antenna_z],  # This point is on the laser plane
                                    normal_vector = [0., 0., 1.])  # The plane normal direction

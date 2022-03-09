@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # This should be the only line that needs to be changed for different codes
 # e.g. `from pywarpx import picmi`
 #      `from fbpic import picmi`

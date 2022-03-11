@@ -55,7 +55,12 @@ class _ClassWithInit(object):
         pass
 
     def _check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
-        """Raise a warning or exception for an unsupported argument."""
+        """Raise a warning or exception for an unsupported argument.
+         - arg_name: The name of the unsupported argument (string)
+         - extra_info: Extra information to include in the warning/error message (string)
+         - raise_error: If False (the default), raise a warning. If true, raise an exception
+                        (which interrupts the code).
+        """
         # --- Implementation note: This should be called in the "init" method of the implementing
         # --- class for each unsupported argument. For example, for the 'density_scale' argument of Species:
         # ---     self._check_unsupported_argument('density_scale', extra_info='My code can not handle a density_scale')
@@ -74,7 +79,12 @@ class _ClassWithInit(object):
                 warnings.warn(message)
 
     def _unsupported_value(self, arg_name, extra_info='', raise_error=True):
-        """Raise a warning or exception for argument with an unsupported value."""
+        """Raise a warning or exception for argument with an unsupported value.
+         - arg_name: The name of the argument with an unsupported value (string)
+         - extra_info: Extra information to include in the warning/error message (string)
+         - raise_error: If False (the default), raise a warning. If true, raise an exception
+                        (which interrupts the code).
+        """
         # --- Implementation note: This should be called when the implementing code handles
         # --- the input arguments. For example, for 'method' in Species:
         # ---     if self.method not in ['Boris', 'Li']:

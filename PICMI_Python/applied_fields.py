@@ -13,31 +13,24 @@ from .base import _ClassWithInit
 class PICMI_ConstantAppliedField(_ClassWithInit):
     """
     Describes a constant applied field
+      - Ex: Constant Ex field (float) [V/m]
+      - Ey: Constant Ey field (float) [V/m]
+      - Ez: Constant Ez field (float) [V/m]
+      - Bx: Constant Bx field (float) [T]
+      - By: Constant By field (float) [T]
+      - Bz: Constant Bz field (float) [T]
+      - lower_bound: Lower bound of the region where the field is applied (vector) [m]
+      - upper_bound: Upper bound of the region where the field is applied (vector) [m]
     """
 
     Ex = None
-    """Constant Ex field (float) [V/m]"""
-
     Ey = None
-    """Constant Ey field (float) [V/m]"""
-
     Ez = None
-    """Constant Ez field (float) [V/m]"""
-
     Bx = None
-    """Constant Bx field (float) [T]"""
-
     By = None
-    """Constant By field (float) [T]"""
-
     Bz = None
-    """Constant Bz field (float) [T]"""
-
-    lower_bound=[None, None, None]
-    """Lower bound of the region where the field is applied (vector) [m]"""
-
-    upper_bound=[None, None, None]
-    """Upper bound of the region where the field is applied (vector) [m]"""
+    lower_bound = [None, None, None]
+    upper_bound = [None, None, None]
 
 
 class PICMI_AnalyticAppliedField(_ClassWithInit):

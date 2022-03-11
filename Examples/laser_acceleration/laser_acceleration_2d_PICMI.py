@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 # 2D version of the LWFA example, provided for quick debugging
 # This should be the only line that needs to be changed for different codes
 # e.g. `from pywarpx import picmi`
 #      `from fbpic import picmi`
 #      `from warp import picmi`
-from fbpic import picmi
+from plasmacode import picmi
 
 # Create alias fror constants
 cst = picmi.constants

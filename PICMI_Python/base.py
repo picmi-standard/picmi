@@ -55,7 +55,7 @@ class _ClassWithInit(object):
         pass
 
     def _check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
-        """Raise a warning or exception for an unsupported argument.
+        """Raise a warning or exception if an unsupported argument was specified by the user
          - arg_name: The name of the unsupported argument (string)
          - extra_info: Extra information to include in the warning/error message (string)
          - raise_error: If False (the default), raise a warning. If true, raise an exception
@@ -96,4 +96,30 @@ class _ClassWithInit(object):
             raise Exception(message)
         else:
             warnings.warn(message)
+
+    def _check_deprecated_argument(self, arg_name, extra_info=None, raise_error=False):
+        """Raise a warning or exception if a deprecated argument was specified by the user
+         - arg_name: The name of the deprecated argument (string)
+         - extra_info: Extra information to include in the warning/error message (string)
+         - raise_error: If False (the default), raise a warning. If true, raise an exception
+                        (which interrupts the code).
+        """
+        # --- Implementation note: This should be called within PICMI in the "__init__" method of classes
+        # --- for each deprecated argument. This assumes that the argument is still included in the
+        # --- argument list of __init__ as a transition until it is removed.
+        # --- For example, if the 'density_scale' argument of Species was to be deprecated:
+        # ---     self._check_deprecated_argument('density_scale', extra_info='This argument is no longer needed')
+
+        # This compares the value of the parameter with the dault value in the __init__ method.
+        # If they differ, this means that the user supplied a value, so a warning or error is raised.
+        signature = inspect.signature(self.__init__)
+        default_value = signature.parameters[arg_name].default
+        if not (getattr(self, arg_name) == default_value):
+            message = f'{self.__name__}: For argument {arg_name} is not supported.'
+            if extra_info is not None:
+                message += f' {extra_info}'
+            if raise_error:
+                raise Exception(message)
+            else:
+                warnings.warn(message)
 

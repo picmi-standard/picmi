@@ -21,6 +21,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         - 'PSTD': Spectral solver with finite difference in time domain
         - 'PSATD': Spectral solver with analytic in time domain
         - 'GPSTD':
+        - 'DS': Directional Splitting after Yasuhiko Sentoku, doi:10.1140/epjd/e2014-50162-y
         - 'ECT': Enlarged Cell Technique solver, allowing internal conductors
       - stencil_order: Order of stencil for each axis (-1=infinite) (vector of integers)
       - cfl = None: Fraction of the Courant-Friedrich-Lewy criteria [1] (float)

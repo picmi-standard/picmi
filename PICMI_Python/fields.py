@@ -14,15 +14,16 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     """
     Electromagnetic field solver
       - grid: grid object to be used by the solver (grid object)
-      - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD' or 'ECT' (string)
-        - 'Yee': standard solver using the staggered Yee grid
+      - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', or 'ECT' (string)
+        - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
         - 'CKC': solver with the extended Cole-Karkkainen stencil with better dispersion properties
-        - 'Lehe': CKC-style solver with modified dispersion (DOI:10.1103/PhysRevSTAB.16.021301)
+          (https://doi.org/10.1103/PhysRevSTAB.16.041303)
+        - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
         - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
-        - 'PSATD': Spectral solver with analytic in time domain
+        - 'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
         - 'GPSTD':
-        - 'DS': Directional Splitting after Yasuhiko Sentoku, doi:10.1140/epjd/e2014-50162-y
-        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors
+        - 'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
+        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
       - stencil_order: Order of stencil for each axis (-1=infinite) (vector of integers)
       - cfl = None: Fraction of the Courant-Friedrich-Lewy criteria [1] (float)
       - l_nodal = None: Quantities are at nodes if True, staggered otherwise (boolean)
@@ -36,7 +37,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - pml_divB_cleaning = None: Solver uses div(B) cleaning in the PML if True (boolean)
     """
 
-    methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'ECT']
+    methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT']
 
     def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
                  source_smoother=None, field_smoother=None, subcycling=None,

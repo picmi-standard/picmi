@@ -18,7 +18,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         - 'Yee': standard solver using the staggered Yee grid
         - 'CKC': solver with the extended Cole-Karkkainen stencil with better dispersion properties
         - 'Lehe': CKC-style solver with modified dispersion (DOI:10.1103/PhysRevSTAB.16.021301)
-        - 'PSTD': Spectral solver with finite difference in time domain
+        - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
         - 'PSATD': Spectral solver with analytic in time domain
         - 'GPSTD':
         - 'DS': Directional Splitting after Yasuhiko Sentoku, doi:10.1140/epjd/e2014-50162-y

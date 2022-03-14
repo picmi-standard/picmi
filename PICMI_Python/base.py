@@ -56,14 +56,19 @@ class _ClassWithInit(object):
 
     def _check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
         """Raise a warning or exception if an unsupported argument was specified by the user
-         - arg_name: The name of the unsupported argument (string)
-         - extra_info: Extra information to include in the warning/error message (string)
-         - raise_error: If False (the default), raise a warning. If true, raise an exception
-                        (which interrupts the code).
+
+        Implementation note: This should be called in the "init" method of the
+        implementing class for each unsupported argument. For example, for the
+        'density_scale' argument of Species:
+            self._check_unsupported_argument(
+                'density_scale',
+                extra_info='My code can not handle a density_scale')
+
+        - arg_name: The name of the unsupported argument (string)
+        - extra_info: Extra information to include in the warning/error message (string)
+        - raise_error: If False (the default), raise a warning. If true, raise an exception
+                       (which interrupts the code).
         """
-        # --- Implementation note: This should be called in the "init" method of the implementing
-        # --- class for each unsupported argument. For example, for the 'density_scale' argument of Species:
-        # ---     self._check_unsupported_argument('density_scale', extra_info='My code can not handle a density_scale')
 
         # This compares the value of the parameter with the dault value in the __init__ method.
         # If they differ, this means that the user supplied a value, so a warning or error is raised.

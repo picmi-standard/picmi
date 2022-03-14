@@ -430,7 +430,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         if upper_boundary_conditions_particles is None:
             if (bc_rmax_particles is None) and (bc_zmax_particles is None):
                 upper_boundary_conditions_particles = upper_boundary_conditions
-                bc_rmax_particles, bc_zmax_particles = lower_boundary_conditions_particles
+                bc_rmax_particles, bc_zmax_particles = upper_boundary_conditions_particles
             else:
                 upper_boundary_conditions_particles = [bc_rmax_particles, bc_zmax_particles]
         else:

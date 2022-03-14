@@ -16,7 +16,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
       - grid: grid object to be used by the solver (grid object)
       - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', or 'ECT' (string)
         - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
-        - 'CKC': solver with the extended Cole-Karkkainen stencil with better dispersion properties
+        - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
           (https://doi.org/10.1103/PhysRevSTAB.16.041303)
         - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
         - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165

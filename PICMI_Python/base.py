@@ -54,20 +54,21 @@ class _ClassWithInit(object):
         # --- This allows testing for any unused arguments and raising an error if found.
         pass
 
-    def _check_unsupported_argument(self, arg_name, extra_info=None, raise_error=False):
+    def _check_unsupported_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if an unsupported argument was specified by the user
+        - arg_name: The name of the unsupported argument (string)
+        - message: Information to include in the warning/error message (string)
+        - raise_error: If False (the default), raise a warning. If true, raise an exception
+                       (which interrupts the code).
 
         Implementation note: This should be called in the "init" method of the
         implementing class for each unsupported argument. For example, for the
         'density_scale' argument of Species:
+
             self._check_unsupported_argument(
                 'density_scale',
-                extra_info='My code can not handle a density_scale')
+                message='My code can not handle a density_scale')
 
-        - arg_name: The name of the unsupported argument (string)
-        - extra_info: Extra information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
         """
 
         # This compares the value of the parameter with the dault value in the __init__ method.
@@ -76,52 +77,53 @@ class _ClassWithInit(object):
         default_value = signature.parameters[arg_name].default
         if not (getattr(self, arg_name) == default_value):
             message = f'{self.__name__}: For argument {arg_name} is not supported.'
-            if extra_info is not None:
-                message += f' {extra_info}'
+            if message is not None:
+                message += f' {message}'
             if raise_error:
                 raise Exception(message)
             else:
                 warnings.warn(message)
 
-    def _unsupported_value(self, arg_name, extra_info='', raise_error=True):
+    def _unsupported_value(self, arg_name, message='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
-
+        - arg_name: The name of the argument with an unsupported value (string)
+        - message: Information to include in the warning/error message (string)
+        - raise_error: If False (the default), raise a warning. If true, raise an exception
+                       (which interrupts the code).
 
         Implementation note: This should be called when the implementing code handles
         the input arguments. For example, for 'method' in Species:
+
             if self.method not in ['Boris', 'Li']:
                 self._unsupported_value(
                     'method',
-                    extra_info='My code only supports Boris and Li')
+                    message='My code only supports Boris and Li')
 
-        - arg_name: The name of the argument with an unsupported value (string)
-        - extra_info: Extra information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
         """
         message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
-        if extra_info is not None:
-            message += f' {extra_info}'
+        if message is not None:
+            message += f' {message}'
         if raise_error:
             raise Exception(message)
         else:
             warnings.warn(message)
 
-    def _check_deprecated_argument(self, arg_name, extra_info=None, raise_error=False):
+    def _check_deprecated_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if a deprecated argument was specified by the user
+        - arg_name: The name of the deprecated argument (string)
+        - message: Information to include in the warning/error message (string)
+        - raise_error: If False (the default), raise a warning. If true, raise an exception
+                       (which interrupts the code).
 
         Implementation note: This should be called within PICMI in the "__init__" method of classes
         for each deprecated argument. This assumes that the argument is still included in the
         argument list of __init__ as a transition until it is removed.
         For example, if the 'density_scale' argument of Species was to be deprecated:
+
             self._check_deprecated_argument(
                 'density_scale',
-                extra_info='This argument is no longer needed')
+                message='This argument is no longer needed')
 
-        - arg_name: The name of the deprecated argument (string)
-        - extra_info: Extra information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
         """
 
         # This compares the value of the parameter with the dault value in the __init__ method.
@@ -130,8 +132,8 @@ class _ClassWithInit(object):
         default_value = signature.parameters[arg_name].default
         if not (getattr(self, arg_name) == default_value):
             message = f'{self.__name__}: For argument {arg_name} is not supported.'
-            if extra_info is not None:
-                message += f' {extra_info}'
+            if message is not None:
+                message += f' {message}'
             if raise_error:
                 raise Exception(message)
             else:

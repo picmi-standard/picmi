@@ -160,7 +160,7 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx) or a
-    # list of values (such as number_of_cells). However, internally, only the lists are saved and
+    # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
     number_of_dimensions = 1
@@ -321,7 +321,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nr and nz) or a
-    # list of values (such as number_of_cells). However, internally, only the lists are saved and
+    # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
     number_of_dimensions = 2
@@ -482,7 +482,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx and ny) or a
-    # list of values (such as number_of_cells). However, internally, only the lists are saved and
+    # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
     number_of_dimensions = 2
@@ -652,7 +652,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx, ny, and nz) or a
-    # list of values (such as number_of_cells). However, internally, only the lists are saved and
+    # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
     number_of_dimensions = 3

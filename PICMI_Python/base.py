@@ -85,15 +85,20 @@ class _ClassWithInit(object):
 
     def _unsupported_value(self, arg_name, extra_info='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
-         - arg_name: The name of the argument with an unsupported value (string)
-         - extra_info: Extra information to include in the warning/error message (string)
-         - raise_error: If False (the default), raise a warning. If true, raise an exception
-                        (which interrupts the code).
+
+
+        Implementation note: This should be called when the implementing code handles
+        the input arguments. For example, for 'method' in Species:
+            if self.method not in ['Boris', 'Li']:
+                self._unsupported_value(
+                    'method',
+                    extra_info='My code only supports Boris and Li')
+
+        - arg_name: The name of the argument with an unsupported value (string)
+        - extra_info: Extra information to include in the warning/error message (string)
+        - raise_error: If False (the default), raise a warning. If true, raise an exception
+                       (which interrupts the code).
         """
-        # --- Implementation note: This should be called when the implementing code handles
-        # --- the input arguments. For example, for 'method' in Species:
-        # ---     if self.method not in ['Boris', 'Li']:
-        # ---         self._unsupported_value('method', extra_info='My code only supports Boris and Li')
         message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
         if extra_info is not None:
             message += f' {extra_info}'

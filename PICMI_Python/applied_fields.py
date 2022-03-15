@@ -19,24 +19,18 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
       - Bx: Constant Bx field (float) [T]
       - By: Constant By field (float) [T]
       - Bz: Constant Bz field (float) [T]
-      - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
-      - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
+      - lower_bound: Lower bound of the region where the field is applied (vector) [m]
+      - upper_bound: Upper bound of the region where the field is applied (vector) [m]
     """
-    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
 
-        self.Ex = Ex
-        self.Ey = Ey
-        self.Ez = Ez
-        self.Bx = Bx
-        self.By = By
-        self.Bz = Bz
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-        self.handle_init(kw)
+    Ex = None
+    Ey = None
+    Ez = None
+    Bx = None
+    By = None
+    Bz = None
+    lower_bound = [None, None, None]
+    upper_bound = [None, None, None]
 
 
 class PICMI_AnalyticAppliedField(_ClassWithInit):

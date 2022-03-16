@@ -4,6 +4,7 @@ import inspect
 import warnings
 import typing
 from collections.abc import Sequence
+import re
 
 
 codename = None
@@ -31,15 +32,28 @@ def _get_constants():
 
 VectorFloat3 = typing.NewType('VectorFloat3', Sequence[float])
 VectorInt3 = typing.NewType('VectorFloat3', Sequence[int])
+Expression = typing.NewType('Expression', str)
 
 class _ClassWithInit(object):
     def _check_vector_lengths(self):
         for arg_name, arg_type in self.__init__.__annotations__.items():
             if arg_type in [VectorFloat3, VectorInt3]:
-                assert len(getattr(self, arg_name)) == 3, Exception(f'{arg_name} must have a length of 3')
+                arg_value = getattr(self, arg_name)
+                assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
+
+    def _check_expressions(self, kw):
+        for arg_name, arg_type in self.__init__.__annotations__.items():
+            if arg_type == Expression:
+                self.user_defined_kw = getattr(self, 'user_defined_kw', {})
+                arg_value = getattr(self, arg_name)
+                if arg_value is not None:
+                    for k in list(kw.keys()):
+                        if re.search(r'\b%s\b'%k, arg_value):
+                            self.user_defined_kw[k] = kw.pop(k)
 
     def handle_init(self, kw):
         self._check_vector_lengths()
+        self._check_expressions(kw)
 
         # --- Grab all keywords for the current code.
         # --- Arguments for other supported codes are ignored.

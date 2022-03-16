@@ -21,7 +21,7 @@ class Test_ClassWithInit(unittest.TestCase):
         # used as static constant (though they dont actually exist in python)
         ERRORMSG = "apples-hammer-red"
 
-        def check(self) -> None:
+        def _check(self) -> None:
             self.check_counter += 1
             # note: assign a specific message to assert for this exact
             # exception in tests
@@ -90,16 +90,25 @@ class Test_ClassWithInit(unittest.TestCase):
         d = self.PlaceholderClass(mandatory_attr="x")
         self.assertEqual("x", d.mandatory_attr)
 
-    def test_no_typechecks(self):
-        """no typechecks, explicit type annotations are rejected"""
+    def test_typechecks(self):
+        """typechecks only in check()"""
         class WithTypecheck(picmistandard.base._ClassWithInit):
             attr: str
             num: int = 0
 
-        with self.assertRaises(SyntaxError):
-            # must complain purely b/c typecheck is *there*
-            # (even if it would enforceable)
-            WithTypecheck(attr="d", num=2)
+        w = WithTypecheck(attr="d", num=2)
+
+        # can overwrite vars, but then check fails
+        w.attr = None
+        with self.assertRaisesRegex(TypeError, ".*str.*"):
+            w.check()
+
+        # also checks in constructor:
+        with self.assertRaisesRegex(TypeError, ".*str.*"):
+            WithTypecheck(attr=7283)
+
+        with self.assertRaisesRegex(TypeError, ".*int.*"):
+            WithTypecheck(attr="", num=123.3)
 
     def test_protected(self):
         """protected args may *never* be accessed"""

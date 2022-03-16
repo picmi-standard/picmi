@@ -162,18 +162,48 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
       - centroid_velocity=[0,0,0]: Velocity (gamma*V) of the bunch centroid at t=0 (vector) [m/s]
       - velocity_divergence=[0,0,0]: Expansion rate of the bunch at t=0 (vector) [m/s/m]
     """
-    def __init__(self,n_physical_particles, rms_bunch_size,
-                 rms_velocity = [0.,0.,0.],
-                 centroid_position = [0.,0.,0.],
-                 centroid_velocity = [0.,0.,0.],
-                 velocity_divergence = [0.,0.,0.],
+    def __init__(self,n_physical_particles = None, density = None, rms_bunch_size,
+                 rms_velocity = None,
+                 centroid_position = None,
+                 centroid_velocity = None,
+                 velocity_divergence = None,
                  **kw):
+        
+        assert n_physical_particles is not None or density is not None, 'One of n_physical_particles or density must be speficied'
+
+        if n_physical_particles is None:
+            if rms_bunch_size.size==3:
+                n_physical_particles = np.prod(rms_bunch_size)*(np.pi*2)**1.5*density
+            if rms_bunch_size.size==2:
+                n_physical_particles = rms_bunch_size[0]**2*rms_bunch_size[1]*(np.pi*2)**1.5*density
+
+        if density is None:
+            if rms_bunch_size.size==3:
+                density = n_physica_particles/ (np.prod(rms_bunch_size)*(np.pi*2)**1.5)
+            if rms_bunch_size.size==2:
+                density = n_physical_particles/ (rms_bunch_size[0]**2*rms_bunch_size[1]*(np.pi*2)**1.5)
+
+
+
         self.n_physical_particles = n_physical_particles
         self.rms_bunch_size = rms_bunch_size
-        self.rms_velocity = rms_velocity
-        self.centroid_position = centroid_position
-        self.centroid_velocity = centroid_velocity
-        self.velocity_divergence = velocity_divergence
+        if(centroid_position is None):
+            self.centroid_position = np.zeros(rms_bunch_size.size)
+        else:
+            self.centroid_position = centroid_position
+        if(centroid_velocity is None):
+            self.centroid_velocity = np.zeros(rms_bunch_size.size)
+        else:
+            self.centroid_velocity = centroid_velocity
+        if(velocity_divergence is None):
+            self.velocity_divergence = np.zeros(rms_bunch_size.size)
+        else:
+            self.velocity_divergence = velocity_divergence
+        if(rms_velocity is None):
+            self.rms_velocity = np.zeros(rms_bunch_size.size)
+        else:
+            self.rms_velocity = rms_velocity
+        
 
         self.handle_init(kw)
 

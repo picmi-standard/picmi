@@ -2,14 +2,20 @@
 These should be the base classes for Python implementation of the PICMI standard
 """
 import re
+import typing
+from collections.abc import Sequence
 
-from .base import _ClassWithInit
+from autoclass import autoargs
+from typeguard import typechecked
+
+from .base import _ClassWithInit, VectorFloat3
 
 # ---------------
 # Applied fields
 # ---------------
 
 
+@typechecked
 class PICMI_ConstantAppliedField(_ClassWithInit):
     """
     Describes a constant applied field
@@ -22,19 +28,16 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
       - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """
-    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
-
-        self.Ex = Ex
-        self.Ey = Ey
-        self.Ez = Ez
-        self.Bx = Bx
-        self.By = By
-        self.Bz = Bz
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
+    @autoargs(exclude=['kw'])
+    def __init__(self, Ex : float = None,
+                       Ey : float = None,
+                       Ez : float = None,
+                       Bx : float = None,
+                       By : float = None,
+                       Bz : float = None,
+                       lower_bound : VectorFloat3 = [None,None,None],
+                       upper_bound : VectorFloat3 = [None,None,None],
+                       **kw):
 
         self.handle_init(kw)
 

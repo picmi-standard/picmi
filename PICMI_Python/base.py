@@ -2,6 +2,9 @@
 """
 import inspect
 import warnings
+import typing
+from collections.abc import Sequence
+
 
 codename = None
 
@@ -26,8 +29,18 @@ def register_constants(implementation_constants):
 def _get_constants():
     return _implementation_constants
 
+VectorFloat3 = typing.NewType('VectorFloat3', Sequence[float])
+VectorInt3 = typing.NewType('VectorFloat3', Sequence[int])
+
 class _ClassWithInit(object):
+    def _check_vector_lengths(self):
+        for arg_name, arg_type in self.__init__.__annotations__.items():
+            if arg_type in [VectorFloat3, VectorInt3]:
+                assert len(getattr(self, arg_name)) == 3, Exception(f'{arg_name} must have a length of 3')
+
     def handle_init(self, kw):
+        self._check_vector_lengths()
+
         # --- Grab all keywords for the current code.
         # --- Arguments for other supported codes are ignored.
         # --- If there is anything left over, it is an error.

@@ -114,6 +114,8 @@ class _ClassWithInit:
         work on the data is performed.
 
         When this method passes it guarantees that self is conforming to PICMI.
+        This includes all children (should there be any) -- their check()
+        method should be called from this method.
 
         When it is not overwritten, it is replaced by this empty parent method.
         """

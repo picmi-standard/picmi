@@ -11,6 +11,22 @@ class Test_ClassWithInit(unittest.TestCase):
         optional = None
         _protected = 1
 
+    class PlaceholderCheckTracer(picmistandard.base._ClassWithInit):
+        """
+        used to demonstrate the check interface
+        """
+        check_pass = True
+        check_counter = 0
+
+        # used as static constant (though they dont actually exist in python)
+        ERRORMSG = "apples-hammer-red"
+
+        def check(self) -> None:
+            self.check_counter += 1
+            # note: assign a specific message to assert for this exact
+            # exception in tests
+            assert self.check_pass, self.ERRORMSG
+
     def setUp(self):
         picmistandard.register_codename("placeholderpic")
 
@@ -96,3 +112,50 @@ class Test_ClassWithInit(unittest.TestCase):
         # ... this is evil, never do this!
         d._protected = 3
         self.assertEqual(3, d._protected)
+
+    def test_check_basic(self):
+        """simple demonstration of check() interface"""
+        # passes
+        check_tracer = self.PlaceholderCheckTracer()
+        check_tracer.check()
+
+        # make check() fail:
+        check_tracer.check_pass = False
+        with self.assertRaises(AssertionError,
+                               self.PlaceholderCheckTracer.ERRORMSG):
+            check_tracer.check()
+
+        with self.assertRaises(AssertionError,
+                               self.PlaceholderCheckTracer.ERRORMSG):
+            self.PlaceholderCheckTracer(check_pass=False)
+
+    def test_empty(self):
+        """empty object works"""
+        class PlaceholderEmpty(picmistandard.base._ClassWithInit):
+            pass
+
+        # both just pass
+        empty = PlaceholderEmpty()
+        empty.check()
+
+    def test_check_optional(self):
+        """implementing check() is not required"""
+        class PlaceholderNoCheck():
+            attr = 3
+
+        no_check = PlaceholderNoCheck()
+        # method exists & passes
+        no_check.check()
+
+    def test_check_in_init(self):
+        """check called from constructor"""
+        check_tracer = self.PlaceholderCheckTracer()
+        # counter is already one
+        self.assertEqual(1, check_tracer.check_counter)
+
+        # ... even if its default is zero
+        self.assertEqual(0, check_tracer.__class__.__dict__["check_counter"])
+
+        # one more call -> counter increased by one
+        check_tracer.check()
+        self.assertEqual(2, check_tracer.check_counter)

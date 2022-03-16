@@ -15,8 +15,9 @@ class Test_ClassWithInit(unittest.TestCase):
         """
         used to demonstrate the check interface
         """
-        check_pass = True
+        check_pass: bool = True
         check_counter = 0
+        must_be_str: str = ""
 
         # used as static constant (though they dont actually exist in python)
         ERRORMSG = "apples-hammer-red"
@@ -153,8 +154,10 @@ class Test_ClassWithInit(unittest.TestCase):
             attr = 3
 
         no_check = PlaceholderNoCheck()
-        # method exists & passes
-        no_check.check()
+        # method exists & passes -- no matter the attribute value
+        for value in [1, None, {}, [], ""]:
+            no_check.attr = value
+            no_check.check()
 
     def test_check_in_init(self):
         """check called from constructor"""
@@ -168,3 +171,56 @@ class Test_ClassWithInit(unittest.TestCase):
         # one more call -> counter increased by one
         check_tracer.check()
         self.assertEqual(2, check_tracer.check_counter)
+
+    def test_default_invalid_type(self):
+        """raises if default variable has invalid type"""
+        class PlaceholderInvalidDefaultType(picmistandard.base._ClassWithInit):
+            my_str_attr: str = None
+
+        with self.assertRaisesRegex(TypeError, ".*default.*my_str_attr.*"):
+            PlaceholderInvalidDefaultType()
+
+    def test_check_order(self):
+        """_check() is only called if typechecks pass"""
+        check_tracer = self.PlaceholderCheckTracer()
+
+        cnt_old = check_tracer.check_counter
+
+        # check will now fail *every time* when called
+        check_tracer.check_pass = False
+
+        # make type check break
+        check_tracer.must_be_str = None
+        with self.assertRaises(TypeError):
+            check_tracer.check()
+
+        # typecheck failed before _check() could be called
+        # -> counter at old state
+        self.asertEqual(cnt_old, check_tracer.check_counter)
+
+        # when the type checks pass, _check is called (which fails)
+        check_tracer.must_be_str = ""
+        with self.assertRaisesRegex(AssertionError,
+                                    self.PlaceholderCheckTracer.ERRORMSG):
+            check_tracer.check()
+
+        # counter increased
+        self.assertEqual(cnt_old + 1, check_tracer.check_counter)
+
+    def test_attribute_optional(self):
+        """attributes can be (explicitly) made optional"""
+        class PlaceholderOptionalAttrs(picmistandard.base._ClassWithInit):
+            mandatory: str
+            num_with_default: float = 3
+            optional_name: typing.Optional[str] = None
+
+        poa = PlaceholderOptionalAttrs(mandatory="", optional_name="foo")
+        # optional_name can be set to none, and still passes:
+        poa.optional_name = None
+        poa.check()
+
+        # but removing the mandatory arg raises:
+        poa.mandatory = None
+        with self.assertRaises(TypeError):
+            # note: type error b/c NoneType != str
+            poa.check()

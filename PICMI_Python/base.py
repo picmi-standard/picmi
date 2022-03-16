@@ -108,10 +108,27 @@ class _ClassWithInit:
         """
         checks self, raises on error, passes silently if okay
 
-        Should be overwritten by child class.
+        ! MUST NOT BE OVERWRITTEN !
+        -> overwrite _check() (note the leading _) instead
+
+        Performs the following checks:
+        1. The type of all attributes are checked against their type
+           annotations (if present). On error a TypeError is raised.
+        2. If (and only if) the typechecks passed the custom-overwriteable
+           method _check() is called.
 
         Will be called inside of __init__(), and should be called before any
         work on the data is performed.
+        """
+        self._check()
+
+    def _check(self) -> None:
+        """
+        run checks that are not typechecks
+
+        Should be overwritten by child class.
+
+        Will be called from check(), and thereby from __init__().
 
         When this method passes it guarantees that self is conforming to PICMI.
         This includes all children (should there be any) -- their check()

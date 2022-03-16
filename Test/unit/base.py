@@ -224,3 +224,40 @@ class Test_ClassWithInit(unittest.TestCase):
         with self.assertRaises(TypeError):
             # note: type error b/c NoneType != str
             poa.check()
+
+    def test_dict_cast(self):
+        """object can be cast to dict"""
+        # this checks if a quirk of python is circumvented:
+        # if you provide a default value for a class attribute, e.g.
+        # >>> class MyClass:
+        # ...   attr = 2
+        # will result in
+        # >>> 2 == MyClass().attr
+        # True
+        #
+        # However, when casting the *instance* to a dictionary,
+        # this variable will be missing:
+        #
+        # >>> myobject = MyClass()
+        # >>> myobject.__dict__
+        # {}
+        #
+        # only after explicitly setting the attribute will it become available:
+        # >>> myobject.attr = myobject.attr
+        # >>> myobject.__dict__
+        # {'attr': 2}
+        #
+        # To aid serialization, we expect the __dict__ cast after construction
+        # to be complete, e.g. for making class variables available in free
+        # expressions.
+
+        class MockWithDefaults(picmistandard.base._ClassWithInit):
+            is_one = 1
+            empty_str = ""
+            empty_list = []
+
+        mock_object = MockWithDefaults()
+        self.assertEqual(mock_object.__dict__,
+                         {"is_one": 1,
+                          "empty_str": "",
+                          "empty_list": []})

@@ -104,6 +104,22 @@ class _ClassWithInit:
                 raise SyntaxError(
                     f"type hints not supported, use typing.Any for {arg_name}")
 
+    def check(self) -> None:
+        """
+        checks self, raises on error, passes silently if okay
+
+        Should be overwritten by child class.
+
+        Will be called inside of __init__(), and should be called before any
+        work on the data is performed.
+
+        When this method passes it guarantees that self is conforming to PICMI.
+
+        When it is not overwritten, it is replaced by this empty parent method.
+        """
+        # parent implementation: just pass
+        pass
+
     def __init__(self, **kw):
         """
         parse kw and set class attributes accordingly
@@ -116,7 +132,6 @@ class _ClassWithInit:
         """
         self.__check_type_annotations()
 
-        mandatory = self.__get_mandatory_attrs()
         mandatory_missing = self.__get_mandatory_attrs() - kw.keys()
         if 0 != len(mandatory_missing):
             raise RuntimeError(
@@ -126,3 +141,6 @@ class _ClassWithInit:
         for name, value in kw.items():
             self.__check_arg_valid(name)
             setattr(self, name, value)
+
+        # perform self-check -> will alert for invalid params
+        self.check()

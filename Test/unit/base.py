@@ -121,12 +121,12 @@ class Test_ClassWithInit(unittest.TestCase):
 
         # make check() fail:
         check_tracer.check_pass = False
-        with self.assertRaises(AssertionError,
-                               self.PlaceholderCheckTracer.ERRORMSG):
+        with self.assertRaisesRegex(AssertionError,
+                                    self.PlaceholderCheckTracer.ERRORMSG):
             check_tracer.check()
 
-        with self.assertRaises(AssertionError,
-                               self.PlaceholderCheckTracer.ERRORMSG):
+        with self.assertRaisesRegex(AssertionError,
+                                    self.PlaceholderCheckTracer.ERRORMSG):
             self.PlaceholderCheckTracer(check_pass=False)
 
     def test_empty(self):
@@ -140,7 +140,7 @@ class Test_ClassWithInit(unittest.TestCase):
 
     def test_check_optional(self):
         """implementing check() is not required"""
-        class PlaceholderNoCheck():
+        class PlaceholderNoCheck(picmistandard.base._ClassWithInit):
             attr = 3
 
         no_check = PlaceholderNoCheck()

@@ -30,9 +30,11 @@ def register_constants(implementation_constants):
 def _get_constants():
     return _implementation_constants
 
+
 VectorFloat3 = typing.NewType('VectorFloat3', Sequence[float])
-VectorInt3 = typing.NewType('VectorFloat3', Sequence[int])
+VectorInt3 = typing.NewType('VectorInt3', Sequence[int])
 Expression = typing.NewType('Expression', str)
+
 
 class _ClassWithInit(object):
     def _check_vector_lengths(self):
@@ -41,9 +43,13 @@ class _ClassWithInit(object):
                 arg_value = getattr(self, arg_name)
                 assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
 
-    def _check_expressions(self, kw):
+    def _process_expression_arguments(self, kw):
+        """For arguments that are of type Expression, save any keyword arguments used in
+        the expression in the user_defined_kw dictionary.
+        """
         for arg_name, arg_type in self.__init__.__annotations__.items():
             if arg_type == Expression:
+                # Create the dictionary is needed
                 self.user_defined_kw = getattr(self, 'user_defined_kw', {})
                 arg_value = getattr(self, arg_name)
                 if arg_value is not None:
@@ -53,7 +59,7 @@ class _ClassWithInit(object):
 
     def handle_init(self, kw):
         self._check_vector_lengths()
-        self._check_expressions(kw)
+        self._process_expression_arguments(kw)
 
         # --- Grab all keywords for the current code.
         # --- Arguments for other supported codes are ignored.

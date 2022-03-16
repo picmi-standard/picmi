@@ -196,7 +196,7 @@ class Test_ClassWithInit(unittest.TestCase):
 
         # typecheck failed before _check() could be called
         # -> counter at old state
-        self.asertEqual(cnt_old, check_tracer.check_counter)
+        self.assertEqual(cnt_old, check_tracer.check_counter)
 
         # when the type checks pass, _check is called (which fails)
         check_tracer.must_be_str = ""

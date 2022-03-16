@@ -2,6 +2,7 @@
 """
 
 import typing
+import typeguard
 
 codename = None
 
@@ -33,8 +34,9 @@ class _ClassWithInit:
 
     Non-given attributes are left untouched (i.e. at their default).
 
-    Attributes can be marked as mandatory by adding a type annotation
-    `typing.Any`; any other type annotation will be rejected.
+    Attributes can be marked as mandatory by adding a type annotation.
+    Type annotations are enforced by check(), i.e. normal assignments for
+    attributes with wrong types still work.
 
     Arguments that are prefixed with codename and underscore _ will be
     accepted, as well as equivalent prefixes for other supported codes.
@@ -95,15 +97,6 @@ class _ClassWithInit:
         # ignore those with default values
         return set(has_type_annotion - self_type.__dict__.keys())
 
-    def __check_type_annotations(self) -> None:
-        """
-        enforce that only typing.Any is used as type annotation
-        """
-        for arg_name, annotation in typing.get_type_hints(type(self)).items():
-            if annotation != typing.Any:
-                raise SyntaxError(
-                    f"type hints not supported, use typing.Any for {arg_name}")
-
     def check(self) -> None:
         """
         checks self, raises on error, passes silently if okay
@@ -120,7 +113,34 @@ class _ClassWithInit:
         Will be called inside of __init__(), and should be called before any
         work on the data is performed.
         """
+        for arg_name, annotation in typing.get_type_hints(type(self)).items():
+            # perform type check: will raise on error
+            typeguard.check_type(arg_name,
+                                 getattr(self, arg_name),
+                                 annotation)
+
         self._check()
+
+    def __check_types_of_defaults(self) -> None:
+        """
+        run typechecks for defaults
+
+        Ensures that defaults for attributes conform to their type annotations.
+        Passes silently if okay, else raises type error.
+        """
+        for arg_name, annotation in typing.get_type_hints(type(self)).items():
+            if arg_name not in type(self).__dict__:
+                # there is no default -> skip loop iteration
+                continue
+            default_value = type(self).__dict__[arg_name]
+            # perform type check: will raise on error
+            try:
+                typeguard.check_type(arg_name, default_value, annotation)
+            except TypeError:
+                # replace by custom message
+                actual_type = type(default_value)
+                raise TypeError(f"default value for {arg_name} must be of "
+                                "type {annotation}, but got {actual_type}")
 
     def _check(self) -> None:
         """
@@ -149,13 +169,13 @@ class _ClassWithInit:
         (Constructors MUST NOT exhibit unpredictable behavior==behavior
         different from the one specified here.)
         """
-        self.__check_type_annotations()
-
         mandatory_missing = self.__get_mandatory_attrs() - kw.keys()
         if 0 != len(mandatory_missing):
             raise RuntimeError(
                 "mandatory attributes are missing: {}"
                 .format(", ".join(mandatory_missing)))
+
+        self.__check_types_of_defaults()
 
         for name, value in kw.items():
             self.__check_arg_valid(name)

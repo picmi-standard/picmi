@@ -7,7 +7,6 @@ from collections.abc import Sequence
 import re
 
 import numpy as np
-import numpy.typing as npt
 
 
 codename = None
@@ -34,8 +33,8 @@ def _get_constants():
     return _implementation_constants
 
 
-VectorFloat3 = typing.NewType('VectorFloat3', typing.Union[Sequence[float], npt.NDArray[np.float64]])
-VectorInt3 = typing.NewType('VectorInt3', typing.Union[Sequence[int], npt.NDArray[np.int64]])
+VectorFloat3 = typing.NewType('VectorFloat3', typing.Union[Sequence[float], np.ndarray[3, np.float64]])
+VectorInt3 = typing.NewType('VectorInt3', typing.Union[Sequence[int], np.ndarray[3, np.int64]])
 Expression = typing.NewType('Expression', str)
 
 

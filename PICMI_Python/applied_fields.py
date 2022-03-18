@@ -3,7 +3,6 @@ These should be the base classes for Python implementation of the PICMI standard
 """
 import re
 import typing
-from collections.abc import Sequence
 
 from autoclass import autoargs
 from typeguard import typechecked

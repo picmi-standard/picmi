@@ -11,15 +11,7 @@ from typeguard import typechecked
 from .base import _ClassWithInit
 from . import fields
 from . import particles
-
-GridType = typing.NewType('GridType', typing.Union[fields.PICMI_Cartesian1DGrid,
-                                                   fields.PICMI_CylindricalGrid,
-                                                   fields.PICMI_Cartesian2DGrid,
-                                                   fields.PICMI_Cartesian3DGrid])
-
-SpeciesType = typing.NewType('SpeciesType', typing.Union[particles.PICMI_Species,
-                                                         particles.PICMI_MultiSpecies])
-SpeciesArgument = typing.NewType('SpeciesArgument', typing.Union[SpeciesType, Sequence[SpeciesType]])
+from . import picmi_types
 
 
 # ----------------------------
@@ -51,7 +43,7 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
 
     """
     @autoargs(exclude=['kw'])
-    def __init__(self, grid : GridType,
+    def __init__(self, grid : picmi_types.GridType,
                        period : int,
                        data_list : Sequence[str] = None,
                        write_dir : str = None,
@@ -100,7 +92,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
       - name: Sets the base name for the diagnostic output files (optional)
     """
     @autoargs(exclude=['kw'])
-    def __init__(self, grid : GridType,
+    def __init__(self, grid : picmi_types.GridType,
                        period : int,
                        data_list : Sequence[str] = None,
                        write_dir : str = None,
@@ -146,7 +138,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
 
     @autoargs(exclude=['kw'])
     def __init__(self, period : int,
-                       species : SpeciesArgument,
+                       species : picmi_types.SpeciesArgument,
                        data_list : Sequence[str] = None,
                        write_dir : str = None,
                        step_min : int = None,
@@ -179,7 +171,7 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
       - name: Sets the base name for the diagnostic output files (optional)
     """
     @autoargs(exclude=['kw'])
-    def __init__(self, grid : GridType,
+    def __init__(self, grid : picmi_types.GridType,
                        num_snapshots : int,
                        dt_snapshots : float,
                        data_list : Sequence[str] = None,
@@ -210,12 +202,12 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
       - name: Sets the base name for the diagnostic output files (optional)
     """
     @autoargs(exclude=['kw'])
-    def __init__(self, grid : GridType,
+    def __init__(self, grid : picmi_types.GridType,
                        num_snapshots : int,
                        dt_snapshots : float,
                        data_list : Sequence[str] = None,
                        time_start : float = 0.,
-                       species : SpeciesArgument = None,
+                       species : picmi_types.SpeciesArgument = None,
                        write_dir : str = None,
                        parallelio : bool = None,
                        name : str = None,

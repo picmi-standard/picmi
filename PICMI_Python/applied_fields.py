@@ -7,7 +7,8 @@ import typing
 from autoclass import autoargs
 from typeguard import typechecked
 
-from .base import _ClassWithInit, VectorFloat3, Expression
+from .base import _ClassWithInit
+from . import picmi_types
 
 # ---------------
 # Applied fields
@@ -34,8 +35,8 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
                        Bx : float = None,
                        By : float = None,
                        Bz : float = None,
-                       lower_bound : VectorFloat3 = [None,None,None],
-                       upper_bound : VectorFloat3 = [None,None,None],
+                       lower_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       upper_bound : picmi_types.VectorFloat3 = [None,None,None],
                        **kw):
 
         self.handle_init(kw)
@@ -58,14 +59,14 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """
     @autoargs(exclude=['kw'])
-    def __init__(self, Ex_expression : Expression = None,
-                       Ey_expression : Expression = None,
-                       Ez_expression : Expression = None,
-                       Bx_expression : Expression = None,
-                       By_expression : Expression = None,
-                       Bz_expression : Expression = None,
-                       lower_bound : VectorFloat3 = [None,None,None],
-                       upper_bound : VectorFloat3 = [None,None,None],
+    def __init__(self, Ex_expression : picmi_types.Expression = None,
+                       Ey_expression : picmi_types.Expression = None,
+                       Ez_expression : picmi_types.Expression = None,
+                       Bx_expression : picmi_types.Expression = None,
+                       By_expression : picmi_types.Expression = None,
+                       Bz_expression : picmi_types.Expression = None,
+                       lower_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       upper_bound : picmi_types.VectorFloat3 = [None,None,None],
                        **kw):
 
         self.handle_init(kw)

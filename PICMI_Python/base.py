@@ -8,6 +8,8 @@ import re
 
 import numpy as np
 
+from . import picmi_types
+
 
 codename = None
 
@@ -33,15 +35,10 @@ def _get_constants():
     return _implementation_constants
 
 
-VectorFloat3 = typing.NewType('VectorFloat3', typing.Union[Sequence[float], np.ndarray[3, np.float64]])
-VectorInt3 = typing.NewType('VectorInt3', typing.Union[Sequence[int], np.ndarray[3, np.int64]])
-Expression = typing.NewType('Expression', str)
-
-
 class _ClassWithInit(object):
     def _check_vector_lengths(self):
         for arg_name, arg_type in self.__init__.__annotations__.items():
-            if arg_type in [VectorFloat3, VectorInt3]:
+            if arg_type in [picmi_types.VectorFloat3, picmi_types.VectorInt3]:
                 arg_value = getattr(self, arg_name)
                 assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
 
@@ -50,10 +47,17 @@ class _ClassWithInit(object):
         the expression in the user_defined_kw dictionary.
         """
         for arg_name, arg_type in self.__init__.__annotations__.items():
-            if arg_type == Expression:
-                # Create the dictionary is needed
-                self.user_defined_kw = getattr(self, 'user_defined_kw', {})
+            if arg_type == picmi_types.Expression:
+
                 arg_value = getattr(self, arg_name)
+
+                # --- Remove any line feeds from the expression
+                if arg_value is not None:
+                    arg_value = arg_value.replace('\n', '')
+                    setattr(self, arg_name, arg_value)
+
+                # --- The dictionary is created if needed
+                self.user_defined_kw = getattr(self, 'user_defined_kw', {})
                 if arg_value is not None:
                     for k in list(kw.keys()):
                         if re.search(r'\b%s\b'%k, arg_value):

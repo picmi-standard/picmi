@@ -3,13 +3,24 @@ This should be the base classes for Python implementation of the PICMI standard
 """
 import math
 import sys
+import typing
+
+from autoclass import autoargs
+from typeguard import typechecked
 
 from .base import _ClassWithInit
+from . import fields
+from . import particles
+from . import diagnostics
+from . import lasers
+from . import diagnostics
+from . import picmi_types
 
 # ---------------------
 # Main simulation object
 # ---------------------
 
+@typechecked
 class PICMI_Simulation(_ClassWithInit):
     """
     Creates a Simulation object
@@ -47,16 +58,17 @@ class PICMI_Simulation(_ClassWithInit):
         Code specific arguments ; should be prefixed with the `codename`
     """
 
-    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', gamma_boost=None, cpu_split=None, load_balancing=None, **kw):
-
-        self.solver = solver
-        self.time_step_size = time_step_size
-        self.verbose = verbose
-        self.max_steps = max_steps
-        self.max_time = max_time
-        self.particle_shape = particle_shape
-        self.gamma_boost = gamma_boost
+    @autoargs(exclude=['kw'])
+    def __init__(self, solver : picmi_types.SolverType = None,
+                       time_step_size : float = None,
+                       max_steps : int = None,
+                       max_time : float = None,
+                       verbose : int = None,
+                       particle_shape : str = 'linear',
+                       gamma_boost : float = None,
+                       cpu_split : bool = None,
+                       load_balancing : bool = None,
+                       **kw):
 
         self.species = []
         self.layouts = []
@@ -71,12 +83,11 @@ class PICMI_Simulation(_ClassWithInit):
 
         self.diagnostics = []
 
-        self.cpu_split = cpu_split
-        self.load_balancing = load_balancing
-
         self.handle_init(kw)
 
-    def add_species(self, species, layout, initialize_self_field=None):
+    def add_species(self, species : picmi_types.SpeciesType,
+                          layout : picmi_types.LayoutType,
+                          initialize_self_field : bool = None):
         """
         Add species to be used in the simulation
 
@@ -102,9 +113,11 @@ class PICMI_Simulation(_ClassWithInit):
         self.injection_plane_normal_vectors.append(None)
 
 
-    def add_species_through_plane(self, species, layout,
-        injection_plane_position, injection_plane_normal_vector,
-        initialize_self_field=None ):
+    def add_species_through_plane(self, species : picmi_types.SpeciesType,
+                                        layout : picmi_types.LayoutType,
+                                        injection_plane_position : picmi_types.VectorFloat3,
+                                        injection_plane_normal_vector : picmi_types.VectorFloat3,
+                                        initialize_self_field : bool = None ):
         """
         Add species to be used in the simulation
 
@@ -122,7 +135,8 @@ class PICMI_Simulation(_ClassWithInit):
         self.injection_plane_normal_vectors.append(injection_plane_normal_vector)
 
 
-    def add_laser(self, laser, injection_method):
+    def add_laser(self, laser : picmi_types.LaserType,
+                        injection_method : picmi_types.LaserInjectionType):
         """
         Add a laser pulses that to be injected in the simulation
 
@@ -144,7 +158,7 @@ class PICMI_Simulation(_ClassWithInit):
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
 
-    def add_applied_field(self, applied_field):
+    def add_applied_field(self, applied_field : picmi_types.AppliedFieldType):
         """
         Add an applied field
 
@@ -156,7 +170,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.applied_fields.append(applied_field)
 
-    def add_diagnostic(self, diagnostic):
+    def add_diagnostic(self, diagnostic : picmi_types.DiagnosticType):
         """
         Add a diagnostic
           - diagnostic: object
@@ -164,7 +178,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.diagnostics.append(diagnostic)
 
-    def set_max_step(self, max_steps):
+    def set_max_step(self, max_steps : int):
         """
         Set the default number of steps for the simulation (i.e. the number
         of steps that gets written when calling `write_input_file`)
@@ -179,7 +193,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.max_steps = max_steps
 
-    def write_input_file(self, file_name):
+    def write_input_file(self, file_name : str):
         """
         Write the parameters of the simulation, as defined in the PICMI input,
         into another, more code-specific input file.
@@ -194,7 +208,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         raise NotImplementedError
 
-    def step(self, nsteps=1):
+    def step(self, nsteps : int = 1):
         """
         Run the simulation for `nsteps` timesteps
 

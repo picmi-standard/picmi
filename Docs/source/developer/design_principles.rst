@@ -7,7 +7,7 @@ Main Structure
 --------------
 
 PICMI defines a Python interface to specify a PIC input parameter set.
-It is not a pure schema, ie. can do computation.
+It is not a pure schema, i. e. can do computation.
 
 In practical terms, PICMI defines a set of classes which implementations
 must inherit from with well-defined names. These classes’ main purpose
@@ -21,7 +21,7 @@ PICMI is (aims to be) well-defined enough to compare codes.
 Scope
 -----
 
-PICMI aims to be define all parameters for most PIC scenarios. Obscure
+PICMI aims to define all parameters for most PIC scenarios. Obscure
 parameters may be implemented by codes when needed.
 
    Rule of thumb: If multiple codes implement a feature, put it into
@@ -31,11 +31,11 @@ Grouping Principles
 -------------------
 
 Parameters defining physics are separated from parameters defining
-numerics (i.e. how these physics are represented in the simulation).
+numerics (i. e. how these physics are represented in the simulation).
 
 Parameters should be optional if possible.
 
-Parameters are grouped conviently for the user: Classes may contain more
+Parameters are grouped conveniently for the user: Classes may contain more
 than the *minimal required set of parameters*, or in other terms:
 Forming sub-groups of parameters is only done when **convenient**, not
 mereley because sub-grouping would be possible.
@@ -51,7 +51,7 @@ performed automatically.
    “Computations” here are filling in different representations of the
    same input data.
 
-Redundancies are allowed if convenient. (e.g. laser a0/e0)
+Redundancies are allowed, though should be limited to different representations of a physical concept (e.g. laser a0/e0).
 Inconsistencies must be caught by checks when invoked explicitly.
 
 Python Features
@@ -64,24 +64,25 @@ PICMI Object Lifecycle
 ~~~~~~~~~~~~~~~~~~~~~~
 
 0. Parameters are collected/loaded/created by the user.
-1. PICMI object is constructed, **all** parameters are passed. They are
-   stored to be retrievable by the code.
+1. PICMI object is constructed, **all** parameters are passed.
+   Automated computations are invoked.
+   Their results and the original parameters are stored to be retrievable by the code.
+   Note that the variables are exposed to the implementing code, not necessarily to the user.
 2. The implementing code extracts these parameters.
 
 PICMI objects mainly hold data and are not designed to be modified
 after they have been initialized with their content.
 
 Note that even if not recommended direct access to member variables
-of objects is still possible. Accessing the member variables directly
-results in **undefined behavior**.
+of objects is still possible.
+Accessing the member variables directly (both reading and writing) results in **undefined behavior**.
 
-Implementing codes may invoke checks on PICMI objects to ensure their
-integrity.
+Implementing codes may invoke checks on PICMI objects to ensure their integrity.
 
 Types
 ~~~~~
 
-For simplicitly **strong typing** is used, i.e. variables are checked
+For simplicity **strong typing** is used, i.e. variables are checked
 against a finite list of type specifications. However, this finite list
 of type specifications is kept **permissive**, including (1) general
 types (e.g. iterable instead of “list”), and (2) common library types
@@ -112,7 +113,7 @@ Extensible
 PICMI passes through all arguments (including codespecific variables)
 which can be handled by implementations.
 
-It is not a library, i.e. it does not provide functionality to be used
+It is not a library, i. e. it does not provide functionality to be used
 by the implementation.
 
 Safety

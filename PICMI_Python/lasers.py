@@ -4,6 +4,7 @@ These should be the base classes for Python implementation of the PICMI standard
 import math
 import sys
 import re
+import typing
 
 from autoclass import autoargs
 from typeguard import typechecked

@@ -6,8 +6,10 @@ from collections.abc import Sequence
 import numpy as np
 
 VectorFloat3 = typing.NewType('VectorFloat3', typing.Union[Sequence[float], np.ndarray[3, np.float64]])
+VectorFloatNone3 = typing.NewType('VectorFloat3', typing.Union[Sequence[typing.Union[float, None]], np.ndarray[3, np.float64]])
 VectorInt3 = typing.NewType('VectorInt3', typing.Union[Sequence[int], np.ndarray[3, np.int64]])
 Expression = typing.NewType('Expression', str)
+VectorExpression3 = typing.NewType('VectorExpression3', Sequence[str])
 
 
 # These must be defined as strings to avoid circular definitions
@@ -25,6 +27,14 @@ SpeciesType = f"""typing.NewType('SpeciesType', {_species_union})"""
 # The SpeciesArgument allows either a single species or a sequence of species.
 SpeciesArgument = f"""typing.NewType('SpeciesArgument', typing.Union[{_species_union},
                                                                      Sequence[{_species_union}]])"""
+
+# Note that this is only used in particles.py and uses classes defined there.
+# The "particles" prefix can not be used on the classes since the module
+# should not reference itself.
+DistributionType = """typing.NewType('DistributionType', typing.Union[PICMI_GaussianBunchDistribution,
+                                                                      PICMI_UniformDistribution,
+                                                                      PICMI_AnalyticDistribution,
+                                                                      PICMI_ParticleListDistribution])"""
 
 LayoutType = """typing.NewType('LayoutType', typing.Union[particles.PICMI_GriddedLayout,
                                                           particles.PICMI_PseudoRandomLayout])"""

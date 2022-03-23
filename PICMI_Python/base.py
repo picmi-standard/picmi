@@ -38,9 +38,17 @@ def _get_constants():
 class _ClassWithInit(object):
     def _check_vector_lengths(self):
         for arg_name, arg_type in self.__init__.__annotations__.items():
-            if arg_type in [picmi_types.VectorFloat3, picmi_types.VectorInt3]:
+            if arg_type in [picmi_types.VectorFloat3, picmi_types.VectorInt3, picmi_types.VectorExpression3]:
                 arg_value = getattr(self, arg_name)
                 assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
+
+    def _add_to_user_defined_kw(self, arg_value, kw):
+        # --- The dictionary is created if needed
+        self.user_defined_kw = getattr(self, 'user_defined_kw', {})
+        if arg_value is not None:
+            for k in list(kw.keys()):
+                if re.search(r'\b%s\b'%k, arg_value):
+                    self.user_defined_kw[k] = kw.pop(k)
 
     def _process_expression_arguments(self, kw):
         """For arguments that are of type Expression, save any keyword arguments used in
@@ -56,12 +64,17 @@ class _ClassWithInit(object):
                     arg_value = arg_value.replace('\n', '')
                     setattr(self, arg_name, arg_value)
 
-                # --- The dictionary is created if needed
-                self.user_defined_kw = getattr(self, 'user_defined_kw', {})
+                self._add_to_user_defined_kw(arg_value, kw)
+
+            elif arg_type == picmi_types.VectorExpression3:
+
+                arg_value = getattr(self, arg_name)
+
+                # --- Remove any line feeds from the expressions
                 if arg_value is not None:
-                    for k in list(kw.keys()):
-                        if re.search(r'\b%s\b'%k, arg_value):
-                            self.user_defined_kw[k] = kw.pop(k)
+                    for i in range(3):
+                        arg_value[i] = arg_value[i].replace('\n', '')
+                        self._add_to_user_defined_kw(arg_value[i], kw)
 
     def handle_init(self, kw):
         self._check_vector_lengths()

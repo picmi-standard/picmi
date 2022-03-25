@@ -3,13 +3,20 @@ These should be the base classes for Python implementation of the PICMI standard
 """
 import math
 import sys
+import typing
+from collections.abc import Sequence
+
+from autoclass import autoargs
+from typeguard import typechecked
 
 from .base import _ClassWithInit
+from . import picmi_types
 
 # ---------------
 # Physics objects
 # ---------------
 
+@typechecked
 class PICMI_ElectromagneticSolver(_ClassWithInit):
     """
     Electromagnetic field solver
@@ -30,31 +37,29 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'ECT']
 
-    def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
-                 source_smoother=None, field_smoother=None, subcycling=None,
-                 galilean_velocity=None, divE_cleaning=None, divB_cleaning=None,
-                 pml_divE_cleaning=None, pml_divB_cleaning=None, **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.FieldsGridType,
+                       method : str = None,
+                       stencil_order : picmi_types.VectorInt3 = None,
+                       cfl : float = None,
+                       l_nodal : bool = None,
+                       source_smoother : picmi_types.SmootherType = None,
+                       field_smoother : picmi_types.SmootherType = None,
+                       subcycling : int = None,
+                       galilean_velocity : picmi_types.VectorFloat3 = None,
+                       divE_cleaning : bool = None,
+                       divB_cleaning : bool = None,
+                       pml_divE_cleaning : bool = None,
+                       pml_divB_cleaning : bool = None,
+                       **kw):
 
         assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))
 
-        self.grid = grid
-        self.method = method
-        self.cfl = cfl
-        self.stencil_order = stencil_order
-        self.l_nodal = l_nodal
-        self.source_smoother = source_smoother
-        self.field_smoother = field_smoother
-        self.subcycling = subcycling
-        self.galilean_velocity = galilean_velocity
-        self.divE_cleaning = divE_cleaning
-        self.divB_cleaning = divB_cleaning
-        self.pml_divE_cleaning = pml_divE_cleaning
-        self.pml_divB_cleaning = pml_divB_cleaning
-
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_ElectrostaticSolver(_ClassWithInit):
     """
     Electrostatic field solver
@@ -66,20 +71,20 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
 
     methods_list = ['FFT', 'Multigrid']
 
-    def __init__(self, grid, method=None,
-                 required_precision=None, maximum_iterations=None, **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.FieldsGridType,
+                       method : str = None,
+                       required_precision : float = None,
+                       maximum_iterations : int = None,
+                       **kw):
 
         assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
 
-        self.grid = grid
-        self.method = method
-        self.required_precision = required_precision
-        self.maximum_iterations = maximum_iterations
-
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_MagnetostaticSolver(_ClassWithInit):
     """
     Magnetostatic field solver
@@ -89,13 +94,13 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
 
     methods_list = ['FFT', 'Multigrid']
 
-    def __init__(self, grid, method=None, **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.FieldsGridType,
+                       method : str = None,
+                       **kw):
 
         assert method is None or method in PICMI_MagnetostaticSolver.methods_list, \
                Exception('method must be one of '+', '.join(PICMI_MagnetostaticSolver.methods_list))
-
-        self.grid = grid
-        self.method = method
 
         self.handle_init(kw)
 
@@ -105,6 +110,7 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
 # ------------------
 
 
+@typechecked
 class PICMI_BinomialSmoother(_ClassWithInit):
     """
     Descibes a binomial smoother operator (applied to grids)
@@ -113,15 +119,17 @@ class PICMI_BinomialSmoother(_ClassWithInit):
     - stride: Stride along each axis. (vector)
     - alpha: Smoothing coefficients along each axis. (vector)
     """
-    def __init__(self, n_pass=None, compensation=None, stride=None, alpha=None, **kw):
-        self.n_pass = n_pass
-        self.compensation = compensation
-        self.stride = stride
-        self.alpha = alpha
+    @autoargs(exclude=['kw'])
+    def __init__(self, n_pass : picmi_types.VectorInt3 = None,
+                       compensation : picmi_types.VectorBool3 = None,
+                       stride : picmi_types.VectorInt3 = None,
+                       alpha : picmi_types.VectorFloat3 = None,
+                       **kw):
 
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_Cartesian1DGrid(_ClassWithInit):
     """
     One-dimensional Cartesian grid
@@ -144,8 +152,8 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
 
       - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
                          with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
-                         lo and hi being vectors of length 2 specifying the extent of the region,
-                         and refinement_factor defaulting to [2,2] (relative to next lower level)
+                         lo and hi being vectors of length 1 specifying the extent of the region,
+                         and refinement_factor defaulting to [2] (relative to next lower level)
 
       - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
       - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
@@ -165,15 +173,30 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
 
     number_of_dimensions = 1
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, xmin=None, xmax=None, bc_xmin=None, bc_xmax=None,
-                 moving_window_velocity=None, refined_regions=[],lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None,
-                 guard_cells=None, pml_cells=None,
-                 **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, number_of_cells : picmi_types.VectorInt1 = None,
+                       lower_bound : picmi_types.VectorFloat1 = None,
+                       upper_bound : picmi_types.VectorFloat1 = None,
+                       lower_boundary_conditions : picmi_types.VectorString1 = None,
+                       upper_boundary_conditions : picmi_types.VectorString1 = None,
+                       nx : int = None,
+                       xmin : float = None,
+                       xmax : float = None,
+                       bc_xmin : str = None,
+                       bc_xmax : str = None,
+                       moving_window_velocity : picmi_types.VectorFloat1 = None,
+                       refined_regions : Sequence[list] = None,
+                       lower_bound_particles : picmi_types.VectorFloat1 = None,
+                       upper_bound_particles : picmi_types.VectorFloat1 = None,
+                       xmin_particles : float = None,
+                       xmax_particles : float = None,
+                       lower_boundary_conditions_particles : picmi_types.VectorString1 = None,
+                       upper_boundary_conditions_particles : picmi_types.VectorString1 = None,
+                       bc_xmin_particles : str = None,
+                       bc_xmax_particles : str = None,
+                       guard_cells : picmi_types.VectorInt1 = None,
+                       pml_cells : picmi_types.VectorInt1 = None,
+                       **kw):
 
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nx is not None) or \
@@ -193,86 +216,66 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
                 Exception('Either upper_boundary_conditions or bc_xmax must be specified')
 
         if number_of_cells is None:
-            number_of_cells = [nx]
+            self.number_of_cells = [nx]
         if lower_bound is None:
-            lower_bound = [xmin]
+            self.lower_bound = [xmin]
         if upper_bound is None:
-            upper_bound = [xmax]
+            self.upper_bound = [xmax]
         if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin]
+            self.lower_boundary_conditions = [bc_xmin]
         if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax,]
+            self.upper_boundary_conditions = [bc_xmax,]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
         if lower_bound_particles is None:
             if (xmin_particles is None):
-                lower_bound_particles = lower_bound
+                self.lower_bound_particles = lower_bound
             else:
-                lower_bound_particles = [xmin_particles]
+                self.lower_bound_particles = [xmin_particles]
         if upper_bound_particles is None:
             if (xmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.upper_bound_particles = upper_bound
             else:
-                upper_bound_particles=[xmax_particles]
+                self.upper_bound_particles = [xmax_particles]
 
         if lower_boundary_conditions_particles is None:
             if (bc_xmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+                self.lower_boundary_conditions_particles = lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles]
+                self.lower_boundary_conditions_particles = [bc_xmin_particles]
         if upper_boundary_conditions_particles is None:
             if (bc_xmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.upper_boundary_conditions_particles = upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles]
+                self.upper_boundary_conditions_particles = [bc_xmax_particles]
 
-        # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 1, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 1, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 1, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 1, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 1, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 1, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 1, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 1, Exception('Wrong number of lower particle boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 1, Exception('Wrong number of upper particle boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2])
-            assert len(region[1]) == 1, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 1, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 1, Exception('The refinement factor of the refined region must be a vector of length 2')
+        self.refined_regions = []
+        if refined_regions is not None:
+            for region in refined_regions:
+                self.add_refined_region(*region)
 
         self.handle_init(kw)
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2]):
+    def add_refined_region(self, level : int,
+                                 lo : picmi_types.VectorInt1,
+                                 hi : picmi_types.VectorInt1,
+                                 refinement_factor : picmi_types.VectorInt1 = None):
         """Add a refined region.
-        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
-        lo, hi: vectors of length 2 specifying the extent of the region
-        refinement_factor: defaulting to [2,2] (relative to next lower level)
+        - level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        - lo, hi: vectors of length 1 specifying the extent of the region
+        - refinement_factor: defaulting to [2] (relative to next lower level)
         """
+        if refinement_factor is None:
+            refinement_factor = [2]
+        assert len(lo) == 1, Exception('The lo extent of the refined region must be a vector of length 1')
+        assert len(hi) == 1, Exception('The hi extent of the refined region must be a vector of length 1')
+        assert len(refinement_factor) == 1, Exception('The refinement factor of the refined region must be a vector of length 1')
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
+@typechecked
 class PICMI_CylindricalGrid(_ClassWithInit):
     """
     Axisymmetric, cylindrical grid
@@ -326,17 +329,40 @@ class PICMI_CylindricalGrid(_ClassWithInit):
 
     number_of_dimensions = 2
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nr=None, nz=None, n_azimuthal_modes=None,
-                 rmin=None, rmax=None, zmin=None, zmax=None,
-                 bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, refined_regions=[],
-                 lower_bound_particles=None, upper_bound_particles=None,
-                 rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None,
-                 guard_cells=None, pml_cells=None, **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, number_of_cells : picmi_types.VectorInt2 = None,
+                       lower_bound : picmi_types.VectorFloat2 = None,
+                       upper_bound : picmi_types.VectorFloat2 = None,
+                       lower_boundary_conditions : picmi_types.VectorString2 = None,
+                       upper_boundary_conditions : picmi_types.VectorString2 = None,
+                       nr : int = None,
+                       nz : int = None,
+                       n_azimuthal_modes : int = None,
+                       rmin : float = None,
+                       rmax : float = None,
+                       zmin : float = None,
+                       zmax : float = None,
+                       bc_rmin : str = None,
+                       bc_rmax : str = None,
+                       bc_zmin : str = None,
+                       bc_zmax : str = None,
+                       moving_window_velocity : picmi_types.VectorFloat2 = None,
+                       refined_regions : Sequence[list] = None,
+                       lower_bound_particles : picmi_types.VectorFloat2 = None,
+                       upper_bound_particles : picmi_types.VectorFloat2 = None,
+                       rmin_particles : float = None,
+                       rmax_particles : float = None,
+                       zmin_particles : float = None,
+                       zmax_particles : float = None,
+                       lower_boundary_conditions_particles : picmi_types.VectorString2 = None,
+                       upper_boundary_conditions_particles : picmi_types.VectorString2 = None,
+                       bc_rmin_particles : str = None,
+                       bc_rmax_particles : str = None,
+                       bc_zmin_particles : str = None,
+                       bc_zmax_particles : str = None,
+                       guard_cells : picmi_types.VectorInt2 = None,
+                       pml_cells : picmi_types.VectorInt2 = None,
+                       **kw):
 
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nr is not None and nz is not None) or \
@@ -357,84 +383,66 @@ class PICMI_CylindricalGrid(_ClassWithInit):
                 Exception('Either upper_boundary_conditions or bc_rmax and bc_zmax must be specified')
 
         if number_of_cells is None:
-            number_of_cells = [nr, nz]
+            self.number_of_cells = [nr, nz]
         if lower_bound is None:
-            lower_bound = [rmin, zmin]
+            self.lower_bound = [rmin, zmin]
         if upper_bound is None:
-            upper_bound = [rmax, zmax]
+            self.upper_bound = [rmax, zmax]
         if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_rmin, bc_zmin]
+            self.lower_boundary_conditions = [bc_rmin, bc_zmin]
         if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_rmax, bc_zmax]
+            self.upper_boundary_conditions = [bc_rmax, bc_zmax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
         if lower_bound_particles is None:
             if (rmin_particles is None) and (zmin_particles is None):
-                lower_bound_particles = lower_bound
+                self.lower_bound_particles = lower_bound
             else:
-                lower_bound_particles = [rmin_particles, zmin_particles]
+                self.lower_bound_particles = [rmin_particles, zmin_particles]
         if upper_bound_particles is None:
             if (rmax_particles is None) and (zmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.upper_bound_particles = upper_bound
             else:
-                upper_bound_particles=[rmax_particles, zmax_particles]
+                self.upper_bound_particles = [rmax_particles, zmax_particles]
 
         if lower_boundary_conditions_particles is None:
             if (bc_rmin_particles is None) and (bc_zmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+                self.lower_boundary_conditions_particles = lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_rmin_particles, bc_zmin_particles]
+                self.lower_boundary_conditions_particles = [bc_rmin_particles, bc_zmin_particles]
         if upper_boundary_conditions_particles is None:
             if (bc_rmax_particles is None) and (bc_zmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.upper_boundary_conditions_particles = upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_rmax_particles, bc_zmax_particles]
+                self.upper_boundary_conditions_particles = [bc_rmax_particles, bc_zmax_particles]
 
-        # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 2, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.n_azimuthal_modes = n_azimuthal_modes
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2,2])
-            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
+        self.refined_regions = []
+        if refined_regions is not None:
+            for region in refined_regions:
+                self.add_refined_region(*region)
 
         self.handle_init(kw)
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
+    def add_refined_region(self, level : int,
+                                 lo : picmi_types.VectorInt2,
+                                 hi : picmi_types.VectorInt2,
+                                 refinement_factor : picmi_types.VectorInt2 = None):
         """Add a refined region.
-        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
-        lo, hi: vectors of length 2 specifying the extent of the region
-        refinement_factor: defaulting to [2,2] (relative to next lower level)
+        - level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        - lo, hi: vectors of length 2 specifying the extent of the region
+        - refinement_factor: defaulting to [2,2] (relative to next lower level)
         """
+        if refinement_factor is None:
+            refinement_factor = [2,2]
+        assert len(lo) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
+        assert len(hi) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
+        assert len(refinement_factor) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
+@typechecked
 class PICMI_Cartesian2DGrid(_ClassWithInit):
     """
     Two dimensional Cartesian grid
@@ -487,17 +495,39 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
 
     number_of_dimensions = 2
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, ny=None,
-                 xmin=None, xmax=None, ymin=None, ymax=None,
-                 bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None,
-                 moving_window_velocity=None, refined_regions=[],lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 guard_cells=None, pml_cells=None,
-                 **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, number_of_cells : picmi_types.VectorInt2 = None,
+                       lower_bound : picmi_types.VectorFloat2 = None,
+                       upper_bound : picmi_types.VectorFloat2 = None,
+                       lower_boundary_conditions : picmi_types.VectorString2 = None,
+                       upper_boundary_conditions : picmi_types.VectorString2 = None,
+                       nx : int = None,
+                       ny : int = None,
+                       xmin : float = None,
+                       xmax : float = None,
+                       ymin : float = None,
+                       ymax : float = None,
+                       bc_xmin : str = None,
+                       bc_xmax : str = None,
+                       bc_ymin : str = None,
+                       bc_ymax : str = None,
+                       moving_window_velocity : picmi_types.VectorFloat2 = None,
+                       refined_regions : Sequence[list] = None,
+                       lower_bound_particles : picmi_types.VectorFloat2 = None,
+                       upper_bound_particles : picmi_types.VectorFloat2 = None,
+                       xmin_particles : float = None,
+                       xmax_particles : float = None,
+                       ymin_particles : float = None,
+                       ymax_particles : float = None,
+                       lower_boundary_conditions_particles : picmi_types.VectorString2 = None,
+                       upper_boundary_conditions_particles : picmi_types.VectorString2 = None,
+                       bc_xmin_particles : str = None,
+                       bc_xmax_particles : str = None,
+                       bc_ymin_particles : str = None,
+                       bc_ymax_particles : str = None,
+                       guard_cells : picmi_types.VectorInt2 = None,
+                       pml_cells : picmi_types.VectorInt2 = None,
+                       **kw):
 
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nx is not None and ny is not None) or \
@@ -517,86 +547,66 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
                 Exception('Either upper_boundary_conditions or bc_xmax and bc_ymax must be specified')
 
         if number_of_cells is None:
-            number_of_cells = [nx, ny]
+            self.number_of_cells = [nx, ny]
         if lower_bound is None:
-            lower_bound = [xmin, ymin]
+            self.lower_bound = [xmin, ymin]
         if upper_bound is None:
-            upper_bound = [xmax, ymax]
+            self.upper_bound = [xmax, ymax]
         if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin, bc_ymin]
+            self.lower_boundary_conditions = [bc_xmin, bc_ymin]
         if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax, bc_ymax]
+            self.upper_boundary_conditions = [bc_xmax, bc_ymax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
         if lower_bound_particles is None:
             if (xmin_particles is None) and (ymin_particles is None):
-                lower_bound_particles = lower_bound
+                self.lower_bound_particles = lower_bound
             else:
-                lower_bound_particles = [xmin_particles, ymin_particles]
+                self.lower_bound_particles = [xmin_particles, ymin_particles]
         if upper_bound_particles is None:
             if (xmax_particles is None) and (ymax_particles is None):
-                upper_bound_particles = upper_bound
+                self.upper_bound_particles = upper_bound
             else:
-                upper_bound_particles=[xmax_particles, ymax_particles]
+                self.upper_bound_particles = [xmax_particles, ymax_particles]
 
         if lower_boundary_conditions_particles is None:
             if (bc_xmin_particles is None) and (bc_ymin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+                self.lower_boundary_conditions_particles = lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles]
+                self.lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles]
         if upper_boundary_conditions_particles is None:
             if (bc_xmax_particles is None) and (bc_ymax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.upper_boundary_conditions_particles = upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles]
+                self.upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles]
 
-        # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 2, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 2, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 2, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 2, Exception('Wrong number of lower particle boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 2, Exception('Wrong number of upper particle boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2,2])
-            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
+        self.refined_regions = []
+        if refined_regions is not None:
+            for region in refined_regions:
+                self.add_refined_region(*region)
 
         self.handle_init(kw)
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
+    def add_refined_region(self, level : int,
+                                 lo : picmi_types.VectorInt2,
+                                 hi : picmi_types.VectorInt2,
+                                 refinement_factor : picmi_types.VectorInt2 = None):
         """Add a refined region.
-        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
-        lo, hi: vectors of length 2 specifying the extent of the region
-        refinement_factor: defaulting to [2,2] (relative to next lower level)
+        - level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        - lo, hi: vectors of length 2 specifying the extent of the region
+        - refinement_factor: defaulting to [2,2] (relative to next lower level)
         """
+        if refinement_factor is None:
+            refinement_factor = [2,2]
+        assert len(lo) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
+        assert len(hi) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
+        assert len(refinement_factor) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
+@typechecked
 class PICMI_Cartesian3DGrid(_ClassWithInit):
     """
     Three dimensional Cartesian grid
@@ -657,17 +667,48 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
 
     number_of_dimensions = 3
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, ny=None, nz=None,
-                 xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
-                 bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, refined_regions=[], lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None, zmin_particles=None, zmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 bc_zmin_particles=None, bc_zmax_particles=None, guard_cells=None, pml_cells=None,
-                 **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, number_of_cells : picmi_types.VectorInt3 = None,
+                       lower_bound : picmi_types.VectorFloat3 = None,
+                       upper_bound : picmi_types.VectorFloat3 = None,
+                       lower_boundary_conditions : picmi_types.VectorString3 = None,
+                       upper_boundary_conditions : picmi_types.VectorString3 = None,
+                       nx : int = None,
+                       ny : int = None,
+                       nz : int = None,
+                       xmin : float = None,
+                       xmax : float = None,
+                       ymin : float = None,
+                       ymax : float = None,
+                       zmin : float = None,
+                       zmax : float = None,
+                       bc_xmin : str = None,
+                       bc_xmax : str = None,
+                       bc_ymin : str = None,
+                       bc_ymax : str = None,
+                       bc_zmin : str = None,
+                       bc_zmax : str = None,
+                       moving_window_velocity : picmi_types.VectorFloat3 = None,
+                       refined_regions : Sequence[list] = None,
+                       lower_bound_particles : picmi_types.VectorFloat3 = None,
+                       upper_bound_particles : picmi_types.VectorFloat3 = None,
+                       xmin_particles : float = None,
+                       xmax_particles : float = None,
+                       ymin_particles : float = None,
+                       ymax_particles : float = None,
+                       zmin_particles : float = None,
+                       zmax_particles : float = None,
+                       lower_boundary_conditions_particles : picmi_types.VectorString3 = None,
+                       upper_boundary_conditions_particles : picmi_types.VectorString3 = None,
+                       bc_xmin_particles : str = None,
+                       bc_xmax_particles : str = None,
+                       bc_ymin_particles : str = None,
+                       bc_ymax_particles : str = None,
+                       bc_zmin_particles : str = None,
+                       bc_zmax_particles : str = None,
+                       guard_cells : picmi_types.VectorInt3 = None,
+                       pml_cells : picmi_types.VectorInt3 = None,
+                       **kw):
 
         # Sanity check and init of input arguments related to grid parameters
         assert (number_of_cells is None) and (nx is not None and ny is not None and nz is not None) or \
@@ -687,80 +728,60 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
                 Exception('Either upper_boundary_conditions or bc_xmax, bc_ymax, and bc_zmax must be specified')
 
         if number_of_cells is None:
-            number_of_cells = [nx, ny, nz]
+            self.number_of_cells = [nx, ny, nz]
         if lower_bound is None:
-            lower_bound = [xmin, ymin, zmin]
+            self.lower_bound = [xmin, ymin, zmin]
         if upper_bound is None:
-            upper_bound = [xmax, ymax, zmax]
+            self.upper_bound = [xmax, ymax, zmax]
         if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin, bc_ymin, bc_zmin]
+            self.lower_boundary_conditions = [bc_xmin, bc_ymin, bc_zmin]
         if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax, bc_ymax, bc_zmax]
+            self.upper_boundary_conditions = [bc_xmax, bc_ymax, bc_zmax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
         if lower_bound_particles is None:
             if (xmin_particles is None) and (ymin_particles is None) and (zmin_particles is None):
-                lower_bound_particles = lower_bound
+                self.lower_bound_particles = lower_bound
             else:
-                lower_bound_particles = [xmin_particles, ymin_particles, zmin_particles]
+                self.lower_bound_particles = [xmin_particles, ymin_particles, zmin_particles]
         if upper_bound_particles is None:
             if (xmax_particles is None) and (ymax_particles is None) and (zmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.upper_bound_particles = upper_bound
             else:
-                upper_bound_particles = [xmax_particles, ymax_particles, zmax_particles]
+                self.upper_bound_particles = [xmax_particles, ymax_particles, zmax_particles]
 
         if lower_boundary_conditions_particles is None:
             if (bc_xmin_particles is None) and (bc_ymin_particles is None) and (bc_zmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+                self.lower_boundary_conditions_particles = lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles, bc_zmin_particles]
+                self.lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles, bc_zmin_particles]
         if upper_boundary_conditions_particles is None:
             if (bc_xmax_particles is None) and (bc_ymax_particles is None) and (bc_zmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.upper_boundary_conditions_particles = upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles, bc_zmax_particles]
+                self.upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles, bc_zmax_particles]
 
-        # Sanity check on number of arguments of vector quantities
-        assert len(number_of_cells) == 3, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 3, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 3, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 3, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 3, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 3, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 3, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 3, Exception('Wrong number of particle lower boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 3, Exception('Wrong number of particle upper boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2,2,2])
-            assert len(region[1]) == 3, Exception('The lo extent of the refined region must be a vector of length 3')
-            assert len(region[2]) == 3, Exception('The hi extent of the refined region must be a vector of length 3')
-            assert len(region[3]) == 3, Exception('The refinement factor of the refined region must be a vector of length 3')
+        self.refined_regions = []
+        if refined_regions is not None:
+            for region in refined_regions:
+                self.add_refined_region(*region)
 
         self.handle_init(kw)
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2,2,2]):
+    def add_refined_region(self, level : int,
+                                 lo : picmi_types.VectorInt3,
+                                 hi : picmi_types.VectorInt3,
+                                 refinement_factor : picmi_types.VectorInt3 = None):
         """Add a refined region.
-        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
-        lo, hi: vectors of length 3 specifying the extent of the region
-        refinement_factor: defaulting to [2,2,2] (relative to next lower level)
+        - level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
+        - lo, hi: vectors of length 3 specifying the extent of the region
+        - refinement_factor: defaulting to [2,2,2] (relative to next lower level)
         """
+        if refinement_factor is None:
+            refinement_factor = [2,2,2]
+        assert len(lo) == 3, Exception('The lo extent of the refined region must be a vector of length 3')
+        assert len(hi) == 3, Exception('The hi extent of the refined region must be a vector of length 3')
+        assert len(refinement_factor) == 3, Exception('The refinement factor of the refined region must be a vector of length 3')
         self.refined_regions.append([level, lo, hi, refinement_factor])

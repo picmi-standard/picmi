@@ -40,7 +40,8 @@ class _ClassWithInit(object):
         for arg_name, arg_type in self.__init__.__annotations__.items():
             if arg_type in [picmi_types.VectorFloat3, picmi_types.VectorInt3, picmi_types.VectorExpression3]:
                 arg_value = getattr(self, arg_name)
-                assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
+                if arg_value is not None:
+                    assert len(arg_value) == 3, Exception(f'{arg_name} must have a length of 3')
 
     def _add_to_user_defined_kw(self, arg_value, kw):
         # --- The dictionary is created if needed

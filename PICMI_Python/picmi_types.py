@@ -5,9 +5,19 @@ from collections.abc import Sequence
 
 import numpy as np
 
+VectorFloat1 = typing.NewType('VectorFloat1', typing.Union[Sequence[float], np.ndarray[1, np.float64]])
+VectorInt1 = typing.NewType('VectorInt1', typing.Union[Sequence[int], np.ndarray[1, np.int64]])
+VectorString1 = typing.NewType('VectorString1', Sequence[str])
+
+VectorFloat2 = typing.NewType('VectorFloat2', typing.Union[Sequence[float], np.ndarray[2, np.float64]])
+VectorInt2 = typing.NewType('VectorInt2', typing.Union[Sequence[int], np.ndarray[2, np.int64]])
+VectorString2 = typing.NewType('VectorString2', Sequence[str])
+
 VectorFloat3 = typing.NewType('VectorFloat3', typing.Union[Sequence[float], np.ndarray[3, np.float64]])
-VectorFloatNone3 = typing.NewType('VectorFloat3', typing.Union[Sequence[typing.Union[float, None]], np.ndarray[3, np.float64]])
+VectorFloatNone3 = typing.NewType('VectorFloatNone3', typing.Union[Sequence[typing.Union[float, None]], np.ndarray[3, np.float64]])
 VectorInt3 = typing.NewType('VectorInt3', typing.Union[Sequence[int], np.ndarray[3, np.int64]])
+VectorBool3 = typing.NewType('VectorBool3', Sequence[bool])
+VectorString3 = typing.NewType('VectorString3', Sequence[str])
 Expression = typing.NewType('Expression', str)
 VectorExpression3 = typing.NewType('VectorExpression3', Sequence[str])
 
@@ -17,6 +27,13 @@ GridType = """typing.NewType('GridType', typing.Union[fields.PICMI_Cartesian1DGr
                                                       fields.PICMI_CylindricalGrid,
                                                       fields.PICMI_Cartesian2DGrid,
                                                       fields.PICMI_Cartesian3DGrid])"""
+# This is needed in the fields.py file since it cannot import itself
+FieldsGridType = """typing.NewType('GridType', typing.Union[PICMI_Cartesian1DGrid,
+                                                            PICMI_CylindricalGrid,
+                                                            PICMI_Cartesian2DGrid,
+                                                            PICMI_Cartesian3DGrid])"""
+
+SmootherType = """typing.NewType('SmootherType', PICMI_BinomialSmoother)"""
 
 _species_union = "typing.Union[particles.PICMI_Species, particles.PICMI_MultiSpecies]"
 

@@ -170,7 +170,7 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
       - velocity_divergence=[0,0,0]: Expansion rate of the bunch at t=0 (vector) [m/s/m]
     """
     @autoargs(exclude=['kw'])
-    def __init__(self,n_physical_particles : int,
+    def __init__(self,n_physical_particles : float,
                        rms_bunch_size : picmi_types.VectorFloat3,
                        rms_velocity : picmi_types.VectorFloat3 = [0.,0.,0.],
                        centroid_position : picmi_types.VectorFloat3 = [0.,0.,0.],

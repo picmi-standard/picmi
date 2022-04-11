@@ -15,6 +15,7 @@ from . import diagnostics
 from . import lasers
 from . import diagnostics
 from . import picmi_types
+from . import applied_fields
 
 # ---------------------
 # Main simulation object
@@ -86,7 +87,7 @@ class PICMI_Simulation(_ClassWithInit):
         self.handle_init(kw)
 
     def add_species(self, species : picmi_types.SpeciesType,
-                          layout : picmi_types.LayoutType,
+                          layout : picmi_types.LayoutType = None,
                           initialize_self_field : bool = None):
         """
         Add species to be used in the simulation

@@ -76,13 +76,13 @@ class _ClassWithInit(object):
         signature = inspect.signature(self.__init__)
         default_value = signature.parameters[arg_name].default
         if not (getattr(self, arg_name) == default_value):
-            message = f'{self.__name__}: For argument {arg_name} is not supported.'
+            full_message = f'{self.__name__}: For argument {arg_name} is not supported.'
             if message is not None:
-                message += f' {message}'
+                full_message += f' {message}'
             if raise_error:
-                raise Exception(message)
+                raise Exception(full_message)
             else:
-                warnings.warn(message)
+                warnings.warn(full_message)
 
     def _unsupported_value(self, arg_name, message='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
@@ -100,13 +100,13 @@ class _ClassWithInit(object):
                     message='My code only supports Boris and Li')
 
         """
-        message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
+        full_message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
         if message is not None:
-            message += f' {message}'
+            full_message += f' {message}'
         if raise_error:
-            raise Exception(message)
+            raise Exception(full_message)
         else:
-            warnings.warn(message)
+            warnings.warn(full_message)
 
     def _check_deprecated_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if a deprecated argument was specified by the user
@@ -131,11 +131,11 @@ class _ClassWithInit(object):
         signature = inspect.signature(self.__init__)
         default_value = signature.parameters[arg_name].default
         if not (getattr(self, arg_name) == default_value):
-            message = f'{self.__name__}: For argument {arg_name} is not supported.'
+            full_message = f'{self.__name__}: For argument {arg_name} is not supported.'
             if message is not None:
-                message += f' {message}'
+                full_message += f' {message}'
             if raise_error:
-                raise Exception(message)
+                raise Exception(full_message)
             else:
-                warnings.warn(message)
+                warnings.warn(full_message)
 

@@ -53,10 +53,7 @@ class PICMI_Species(_ClassWithInit):
         self.handle_init(kw)
 
     def activate_field_ionization(self, model, product_species):
-        # --- TODO: One way of handling interactions is to add a class for each type
-        # ---       of interaction. Instances would be added to the interactions list
-        # ---       instead of the list of parameters.
-        self.interactions.append(['ionization', model, product_species])
+        self.interactions.append(PICMI_FieldIonization(model, product_species))
 
 
 class PICMI_MultiSpecies(_ClassWithInit):
@@ -387,5 +384,18 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
         self.n_macroparticles_per_cell = n_macroparticles_per_cell
         self.seed = seed
         self.grid = grid
+
+        self.handle_init(kw)
+        
+        
+class PICMI_FieldIonization(_ClassWithInit):
+    """
+    Field ionization on an ion species
+    - model: ionization model, e.g. "ADK" (string)
+    - product_species: Species in which ionized electrons are stored.
+    """
+    def __init__(self, model, product_species, **kw):
+        self.model = model
+        self.product_species = product_species
 
         self.handle_init(kw)

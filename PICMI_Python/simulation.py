@@ -71,6 +71,8 @@ class PICMI_Simulation(_ClassWithInit):
 
         self.diagnostics = []
 
+        self.interactions = []
+
         self.cpu_split = cpu_split
         self.load_balancing = load_balancing
 
@@ -163,6 +165,14 @@ class PICMI_Simulation(_ClassWithInit):
                 One of the diagnostic objects.
         """
         self.diagnostics.append(diagnostic)
+
+    def add_interaction(self, interaction):
+        """
+        Add an interaction
+          - interaction: object
+                One of the interaction objects.
+        """
+        self.interactions.append(interaction)
 
     def set_max_step(self, max_steps):
         """

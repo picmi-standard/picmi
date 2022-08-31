@@ -15,6 +15,11 @@ Grids
 
 .. autoclass:: picmistandard.PICMI_Cartesian2DGrid
 
+1D Cartesian geometry
+---------------------
+
+.. autoclass:: picmistandard.PICMI_Cartesian1DGrid
+
 Cylindrical geometry
 --------------------
 

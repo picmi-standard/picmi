@@ -2,14 +2,20 @@
 These should be the base classes for Python implementation of the PICMI standard
 """
 import re
+import typing
+
+from autoclass import autoargs
+from typeguard import typechecked
 
 from .base import _ClassWithInit
+from . import picmi_types
 
 # ---------------
 # Applied fields
 # ---------------
 
 
+@typechecked
 class PICMI_ConstantAppliedField(_ClassWithInit):
     """
     Describes a constant applied field
@@ -22,23 +28,21 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
       - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """
-    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
-
-        self.Ex = Ex
-        self.Ey = Ey
-        self.Ez = Ez
-        self.Bx = Bx
-        self.By = By
-        self.Bz = Bz
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
+    @autoargs(exclude=['kw'])
+    def __init__(self, Ex : float = None,
+                       Ey : float = None,
+                       Ez : float = None,
+                       Bx : float = None,
+                       By : float = None,
+                       Bz : float = None,
+                       lower_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       upper_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       **kw):
 
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_AnalyticAppliedField(_ClassWithInit):
     """
     Describes an analytic applied field
@@ -54,35 +58,16 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
       - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
     """
-    def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
-                       Bx_expression=None, By_expression=None, Bz_expression=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
-
-        self.Ex_expression = Ex_expression
-        self.Ey_expression = Ey_expression
-        self.Ez_expression = Ez_expression
-        self.Bx_expression = Bx_expression
-        self.By_expression = By_expression
-        self.Bz_expression = Bz_expression
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-        # --- Find any user defined keywords in the kw dictionary.
-        # --- Save them and delete them from kw.
-        # --- It's up to the code to make sure that all parameters
-        # --- used in the expression are defined.
-        self.user_defined_kw = {}
-        for k in list(kw.keys()):
-            if ((self.Ex_expression is not None and re.search(r'\b%s\b'%k, self.Ex_expression)) or
-                (self.Ey_expression is not None and re.search(r'\b%s\b'%k, self.Ey_expression)) or
-                (self.Ez_expression is not None and re.search(r'\b%s\b'%k, self.Ez_expression)) or
-                (self.Bx_expression is not None and re.search(r'\b%s\b'%k, self.Bx_expression)) or
-                (self.By_expression is not None and re.search(r'\b%s\b'%k, self.By_expression)) or
-                (self.Bz_expression is not None and re.search(r'\b%s\b'%k, self.Bz_expression))):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
+    @autoargs(exclude=['kw'])
+    def __init__(self, Ex_expression : picmi_types.Expression = None,
+                       Ey_expression : picmi_types.Expression = None,
+                       Ez_expression : picmi_types.Expression = None,
+                       Bx_expression : picmi_types.Expression = None,
+                       By_expression : picmi_types.Expression = None,
+                       Bz_expression : picmi_types.Expression = None,
+                       lower_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       upper_bound : picmi_types.VectorFloat3 = [None,None,None],
+                       **kw):
 
         self.handle_init(kw)
 
@@ -103,17 +88,15 @@ class PICMI_Mirror(_ClassWithInit):
     or the code's default value if neither are specified.
     """
 
-    def __init__(self, x_front_location=None, y_front_location=None, z_front_location=None,
-                 depth=None, number_of_cells=None, **kw):
+    def __init__(self, x_front_location : float = None,
+                       y_front_location : float = None,
+                       z_front_location : float = None,
+                       depth : float = None,
+                       number_of_cells : int = None,
+                       **kw):
 
         assert [x_front_location,y_front_location,z_front_location].count(None) == 2,\
                Exception('At least one and only one of [x,y,z]_front_location should be specified.')
-
-        self.x_front_location = x_front_location
-        self.y_front_location = y_front_location
-        self.z_front_location = z_front_location
-        self.depth = depth
-        self.number_of_cells = number_of_cells
 
         self.handle_init(kw)
 

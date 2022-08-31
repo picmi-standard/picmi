@@ -2,14 +2,24 @@
 These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all diagnostics related
 """
+import typing
+from collections.abc import Sequence
+
+from autoclass import autoargs
+from typeguard import typechecked
 
 from .base import _ClassWithInit
+from . import fields
+from . import particles
+from . import picmi_types
+
 
 # ----------------------------
 # Simulation frame diagnostics
 # ----------------------------
 
 
+@typechecked
 class PICMI_FieldDiagnostic(_ClassWithInit):
     """
     Defines the electromagnetic field diagnostics in the simulation frame
@@ -32,35 +42,34 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
       - name: Sets the base name for the diagnostic output files (optional)
 
     """
-    def __init__(self, grid, period, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 number_of_cells = None,
-                 lower_bound = None,
-                 upper_bound = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.GridType,
+                       period : int,
+                       data_list : Sequence[str] = None,
+                       write_dir : str = None,
+                       step_min : int = None,
+                       step_max : int = None,
+                       number_of_cells : Sequence[int] = None,
+                       lower_bound : Sequence[float] = None,
+                       upper_bound : Sequence[float] = None,
+                       parallelio : bool = None,
+                       name : str = None,
+                       **kw):
 
-        if data_list is not None:
-            assert isinstance(data_list, list), 'FieldDiagnostic: data_list must be a list'
-
-        self.grid = grid
-        self.period = period
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.parallelio = parallelio
-        self.name = name
+        if number_of_cells is not None:
+            assert len(number_of_cells) == grid.number_of_dimensions, \
+                'FieldDiagnostic: length of number_of_cells must be the same as the dimensionality of the grid'
+        if lower_bound is not None:
+            assert len(lower_bound) == grid.number_of_dimensions, \
+                'FieldDiagnostic: length of lower_bound must be the same as the dimensionality of the grid'
+        if upper_bound is not None:
+            assert len(upper_bound) == grid.number_of_dimensions, \
+                'FieldDiagnostic: length of upper_bound must be the same as the dimensionality of the grid'
 
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
     """
     Defines the electrostatic field diagnostics in the simulation frame
@@ -82,35 +91,34 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, period, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 number_of_cells = None,
-                 lower_bound = None,
-                 upper_bound = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.GridType,
+                       period : int,
+                       data_list : Sequence[str] = None,
+                       write_dir : str = None,
+                       step_min : int = None,
+                       step_max : int = None,
+                       number_of_cells : Sequence[int] = None,
+                       lower_bound : Sequence[float] = None,
+                       upper_bound : Sequence[float] = None,
+                       parallelio : bool = None,
+                       name : str = None,
+                       **kw):
 
-        if data_list is not None:
-            assert isinstance(data_list, list), 'ElectrostaticFieldDiagnostic: data_list must be a list'
-
-        self.grid = grid
-        self.period = period
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.parallelio = parallelio
-        self.name = name
+        if number_of_cells is not None:
+            assert len(number_of_cells) == grid.number_of_dimensions, \
+                'ElectrostaticFieldDiagnostic: length of number_of_cells must be the same as the dimensionality of the grid'
+        if lower_bound is not None:
+            assert len(lower_bound) == grid.number_of_dimensions, \
+                'ElectrostaticFieldDiagnostic: length of lower_bound must be the same as the dimensionality of the grid'
+        if upper_bound is not None:
+            assert len(upper_bound) == grid.number_of_dimensions, \
+                'ElectrostaticFieldDiagnostic: length of upper_bound must be the same as the dimensionality of the grid'
 
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_ParticleDiagnostic(_ClassWithInit) :
     """
     Defines the particle diagnostics in the simulation frame
@@ -128,25 +136,16 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
       - name: Sets the base name for the diagnostic output files (optional)
     """
 
-    def __init__(self, period, species, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
-
-        if data_list is not None:
-            assert isinstance(data_list, list), 'ParticleDiagnostic: data_list must be a list'
-
-        self.period = period
-        self.species = species
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
-        self.parallelio = parallelio
-        self.name = name
+    @autoargs(exclude=['kw'])
+    def __init__(self, period : int,
+                       species : picmi_types.SpeciesArgument,
+                       data_list : Sequence[str] = None,
+                       write_dir : str = None,
+                       step_min : int = None,
+                       step_max : int = None,
+                       parallelio : bool = None,
+                       name : str = None,
+                       **kw):
 
         self.handle_init(kw)
 
@@ -156,6 +155,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
 # ----------------------------
 
 
+@typechecked
 class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
     """
     Defines the electromagnetic field diagnostics in the lab frame
@@ -170,29 +170,22 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
       - parallelio=None: If set to True, field diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
-                 z_subsampling = 1, time_start = 0.,
-                 write_dir = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
-
-        if data_list is not None:
-            assert isinstance(data_list, list), 'LabFrameFieldDiagnostic: data_list must be a list'
-
-        self.grid = grid
-        self.num_snapshots = num_snapshots
-        self.dt_snapshots = dt_snapshots
-        self.z_subsampling = z_subsampling
-        self.time_start = time_start
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.parallelio = parallelio
-        self.name = name
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.GridType,
+                       num_snapshots : int,
+                       dt_snapshots : float,
+                       data_list : Sequence[str] = None,
+                       z_subsampling : int = 1,
+                       time_start : float = 0.,
+                       write_dir : str = None,
+                       parallelio : bool = None,
+                       name : str = None,
+                       **kw):
 
         self.handle_init(kw)
 
 
+@typechecked
 class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
     """
     Defines the particle diagnostics in the lab frame
@@ -208,25 +201,16 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
       - parallelio=None: If set to True, particle diagnostics are dumped in parallel (optional)
       - name: Sets the base name for the diagnostic output files (optional)
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
-                 time_start = 0.,
-                 species = None,
-                 write_dir = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
-
-        if data_list is not None:
-            assert isinstance(data_list, list), 'LabFrameParticleDiagnostic: data_list must be a list'
-
-        self.grid = grid
-        self.num_snapshots = num_snapshots
-        self.dt_snapshots = dt_snapshots
-        self.time_start = time_start
-        self.species = species
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.parallelio = parallelio
-        self.name = name
+    @autoargs(exclude=['kw'])
+    def __init__(self, grid : picmi_types.GridType,
+                       num_snapshots : int,
+                       dt_snapshots : float,
+                       data_list : Sequence[str] = None,
+                       time_start : float = 0.,
+                       species : picmi_types.SpeciesArgument = None,
+                       write_dir : str = None,
+                       parallelio : bool = None,
+                       name : str = None,
+                       **kw):
 
         self.handle_init(kw)

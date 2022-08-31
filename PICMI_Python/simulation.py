@@ -103,17 +103,32 @@ class PICMI_Simulation(_ClassWithInit):
 
 
     def add_species_through_plane(self, species, layout,
-        injection_plane_position, injection_plane_normal_vector,
-        initialize_self_field=None ):
+                                  injection_plane_position, injection_plane_normal_vector,
+                                  initialize_self_field=None):
         """
-        Add species to be used in the simulation
+        Add species to be used in the simulation that are injected through a plane
+        during the simulation.
 
         Parameters
         ----------
-        Same as `add_species`, with the following two possible arguments:
+        - species : object
+              an instance of one of the PICMI species object ; see :doc:`species`
+              Defines added species from the *physical* point of view
+              (e.g. charge, mass, initial distribution of particles)
 
-        - injection_plane_position: Position of one point of the injection plane (vector of floats)
-        - injection_plane_normal_vector: Vector normal to injection plane (vector of floats)
+        - layout : object
+              an instance of one of the PICMI layout object ; see :doc:`layout`
+              Defines how particles are added into the simulation, from the *numerical* point of view
+
+        - initialize_self_field : bool
+              Whether the initial space-charge fields of this species
+              is calculated and added to the simulation
+
+        - injection_plane_position: vector of floats
+              Position of one point of the injection plane
+
+        - injection_plane_normal_vector: vector of floats
+              Vector normal to injection plane
         """
         self.species.append(species)
         self.layouts.append(layout)
@@ -128,18 +143,18 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-          - laser_profile: object
-                one of laser profile objects
-                Specifies the **physical** properties of the laser pulse.
-                (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
+        - laser_profile: object
+              one of laser profile objects
+              Specifies the **physical** properties of the laser pulse.
+              (e.g. spatial and temporal profile, wavelength, amplitude, etc.)
 
-          - injection_method: object (optional)
-                a laser injector object (optional)
-                Specifies how the laser is injected (numerically) into the simulation
-                (e.g. through a laser antenna, or directly added to the mesh).
-                This argument describes an **algorithm**, not a physical object.
-                It is optional. (It is up to each code to define the default method
-                of injection, if the user does not provide injection_method)
+        - injection_method: object (optional)
+              a laser injector object (optional)
+              Specifies how the laser is injected (numerically) into the simulation
+              (e.g. through a laser antenna, or directly added to the mesh).
+              This argument describes an **algorithm**, not a physical object.
+              It is optional. (It is up to each code to define the default method
+              of injection, if the user does not provide injection_method)
         """
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
@@ -150,17 +165,20 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-          - applied_field: object
-                one of the applied field objects
-                Specifies the properties of the applied field.
+        - applied_field: object
+              one of the applied field objects
+              Specifies the properties of the applied field.
         """
         self.applied_fields.append(applied_field)
 
     def add_diagnostic(self, diagnostic):
         """
         Add a diagnostic
-          - diagnostic: object
-                One of the diagnostic objects.
+
+        Parameters
+        ----------
+        - diagnostic: object
+              One of the diagnostic objects.
         """
         self.diagnostics.append(diagnostic)
 
@@ -174,8 +192,8 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameter
         ---------
-        max_steps: int
-            Maximum number of time steps
+        - max_steps: int
+              Maximum number of time steps
         """
         self.max_steps = max_steps
 
@@ -189,8 +207,8 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-        file_name: str
-            The path to the file that will be created.
+        - file_name: str
+              The path to the file that will be created.
         """
         raise NotImplementedError
 
@@ -200,14 +218,14 @@ class PICMI_Simulation(_ClassWithInit):
 
         Parameters
         ----------
-        nsteps: int
-            The number of timesteps
+        - nsteps: int
+              The number of timesteps
         """
         raise NotImplementedError
 
     def extension(self):
         """
-        Reserved for code-specific extensions, for example a class instance
+        Reserved for code-specific extensions, for example returns a class instance
         that has further methods for manipulating a PIC simulation.
         """
         raise NotImplementedError

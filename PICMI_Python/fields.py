@@ -19,23 +19,23 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     grid: grid instance
         Grid object for the diagnostic
 
-    method: string
-        One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', or 'ECT'
+    method: {'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT'}
+        The advance method use to solve Maxwell's equations. The default method is code dependent.
 
-        'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
+        - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
 
-        'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
+        - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
           (https://doi.org/10.1103/PhysRevSTAB.16.041303)
 
-        'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
+        - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
 
-        'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
+        - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
 
-        'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
+        - 'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
 
-        'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
+        - 'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
 
-        'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
+        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
 
     stencil_order: vector of integers
         Order of stencil for each axis (-1=infinite)

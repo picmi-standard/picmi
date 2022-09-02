@@ -23,7 +23,7 @@ def register_constants(implementation_constants):
 
     Parameters
     ----------
-    - implementation_constants: python object
+    implementation_constants: python object
         The object must have as attributes the physical constants
     """
     global _implementation_constants
@@ -65,13 +65,13 @@ class _ClassWithInit(object):
 
         Parameters
         ----------
-        - arg_name: string
+        arg_name: string
             The name of the unsupported argument
 
-        - message: string
+        message: string
             Information to include in the warning/error message
 
-        - raise_error: bool
+        raise_error: bool
             If False (the default), raise a warning. If true, raise an exception
             (which interrupts the code).
 
@@ -103,13 +103,13 @@ class _ClassWithInit(object):
 
         Parameters
         ----------
-        - arg_name: string
+        arg_name: string
             The name of the argument with an unsupported value
 
-        - message: string
+        message: string
             Information to include in the warning/error message
 
-        - raise_error: bool
+        raise_error: bool
             If False (the default), raise a warning. If true, raise an exception
             (which interrupts the code).
 
@@ -135,13 +135,13 @@ class _ClassWithInit(object):
 
         Parameters
         ----------
-        - arg_name: string
+        arg_name: string
             The name of the deprecated argument
 
-        - message: string
+        message: string
             Information to include in the warning/error message
 
-        - raise_error: bool
+        raise_error: bool
             If False (the default), raise a warning. If true, raise an exception
             (which interrupts the code).
 

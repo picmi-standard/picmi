@@ -17,6 +17,9 @@ from .base import _ClassWithInit
 class PICMI_Species(_ClassWithInit):
     """
     Species
+
+    Parameters
+    ----------
       - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - name=None: Name of the species
       - method=None: One of 'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', and 'LLRK4' (Landau-Lifschitz radiation reaction formula with RK-4) (string)
@@ -64,6 +67,9 @@ class PICMI_MultiSpecies(_ClassWithInit):
     INCOMPLETE: proportions argument is not implemented
     Multiple species that are initialized with the same distribution
     Each parameter can be list, giving a value for each species, or a single value which is given to all species.
+
+    Parameters
+    ----------
       - particle_types: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
       - names: Names of the species (optional)
       - charge_states: Charge states of the species (applies to atoms, use None otherwise) (optional)
@@ -155,6 +161,9 @@ class PICMI_MultiSpecies(_ClassWithInit):
 class PICMI_GaussianBunchDistribution(_ClassWithInit):
     """
     Describes a Gaussian distribution of particles
+
+    Parameters
+    ----------
       - n_physical_particles: Number of physical particles in the bunch
       - rms_bunch_size: RMS bunch size at t=0 (vector) [m]
       - rms_velocity=[0,0,0]: RMS velocity spread at t=0 (vector) [m/s]
@@ -181,6 +190,9 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
 class PICMI_UniformDistribution(_ClassWithInit):
     """
     Describes a uniform density distribution of particles
+
+    Parameters
+    ----------
       - density: Physical number density [m^-3]
       - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
       - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
@@ -209,6 +221,9 @@ class PICMI_UniformDistribution(_ClassWithInit):
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """
     Describes a uniform density plasma
+
+    Parameters
+    ----------
       - density_expression: Analytic expression describing physical number density (string) [m^-3]
                             Expression should be in terms of the position, written as 'x', 'y', and 'z'.
                             Parameters can be used in the expression with the values given as keyword arguments.
@@ -278,6 +293,9 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
 class PICMI_ParticleListDistribution(_ClassWithInit):
     """
     Load particles at the specified positions and velocities
+
+    Parameters
+    ----------
       - x=0.: List of x positions of the particles [m]
       - y=0.: List of y positions of the particles [m]
       - z=0.: List of z positions of the particles [m]
@@ -339,6 +357,9 @@ class PICMI_ParticleListDistribution(_ClassWithInit):
 class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
     """
     Describes the injection of particles from a plane
+
+    Parameters
+    ----------
       - position: Position of the particle centroid (vector) [m]
       - plane_normal: Vector normal to the plane of injection (vector) [1]
       - plane_velocity: Velocity of the plane of injection (vector) [m/s]
@@ -356,6 +377,9 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
 class PICMI_GriddedLayout(_ClassWithInit):
     """
     Specifies a gridded layout of particles
+
+    Parameters
+    ----------
     - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
     - grid: grid object specifying the grid to follow (optional)
     If not specified, the underlying grid of the code is used.
@@ -370,6 +394,9 @@ class PICMI_GriddedLayout(_ClassWithInit):
 class PICMI_PseudoRandomLayout(_ClassWithInit):
     """
     Specifies a pseudo-random layout of the particles
+
+    Parameters
+    ----------
 
     Only one of these should be specified:
     - n_macroparticles: total number of macroparticles to load

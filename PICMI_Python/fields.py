@@ -13,27 +13,62 @@ from .base import _ClassWithInit
 class PICMI_ElectromagneticSolver(_ClassWithInit):
     """
     Electromagnetic field solver
-      - grid: grid object to be used by the solver (grid object)
-      - method: One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', or 'ECT' (string)
-        - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
-        - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
+
+    Parameters
+    ----------
+    grid: grid instance
+        Grid object for the diagnostic
+
+    method: string
+        One of 'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', or 'ECT'
+
+        'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
+
+        'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
           (https://doi.org/10.1103/PhysRevSTAB.16.041303)
-        - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
-        - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
-        - 'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
-        - 'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
-        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
-      - stencil_order: Order of stencil for each axis (-1=infinite) (vector of integers)
-      - cfl = None: Fraction of the Courant-Friedrich-Lewy criteria [1] (float)
-      - l_nodal = None: Quantities are at nodes if True, staggered otherwise (boolean)
-      - source_smoother = None: Smoother object to apply to the sources (smoother object)
-      - field_smoother = None: Smoother object to apply to the fields (smoother object)
-      - subcycling = None: level of subcycling for the GPSTD solver (integer)
-      - galilean_velocity = None: Velocity of Galilean reference frame (vector of floats) [m/s]
-      - divE_cleaning = None: Solver uses div(E) cleaning if True (boolean)
-      - divB_cleaning = None: Solver uses div(B) cleaning if True (boolean)
-      - pml_divE_cleaning = None: Solver uses div(E) cleaning in the PML if True (boolean)
-      - pml_divB_cleaning = None: Solver uses div(B) cleaning in the PML if True (boolean)
+
+        'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
+
+        'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
+
+        'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
+
+        'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
+
+        'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
+
+    stencil_order: vector of integers
+        Order of stencil for each axis (-1=infinite)
+
+    cfl: float, optional
+        Fraction of the Courant-Friedrich-Lewy criteria [1]
+
+    l_nodal: bool, optional
+        Quantities are at nodes if True, staggered otherwise
+
+    source_smoother: smoother instance, optional
+        Smoother object to apply to the sources
+
+    field_smoother: smoother instance, optional
+        Smoother object to apply to the fields
+
+    subcycling: integer, optional
+        Level of subcycling for the GPSTD solver
+
+    galilean_velocity: vector of floats, optional
+        Velocity of Galilean reference frame [m/s]
+
+    divE_cleaning: bool, optional
+        Solver uses div(E) cleaning if True
+
+    divB_cleaning: bool, optional
+        Solver uses div(B) cleaning if True
+
+    pml_divE_cleaning: bool, optional
+        Solver uses div(E) cleaning in the PML if True
+
+    pml_divB_cleaning: bool, optional
+        Solver uses div(B) cleaning in the PML if True
     """
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT']
@@ -66,10 +101,20 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
 class PICMI_ElectrostaticSolver(_ClassWithInit):
     """
     Electrostatic field solver
-      - grid: grid object to be used by the solver (grid object)
-      - method = None: One of 'FFT', or 'Multigrid' (string)
-      - required_precision: Level of precision required for iterative solvers (float)
-      - maximum_iterations: Maximum number of iterations for iterative solvers (integer)
+
+    Parameters
+    ----------
+    grid: grid instance
+        Grid object for the diagnostic
+
+    method: string
+        One of 'FFT', or 'Multigrid'
+
+    required_precision: float, optional
+        Level of precision required for iterative solvers
+
+    maximum_iterations: integer, optional
+        Maximum number of iterations for iterative solvers
     """
 
     methods_list = ['FFT', 'Multigrid']
@@ -91,8 +136,14 @@ class PICMI_ElectrostaticSolver(_ClassWithInit):
 class PICMI_MagnetostaticSolver(_ClassWithInit):
     """
     Magnetostatic field solver
-      - grid: grid object to be used by the solver (grid object)
-      - method = None: One of 'FFT', or 'Multigrid' (string)
+
+    Parameters
+    ----------
+    grid: grid instance
+        Grid object for the diagnostic
+
+    method: string
+        One of 'FFT', or 'Multigrid'
     """
 
     methods_list = ['FFT', 'Multigrid']
@@ -116,10 +167,20 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
 class PICMI_BinomialSmoother(_ClassWithInit):
     """
     Descibes a binomial smoother operator (applied to grids)
-    - n_pass: Number of passes along each axis (vector)
-    - compensation: Flags whether to apply comensation along each axis (vector of booleans)
-    - stride: Stride along each axis. (vector)
-    - alpha: Smoothing coefficients along each axis. (vector)
+
+    Parameters
+    ----------
+    n_pass: vector of integers
+        Number of passes along each axis
+
+    compensation: vector of booleans, optional
+        Flags whether to apply comensation along each axis
+
+    stride: vector of integers, optional
+        Stride along each axis
+
+    alpha: vector of floats, optional
+        Smoothing coefficients along each axis
     """
     def __init__(self, n_pass=None, compensation=None, stride=None, alpha=None, **kw):
         self.n_pass = n_pass
@@ -136,35 +197,76 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
     Parameters can be specified either as vectors or separately.
     (If both are specified, the vector is used.)
 
-      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector)
-      - lower_bound: Position of the node at the lower bound (vector) [m]
-      - upper_bound: Position of the node at the upper bound (vector) [m]
-      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector)
-      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
+    Parameters
+    ----------
+    number_of_cells: vector of integers
+        Number of cells along each axis (number of nodes is number_of_cells+1)
 
-      - nx: Number of cells along X (number of nodes=nx+1)
-      - xmin: Position of first node along X [m]
-      - xmax: Position of last node along X [m]
-      - bc_xmin: Boundary condition at min X: One of periodic, open, dirichlet, or neumann
-      - bc_xmax: Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+    lower_bound: vector of floats
+        Position of the node at the lower bound [m]
 
-      - moving_window_velocity: Moving frame velocity (vector) [m/s]
+    upper_bound: vector of floats
+        Position of the node at the upper bound [m]
 
-      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
-                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
-                         lo and hi being vectors of length 2 specifying the extent of the region,
-                         and refinement_factor defaulting to [2,2] (relative to next lower level)
+    lower_boundary_conditions: vector of strings
+        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
 
-      - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
-      - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
-      - xmin_particles: Position of min particle boundary along X [m] (float)
-      - xmax_particles: Position of max particle boundary along X [m] (float)
-      - lower_boundary_conditions_particles: Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - upper_boundary_conditions_particles: Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - bc_xmin_particles: Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_xmax_particles: Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - guard_cells = None: number of guard cells used along each direction (vector of integers)
-      - pml_cells = None: number of Perfectly Matched Layer (PML) cells along each direction (vector of integers)
+    upper_boundary_conditions: vector of strings
+        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+
+    nx: integer
+        Number of cells along X (number of nodes=nx+1)
+
+    xmin: float
+        Position of first node along X [m]
+
+    xmax: float
+        Position of last node along X [m]
+
+    bc_xmin: vector of strings
+        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+
+    bc_xmax: vector of strings
+        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+
+    moving_window_velocity: vector of floats, optional
+        Moving frame velocity [m/s]
+
+    refined_regions: list of lists, optional
+        List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+        with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+        lo and hi being vectors of length 2 specifying the extent of the region,
+        and refinement_factor defaulting to [2,2] (relative to next lower level)
+
+    lower_bound_particles: vector of floats, optional
+        Position of particle lower bound [m]
+
+    upper_bound_particles: vector of floats, optional
+        Position of particle upper bound [m]
+
+    xmin_particles: float, optional
+        Position of min particle boundary along X [m]
+
+    xmax_particles: float, optional
+        Position of max particle boundary along X [m]
+
+    lower_boundary_conditions_particles: vector of strings, optional
+        Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal
+
+    upper_boundary_conditions_particles: vector of strings, optional
+        Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal
+
+    bc_xmin_particles: string, optional
+        Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_xmax_particles: string, optional
+        Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal
+
+    guard_cells: vector of integers, optional
+        Number of guard cells used along each direction
+
+    pml_cells: vector of integers, optional
+        Number of Perfectly Matched Layer (PML) cells along each direction
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx) or a
@@ -287,45 +389,106 @@ class PICMI_CylindricalGrid(_ClassWithInit):
     Parameters can be specified either as vectors or separately.
     (If both are specified, the vector is used.)
 
-      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector)
-      - lower_bound: Position of the node at the lower bound (vector) [m]
-      - upper_bound: Position of the node at the upper bound (vector) [m]
-      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector)
-      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
+    Parameters
+    ----------
+    number_of_cells: vector of integers
+        Number of cells along each axis (number of nodes is number_of_cells+1)
 
-      - nr: Number of cells along R (number of nodes=nr+1)
-      - nz: Number of cells along Z (number of nodes=nz+1)
-      - n_azimuthal_modes: Number of azimuthal modes
-      - rmin: Position of first node along R [m]
-      - rmax: Position of last node along R [m]
-      - zmin: Position of first node along Z [m]
-      - zmax: Position of last node along Z [m]
-      - bc_rmin: Boundary condition at min R: One of open, dirichlet, or neumann
-      - bc_rmax: Boundary condition at max R: One of open, dirichlet, or neumann
-      - bc_zmin: Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
-      - bc_zmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+    lower_bound: vector of floats
+        Position of the node at the lower bound [m]
 
-      - moving_window_velocity: Moving frame velocity (vector) [m/s]
+    upper_bound: vector of floats
+        Position of the node at the upper bound [m]
 
-      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
-                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
-                         lo and hi being vectors of length 2 specifying the extent of the region,
-                         and refinement_factor defaulting to [2,2] (relative to next lower level)
+    lower_boundary_conditions: vector of strings
+        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
 
-      - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
-      - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
-      - rmin_particles: Position of min particle boundary along R [m] (float)
-      - rmax_particles: Position of max particle boundary along R [m] (float)
-      - zmin_particles: Position of min particle boundary along Z [m] (float)
-      - zmax_particles: Position of max particle boundary along Z [m] (float)
-      - lower_boundary_conditions_particles: Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - upper_boundary_conditions_particles: Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - bc_rmin_particles: Boundary condition at min R for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_rmax_particles: Boundary condition at max R for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_zmin_particles: Boundary condition at min Z for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_zmax_particles: Boundary condition at max Z for particles: One of periodic, absorbing, reflect, thermal (string)
-      - guard_cells = None: number of guard cells used along each direction (vector of integers)
-      - pml_cells = None: number of Perfectly Matched Layer (PML) cells along each direction (vector of integers)
+    upper_boundary_conditions: vector of strings
+        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+
+    nr: integer
+        Number of cells along R (number of nodes=nr+1)
+
+    nz: integer
+        Number of cells along Z (number of nodes=nz+1)
+
+    n_azimuthal_modes: integer
+        Number of azimuthal modes
+
+    rmin: float
+        Position of first node along R [m]
+
+    rmax: float
+        Position of last node along R [m]
+
+    zmin: float
+        Position of first node along Z [m]
+
+    zmax: float
+        Position of last node along Z [m]
+
+    bc_rmin: vector of strings
+        Boundary condition at min R: One of open, dirichlet, or neumann
+
+    bc_rmax: vector of strings
+        Boundary condition at max R: One of open, dirichlet, or neumann
+
+    bc_zmin: vector of strings
+        Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
+
+    bc_zmax: vector of strings
+        Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+
+    moving_window_velocity: vector of floats, optional
+        Moving frame velocity [m/s]
+
+    refined_regions: list of lists, optional
+        List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+        with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+        lo and hi being vectors of length 2 specifying the extent of the region,
+        and refinement_factor defaulting to [2,2] (relative to next lower level)
+
+    lower_bound_particles: vector of floats, optional
+        Position of particle lower bound [m]
+
+    upper_bound_particles: vector of floats, optional
+        Position of particle upper bound [m]
+
+    rmin_particles: float, optional
+        Position of min particle boundary along R [m]
+
+    rmax_particles: float, optional
+        Position of max particle boundary along R [m]
+
+    zmin_particles: float, optional
+        Position of min particle boundary along Z [m]
+
+    zmax_particles: float, optional
+        Position of max particle boundary along Z [m]
+
+    lower_boundary_conditions_particles: vector of strings, optional
+        Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal
+
+    upper_boundary_conditions_particles: vector of strings, optional
+        Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal
+
+    bc_rmin_particles: string, optional
+        Boundary condition at min R for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_rmax_particles: string, optional
+        Boundary condition at max R for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_zmin_particles: string, optional
+        Boundary condition at min Z for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_zmax_particles: string, optional
+        Boundary condition at max Z for particles: One of periodic, absorbing, reflect, thermal
+
+    guard_cells: vector of integers, optional
+        Number of guard cells used along each direction
+
+    pml_cells: vector of integers, optional
+        Number of Perfectly Matched Layer (PML) cells along each direction
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nr and nz) or a
@@ -356,7 +519,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         assert (upper_bound is None) and (rmax is not None and zmax is not None) or \
                (upper_bound is not None) and (rmax is None and zmax is None), \
                 Exception('Either upper_bound or rmax and zmax must be specified')
-        # --- Allow bc_rmin to be None since it will usually be the axis.
+        # --Allow bc_rmin to be None since it will usually be the axis.
         assert (lower_boundary_conditions is None) and (bc_zmin is not None) or \
                (lower_boundary_conditions is not None) and (bc_rmin is None and bc_zmin is None), \
                 Exception('Either lower_boundary_conditions or bc_rmin and bc_zmin must be specified')
@@ -449,44 +612,103 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
     Parameters can be specified either as vectors or separately.
     (If both are specified, the vector is used.)
 
-      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector)
-      - lower_bound: Position of the node at the lower bound (vector) [m]
-      - upper_bound: Position of the node at the upper bound (vector) [m]
-      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector)
-      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector)
+    Parameters
+    ----------
+    number_of_cells: vector of integers
+        Number of cells along each axis (number of nodes is number_of_cells+1)
 
-      - nx: Number of cells along X (number of nodes=nx+1)
-      - ny: Number of cells along Y (number of nodes=ny+1)
-      - xmin: Position of first node along X [m]
-      - xmax: Position of last node along X [m]
-      - ymin: Position of first node along Y [m]
-      - ymax: Position of last node along Y [m]
-      - bc_xmin: Boundary condition at min X: One of periodic, open, dirichlet, or neumann
-      - bc_xmax: Boundary condition at max X: One of periodic, open, dirichlet, or neumann
-      - bc_ymin: Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
-      - bc_ymax: Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
+    lower_bound: vector of floats
+        Position of the node at the lower bound [m]
 
-      - moving_window_velocity: Moving frame velocity (vector) [m/s]
+    upper_bound: vector of floats
+        Position of the node at the upper bound [m]
 
-      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
-                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
-                         lo and hi being vectors of length 2 specifying the extent of the region,
-                         and refinement_factor defaulting to [2,2] (relative to next lower level)
+    lower_boundary_conditions: vector of strings
+        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
 
-      - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
-      - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
-      - xmin_particles: Position of min particle boundary along X [m] (float)
-      - xmax_particles: Position of max particle boundary along X [m] (float)
-      - ymin_particles: Position of min particle boundary along Y [m] (float)
-      - ymax_particles: Position of max particle boundary along Y [m] (float)
-      - lower_boundary_conditions_particles: Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - upper_boundary_conditions_particles: Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - bc_xmin_particles: Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_xmax_particles: Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymin_particles: Boundary condition at min Y for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymax_particles: Boundary condition at max Y for particles: One of periodic, absorbing, reflect, thermal (string)
-      - guard_cells = None: number of guard cells used along each direction (vector of integers)
-      - pml_cells = None: number of Perfectly Matched Layer (PML) cells along each direction (vector of integers)
+    upper_boundary_conditions: vector of strings
+        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+
+    nx: integer
+        Number of cells along X (number of nodes=nx+1)
+
+    ny: integer
+        Number of cells along Y (number of nodes=ny+1)
+
+    xmin: float
+        Position of first node along X [m]
+
+    xmax: float
+        Position of last node along X [m]
+
+    ymin: float
+        Position of first node along Y [m]
+
+    ymax: float
+        Position of last node along Y [m]
+
+    bc_xmin: vector of strings
+        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+
+    bc_xmax: vector of strings
+        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+
+    bc_ymin: vector of strings
+        Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
+
+    bc_ymax: vector of strings
+        Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
+
+    moving_window_velocity: vector of floats, optional
+        Moving frame velocity [m/s]
+
+    refined_regions: list of lists, optional
+        List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+        with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+        lo and hi being vectors of length 2 specifying the extent of the region,
+        and refinement_factor defaulting to [2,2] (relative to next lower level)
+
+    lower_bound_particles: vector of floats, optional
+        Position of particle lower bound [m]
+
+    upper_bound_particles: vector of floats, optional
+        Position of particle upper bound [m]
+
+    xmin_particles: float, optional
+        Position of min particle boundary along X [m]
+
+    xmax_particles: float, optional
+        Position of max particle boundary along X [m]
+
+    ymin_particles: float, optional
+        Position of min particle boundary along Y [m]
+
+    ymax_particles: float, optional
+        Position of max particle boundary along Y [m]
+
+    lower_boundary_conditions_particles: vector of strings, optional
+        Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal
+
+    upper_boundary_conditions_particles: vector of strings, optional
+        Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal
+
+    bc_xmin_particles: string, optional
+        Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_xmax_particles: string, optional
+        Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_ymin_particles: string, optional
+        Boundary condition at min Y for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_ymax_particles: string, optional
+        Boundary condition at max Y for particles: One of periodic, absorbing, reflect, thermal
+
+    guard_cells: vector of integers, optional
+        Number of guard cells used along each direction
+
+    pml_cells: vector of integers, optional
+        Number of Perfectly Matched Layer (PML) cells along each direction
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx and ny) or a
@@ -611,52 +833,130 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
     Parameters can be specified either as vectors or separately.
     (If both are specified, the vector is used.)
 
-      - number_of_cells: Number of cells along each axis (number of nodes is number_of_cells+1) (vector of integers)
-      - lower_bound: Position of the node at the lower bound (vector of floats) [m]
-      - upper_bound: Position of the node at the upper bound (vector of floats) [m]
-      - lower_boundary_conditions: Conditions at lower boundaries, periodic, open, dirichlet, or neumann (vector of strings)
-      - upper_boundary_conditions: Conditions at upper boundaries, periodic, open, dirichlet, or neumann (vector of strings)
+    Parameters
+    ----------
+    number_of_cells: vector of integers
+        Number of cells along each axis (number of nodes is number_of_cells+1)
 
-      - nx: Number of cells along X (number of nodes=nx+1) (integer)
-      - ny: Number of cells along Y (number of nodes=ny+1) (integer)
-      - nz: Number of cells along Z (number of nodes=nz+1) (integer)
-      - xmin: Position of first node along X [m] (float)
-      - xmax: Position of last node along X [m] (float)
-      - ymin: Position of first node along Y [m] (float)
-      - ymax: Position of last node along Y [m] (float)
-      - zmin: Position of first node along Z [m] (float)
-      - zmax: Position of last node along Z [m] (float)
-      - bc_xmin: Boundary condition at min X: One of periodic, open, dirichlet, or neumann (string)
-      - bc_xmax: Boundary condition at max X: One of periodic, open, dirichlet, or neumann (string)
-      - bc_ymin: Boundary condition at min Y: One of periodic, open, dirichlet, or neumann (string)
-      - bc_ymax: Boundary condition at max Y: One of periodic, open, dirichlet, or neumann (string)
-      - bc_zmin: Boundary condition at min Z: One of periodic, open, dirichlet, or neumann (string)
-      - bc_zmax: Boundary condition at max Z: One of periodic, open, dirichlet, or neumann (string)
-      - moving_window_velocity: Moving frame velocity (vector) [m/s]
+    lower_bound: vector of floats
+        Position of the node at the lower bound [m]
 
-      - refined_regions: List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
-                         with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
-                         lo and hi being vectors of length 3 specifying the extent of the region,
-                         and refinement_factor defaulting to [2,2,2] (relative to next lower level)
+    upper_bound: vector of floats
+        Position of the node at the upper bound [m]
 
-      - lower_bound_particles: Position of particle lower bound (vector of floats) [m]
-      - upper_bound_particles: Position of particle upper bound (vector of floats) [m]
-      - xmin_particles: Position of min particle boundary along X [m] (float)
-      - xmax_particles: Position of max particle boundary along X [m] (float)
-      - ymin_particles: Position of min particle boundary along Y [m] (float)
-      - ymax_particles: Position of max particle boundary along Y [m] (float)
-      - zmin_particles  Position of min particle boundary along Z [m] (float)
-      - zmax_particles: Position of max particle boundary along Z [m] (float)
-      - lower_boundary_conditions_particles: Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - upper_boundary_conditions_particles: Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal (vector of strings)
-      - bc_xmin_particles: Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_xmax_particles: Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymin_particles: Boundary condition at min Y for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_ymax_particles: Boundary condition at max Y for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_zmin_particles: Boundary condition at min Z for particles: One of periodic, absorbing, reflect, thermal (string)
-      - bc_zmax_particles: Boundary condition at max Z for particles: One of periodic, absorbing, reflect, thermal (string)
-      - guard_cells = None: number of guard cells used along each direction (vector of integers)
-      - pml_cells = None: number of Perfectly Matched Layer (PML) cells along each direction (vector of integers)
+    lower_boundary_conditions: vector of strings
+        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
+
+    upper_boundary_conditions: vector of strings
+        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+
+    nx: integer
+        Number of cells along X (number of nodes=nx+1)
+
+    ny: integer
+        Number of cells along Y (number of nodes=ny+1)
+
+    nz: integer
+        Number of cells along Z (number of nodes=nz+1)
+
+    xmin: float
+        Position of first node along X [m]
+
+    xmax: float
+        Position of last node along X [m]
+
+    ymin: float
+        Position of first node along Y [m]
+
+    ymax: float
+        Position of last node along Y [m]
+
+    zmin: float
+        Position of first node along Z [m]
+
+    zmax: float
+        Position of last node along Z [m]
+
+    bc_xmin: string
+        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+
+    bc_xmax: string
+        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+
+    bc_ymin: string
+        Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
+
+    bc_ymax: string
+        Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
+
+    bc_zmin: string
+        Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
+
+    bc_zmax: string
+        Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+
+    moving_window_velocity: vector of floats, optional
+        Moving frame velocity [m/s]
+
+    refined_regions: list of lists, optional
+        List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor],
+        with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc,
+        lo and hi being vectors of length 3 specifying the extent of the region,
+        and refinement_factor defaulting to [2,2,2] (relative to next lower level)
+
+    lower_bound_particles: vector of floats, optional
+        Position of particle lower bound [m]
+
+    upper_bound_particles: vector of floats, optional
+        Position of particle upper bound [m]
+
+    xmin_particles: float, optional
+        Position of min particle boundary along X [m]
+
+    xmax_particles: float, optional
+        Position of max particle boundary along X [m]
+
+    ymin_particles: float, optional
+        Position of min particle boundary along Y [m]
+
+    ymax_particles: float, optional
+        Position of max particle boundary along Y [m]
+
+    zmin_particles float, optional
+        Position of min particle boundary along Z [m]
+
+    zmax_particles: float, optional
+        Position of max particle boundary along Z [m]
+
+    lower_boundary_conditions_particles: vector of strings, optional
+        Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal
+
+    upper_boundary_conditions_particles: vector of strings, optional
+        Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal
+
+    bc_xmin_particles: string, optional
+        Boundary condition at min X for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_xmax_particles: string, optional
+        Boundary condition at max X for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_ymin_particles: string, optional
+        Boundary condition at min Y for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_ymax_particles: string, optional
+        Boundary condition at max Y for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_zmin_particles: string, optional
+        Boundary condition at min Z for particles: One of periodic, absorbing, reflect, thermal
+
+    bc_zmax_particles: string, optional
+        Boundary condition at max Z for particles: One of periodic, absorbing, reflect, thermal
+
+    guard_cells: vector of integers, optional
+        Number of guard cells used along each direction
+
+    pml_cells: vector of integers, optional
+        Number of Perfectly Matched Layer (PML) cells along each direction
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx, ny, and nz) or a
@@ -767,8 +1067,16 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2,2,2]):
         """Add a refined region.
-        level: the refinement level, with 1 being the first level of refinement, 2 being the second etc.
-        lo, hi: vectors of length 3 specifying the extent of the region
-        refinement_factor: defaulting to [2,2,2] (relative to next lower level)
+
+        Parameters
+        ----------
+        level: integer
+            The refinement level, with 1 being the first level of refinement, 2 being the second etc.
+
+        lo, hi: vectors of floats
+            Each is a vector of length 3 specifying the extent of the region
+
+        refinement_factor: vector of integers, optional
+            Defaulting to [2,2,2] (relative to next lower level)
         """
         self.refined_regions.append([level, lo, hi, refinement_factor])

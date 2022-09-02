@@ -16,34 +16,34 @@ class PICMI_Simulation(_ClassWithInit):
 
     Parameters
     ----------
-    solver: object
+    - solver: object
         An instance of one of the PICMI field solvers ; see :doc:`field`
         This is the field solver to be used in the simulation
 
-    time_step_size: float
+    - time_step_size: float
         Absolute time step size of the simulation [s]
         (needed if the CFL is not specified elsewhere)
 
-    max_steps: int
+    - max_steps: int
         Maximum number of time steps
         (Specify either this, or `max_time`, or use the `step` function directly)
 
-    max_time: float
+    - max_time: float
         Maximum physical time to run the simulation [s]
         (Specify either this, or `max_steps`, or use the `step` function directly)
 
-    verbose: int
+    - verbose: int
         Verbosity flag (A larger integer results in more verbose output.)
 
-    particle_shape: str
+    - particle_shape: str
         Default particle shape for species added to this simulation.
         Possible values are 'NGP', 'linear', 'quadratic', 'cubic'.
 
-    gamma_boost: float
+    - gamma_boost: float
         Lorentz factor of the boosted simulation frame.
         (Note that all input values should be in the lab frame)
 
-    kw: additional code arguments
+    - kw: additional code arguments
         Code specific arguments ; should be prefixed with the `codename`
     """
 

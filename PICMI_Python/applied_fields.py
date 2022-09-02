@@ -16,31 +16,29 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
 
     Parameters
     ----------
-    - Ex: float
-          Constant Ex field [V/m]
+    Ex: float, default=0.
+        Constant Ex field [V/m]
 
-    - Ey: float
-          Constant Ey field [V/m]
+    Ey: float, default=0.
+        Constant Ey field [V/m]
 
-    - Ez: float
-          Constant Ez field [V/m]
+    Ez: float, default=0.
+        Constant Ez field [V/m]
 
-    - Bx: float
-          Constant Bx field [T]
+    Bx: float, default=0.
+        Constant Bx field [T]
 
-    - By: float
-          Constant By field [T]
+    By: float, default=0.
+        Constant By field [T]
 
-    - Bz: float
+    Bz: float, default=0.
         Constant Bz field [T]
 
-    - lower_bound: vector
+    lower_bound: vector, optional
         Lower bound of the region where the field is applied [m].
-        (default = [None,None,None])
 
-    - upper_bound: vector
+    upper_bound: vector, optional
         Upper bound of the region where the field is applied [m]
-        (default = [None,None,None])
     """
     def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
                  lower_bound=[None,None,None], upper_bound=[None,None,None],
@@ -69,31 +67,29 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
 
     Parameters
     ----------
-    - Ex_expression: string
-          Analytic expression describing Ex field [V/m]
+    Ex_expression: string, optional
+        Analytic expression describing Ex field [V/m]
 
-    - Ey_expression: string
-          Analytic expression describing Ey field [V/m]
+    Ey_expression: string, optional
+        Analytic expression describing Ey field [V/m]
 
-    - Ez_expression: string
-          Analytic expression describing Ez field [V/m]
+    Ez_expression: string, optional
+        Analytic expression describing Ez field [V/m]
 
-    - Bx_expression: string
-          Analytic expression describing Bx field [T]
+    Bx_expression: string, optional
+        Analytic expression describing Bx field [T]
 
-    - By_expression: string
-          Analytic expression describing By field [T]
+    By_expression: string, optional
+        Analytic expression describing By field [T]
 
-    - Bz_expression: string
-          Analytic expression describing Bz field [T]
+    Bz_expression: string, optional
+        Analytic expression describing Bz field [T]
 
-    - lower_bound: vector
+    lower_bound: vector, optional
         Lower bound of the region where the field is applied [m].
-        (default = [None,None,None])
 
-    - upper_bound: vector
+    upper_bound: vector, optional
         Upper bound of the region where the field is applied [m]
-        (default = [None,None,None])
     """
     def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
                        Bx_expression=None, By_expression=None, Bz_expression=None,
@@ -135,20 +131,20 @@ class PICMI_Mirror(_ClassWithInit):
 
     Parameters
     ----------
-    - x_front_location: float
-          Location in x of the front of the nirror [m]
+    x_front_location: float, optional (see comment below)
+        Location in x of the front of the nirror [m]
 
-    - y_front_location: float
-          Location in y of the front of the nirror [m]
+    y_front_location: float, optional (see comment below)
+        Location in y of the front of the nirror [m]
 
-    - z_front_location: float
-          Location in z of the front of the nirror [m]
+    z_front_location: float, optional (see comment below)
+        Location in z of the front of the nirror [m]
 
-    - depth: float
-          Depth of the mirror [m]
+    depth: float, optional (see comment below)
+        Depth of the mirror [m]
 
-    - number_of_cells: integer
-          Minimum numer of cells zeroed out
+    number_of_cells: integer, optional (see comment below)
+        Minimum numer of cells zeroed out
 
     Only one of the [x,y,z]_front_location should be specified. The mirror will be set
     perpendicular to the respective direction and infinite in the others.

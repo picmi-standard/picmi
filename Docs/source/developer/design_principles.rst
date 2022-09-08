@@ -48,7 +48,7 @@ Computations inside PICMI
 PICMI defines a parameter structure. Convenient computations are
 performed automatically.
 
-   “Computations” here are filling in different representations of the
+   "Computations" here are filling in different representations of the
    same input data.
 
 Redundancies are allowed, though should be limited to different representations of a physical concept (e.g. laser a0/e0).
@@ -85,7 +85,7 @@ Types
 For simplicity **strong typing** is used, i.e. variables are checked
 against a finite list of type specifications. However, this finite list
 of type specifications is kept **permissive**, including (1) general
-types (e.g. iterable instead of “list”), and (2) common library types
+types (e.g. iterable instead of "list"), and (2) common library types
 (e.g. numpy types).
 
 Identifying Objects

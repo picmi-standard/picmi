@@ -16,17 +16,49 @@ from .base import _ClassWithInit
 
 class PICMI_Species(_ClassWithInit):
     """
-    Species
-      - particle_type=None: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
-      - name=None: Name of the species
-      - method=None: One of 'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', and 'LLRK4' (Landau-Lifschitz radiation reaction formula with RK-4) (string)
-                     code-specific method can be specified using 'other:<method>'
-      - charge_state=None: Charge state of the species (applies to atoms) [1]
-      - charge=None: Particle charge, required when type is not specified, otherwise determined from type [C]
-      - mass=None: Particle mass, required when type is not specified, otherwise determined from type [kg]
-      - initial_distribution=None: The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
-      - density_scale=None: A scale factor on the density given by the initial_distribution (optional)
-      - particle_shape: Particle shape used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
+    Sets up the species to be simulated.
+    The species charge and mass can be specified by setting the particle type or by setting them directly.
+    If the particle type is specified, the charge or mass can be set to override the value from the type.
+
+    Parameters
+    ----------
+    particle_type: string, optional
+        A string specifying an elementary particle, atom, or other, as defined in
+        the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
+
+    name: string, optional
+        Name of the species
+
+    method: {'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', 'LLRK4'}
+        The particle advance method to use. Code-specific method can be specified using 'other:<method>'. The default is code
+        dependent.
+
+        - 'Boris': Standard "leap-frog" Boris advance
+        - 'Vay': 
+        - 'Higuera-Cary':
+        - 'Li' :
+        - 'free-streaming': Advance with no fields
+        - 'LLRK4': Landau-Lifschitz radiation reaction formula with RK-4)
+
+    charge_state: float, optional
+        Charge state of the species (applies only to atoms) [1]
+
+    charge: float, optional
+        Particle charge, required when type is not specified, otherwise determined from type [C]
+
+    mass: float, optional
+        Particle mass, required when type is not specified, otherwise determined from type [kg]
+
+    initial_distribution: distribution instance
+        The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
+
+    density_scale: float, optional
+        A scale factor on the density given by the initial_distribution
+
+    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
+        Particle shape used for deposition and gather.
+        If not specified, the value from the `Simulation` object will be used.
+        Other values maybe specified that are code dependent.
     """
 
     methods_list = ['Boris' , 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4']
@@ -62,17 +94,39 @@ class PICMI_Species(_ClassWithInit):
 class PICMI_MultiSpecies(_ClassWithInit):
     """
     INCOMPLETE: proportions argument is not implemented
-    Multiple species that are initialized with the same distribution
+    Multiple species that are initialized with the same distribution.
     Each parameter can be list, giving a value for each species, or a single value which is given to all species.
-      - particle_types: A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
-      - names: Names of the species (optional)
-      - charge_states: Charge states of the species (applies to atoms, use None otherwise) (optional)
-      - charges: Particle charges, required when type is not specified, otherwise determined from type [C]
-      - masses: Particle masses, required when type is not specified, otherwise determined from type [kg]
-      - proportions: Proportions of the initial distribution made up by each species
+    The species charge and mass can be specified by setting the particle type or by setting them directly.
+    If the particle type is specified, the charge or mass can be set to override the value from the type.
 
-      - initial_distribution: Initial particle distribution, applied to all species
-      - particle_shape: Particle shape for all speecies used for deposition and gather ; if None, the default from the `Simulation` object will be used. Possible values are 'NGP', 'linear', 'quadratic', 'cubic'
+    Parameters
+    ----------
+    particle_types: list of strings, optional
+        A string specifying an elementary particle, atom, or other, as defined in
+        the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
+
+    names: list of strings, optional
+        Names of the species
+
+    charge_states: list of floats, optional
+        Charge states of the species (applies only to atoms)
+
+    charges: list of floats, optional
+        Particle charges, required when type is not specified, otherwise determined from type [C]
+
+    masses: list of floats, optional
+        Particle masses, required when type is not specified, otherwise determined from type [kg]
+
+    proportions: list of floats, optional
+        Proportions of the initial distribution made up by each species
+
+    initial_distribution: distribution instance
+        Initial particle distribution, applied to all species
+
+    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
+        Particle shape used for deposition and gather.
+        If not specified, the value from the `Simulation` object will be used.
+        Other values maybe specified that are code dependent.
     """
     # --- Note to developer: This class attribute needs to be set to the Species class
     # --- defined in the codes PICMI implementation.
@@ -155,12 +209,26 @@ class PICMI_MultiSpecies(_ClassWithInit):
 class PICMI_GaussianBunchDistribution(_ClassWithInit):
     """
     Describes a Gaussian distribution of particles
-      - n_physical_particles: Number of physical particles in the bunch
-      - rms_bunch_size: RMS bunch size at t=0 (vector) [m]
-      - rms_velocity=[0,0,0]: RMS velocity spread at t=0 (vector) [m/s]
-      - centroid_position=[0,0,0]: Position of the bunch centroid at t=0 (vector) [m]
-      - centroid_velocity=[0,0,0]: Velocity (gamma*V) of the bunch centroid at t=0 (vector) [m/s]
-      - velocity_divergence=[0,0,0]: Expansion rate of the bunch at t=0 (vector) [m/s/m]
+
+    Parameters
+    ----------
+    n_physical_particles: integer
+        Number of physical particles in the bunch
+
+    rms_bunch_size: vector of floats
+        RMS bunch size at t=0 [m]
+
+    rms_velocity: vector of floats, default=[0.,0.,0.]
+        RMS velocity spread at t=0 [m/s]
+
+    centroid_position: vector of floats, default=[0.,0.,0.]
+        Position of the bunch centroid at t=0 [m]
+
+    centroid_velocity: vector of floats, default=[0.,0.,0.]
+        Velocity (gamma*V) of the bunch centroid at t=0 [m/s]
+
+    velocity_divergence: vector of floats, default=[0.,0.,0.]
+        Expansion rate of the bunch at t=0 [m/s/m]
     """
     def __init__(self,n_physical_particles, rms_bunch_size,
                  rms_velocity = [0.,0.,0.],
@@ -181,12 +249,26 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
 class PICMI_UniformDistribution(_ClassWithInit):
     """
     Describes a uniform density distribution of particles
-      - density: Physical number density [m^-3]
-      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
-      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
-      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
-      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
+
+    Parameters
+    ----------
+    density: float
+        Physical number density [m^-3]
+
+    lower_bound: vector of floats, optional
+        Lower bound of the distribution [m]
+
+    upper_bound: vector of floats, optional
+        Upper bound of the distribution [m]
+
+    rms_velocity: vector of floats, default=[0.,0.,0.]
+        Thermal velocity spread [m/s]
+
+    directed_velocity: vector of floats, default=[0.,0.,0.]
+        Directed, average, velocity [m/s]
+
+    fill_in: bool, optional
+        Flags whether to fill in the empty spaced opened up when the grid moves
     """
 
     def __init__(self, density,
@@ -209,20 +291,38 @@ class PICMI_UniformDistribution(_ClassWithInit):
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """
     Describes a uniform density plasma
-      - density_expression: Analytic expression describing physical number density (string) [m^-3]
-                            Expression should be in terms of the position, written as 'x', 'y', and 'z'.
-                            Parameters can be used in the expression with the values given as keyword arguments.
-      - momentum_expressions=[None, None, None]: Analytic expressions describing the gamma*velocity for each axis (vector of strings) [m/s]
-                                                 Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
-                                                 Parameters can be used in the expression with the values given as keyword arguments.
-                                                 For any axis not supplied, directed_velocity will be used.
-      - lower_bound=[None,None,None]: Lower bound of the distribution (vector) [m]
-      - upper_bound=[None,None,None]: Upper bound of the distribution (vector) [m]
-      - rms_velocity=[0,0,0]: Thermal velocity spread (vector) [m/s]
-      - directed_velocity=[0,0,0]: Directed, average, velocity (vector) [m/s]
-      - fill_in: Flags whether to fill in the empty spaced opened up when the grid moves
 
-      # This will create a distribution where the density is n0 below rmax and zero elsewhere.
+    Parameters
+    ----------
+    density_expression: string
+        Analytic expression describing physical number density (string) [m^-3].
+        Expression should be in terms of the position, written as 'x', 'y', and 'z'.
+        Parameters can be used in the expression with the values given as keyword arguments.
+
+    momentum_expressions: list of strings
+        Analytic expressions describing the gamma*velocity for each axis [m/s].
+        Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
+        Parameters can be used in the expression with the values given as keyword arguments.
+        For any axis not supplied (set to None), directed_velocity will be used.
+
+    lower_bound: vector of floats, optional
+        Lower bound of the distribution [m]
+
+    upper_bound: vector of floats, optional
+        Upper bound of the distribution [m]
+
+    rms_velocity: vector of floats, detault=[0.,0.,0.]
+        Thermal velocity spread [m/s]
+
+    directed_velocity: vector of floats, detault=[0.,0.,0.]
+        Directed, average, velocity [m/s]
+
+    fill_in: bool, optional
+        Flags whether to fill in the empty spaced opened up when the grid moves
+
+
+    This will create a distribution where the density is n0 below rmax and zero elsewhere.::
+
       dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
                                   rmax = 1.,
                                   n0 = 1.e20,
@@ -278,13 +378,29 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
 class PICMI_ParticleListDistribution(_ClassWithInit):
     """
     Load particles at the specified positions and velocities
-      - x=0.: List of x positions of the particles [m]
-      - y=0.: List of y positions of the particles [m]
-      - z=0.: List of z positions of the particles [m]
-      - ux=0.: List of ux positions of the particles (ux = gamma*vx) [m/s]
-      - uy=0.: List of uy positions of the particles (uy = gamma*vy) [m/s]
-      - uz=0.: List of uz positions of the particles (uz = gamma*vz) [m/s]
-      - weight: Particle weight or list of weights, number of real particles per simulation particle
+
+    Parameters
+    ----------
+    x: float, default=0.
+        List of x positions of the particles [m]
+
+    y: float, default=0.
+        List of y positions of the particles [m]
+
+    z: float, default=0.
+        List of z positions of the particles [m]
+
+    ux: float, default=0.
+        List of ux positions of the particles (ux = gamma*vx) [m/s]
+
+    uy: float, default=0.
+        List of uy positions of the particles (uy = gamma*vy) [m/s]
+
+    uz: float, default=0.
+        List of uz positions of the particles (uz = gamma*vz) [m/s]
+
+    weight: float
+        Particle weight or list of weights, number of real particles per simulation particle
     """
     def __init__(self, x=0., y=0., z=0., ux=0., uy=0., uz=0., weight=0.,
                  **kw):
@@ -339,10 +455,19 @@ class PICMI_ParticleListDistribution(_ClassWithInit):
 class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
     """
     Describes the injection of particles from a plane
-      - position: Position of the particle centroid (vector) [m]
-      - plane_normal: Vector normal to the plane of injection (vector) [1]
-      - plane_velocity: Velocity of the plane of injection (vector) [m/s]
-      - method: InPlace - method of injection. One of 'InPlace', or 'Plane'
+
+    Parameters
+    ----------
+    position: vector of floats
+        Position of the particle centroid [m]
+
+    plane_normal: vector of floats
+        Vector normal to the plane of injection [1]
+
+    plane_velocity: vector of floats
+        Velocity of the plane of injection [m/s]
+
+    method: {'InPlace', 'Plane'}
     """
     def __init__(self, position, plane_normal, plane_velocity=[0.,0.,0.], method='InPlace', **kw):
         self.position = position
@@ -356,9 +481,15 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
 class PICMI_GriddedLayout(_ClassWithInit):
     """
     Specifies a gridded layout of particles
-    - n_macroparticle_per_cell: number of particles per cell along each axis (vector)
-    - grid: grid object specifying the grid to follow (optional)
-    If not specified, the underlying grid of the code is used.
+
+    Parameters
+    ----------
+    n_macroparticle_per_cell: vector of integers
+        Number of particles per cell along each axis
+
+    grid: grid instance, optional
+        Grid object specifying the grid to follow.
+        If not specified, the underlying grid of the code is used.
     """
     def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
         self.n_macroparticle_per_cell = n_macroparticle_per_cell
@@ -371,12 +502,22 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
     """
     Specifies a pseudo-random layout of the particles
 
-    Only one of these should be specified:
-    - n_macroparticles: total number of macroparticles to load
-    - n_macroparticles_per_cell: number of macroparticles to load per cell
-    - seed: pseudo-random number generator seed (optional)
-    - grid: grid object specifying the grid to follow for n_macroparticles_per_cell (optional)
-    If not specified, the underlying grid of the code is used.
+    Parameters
+    ----------
+    n_macroparticles: integer
+        Total number of macroparticles to load.
+        Either this argument or n_macroparticles_per_cell should be supplied.
+
+    n_macroparticles_per_cell: integer
+        Number of macroparticles to load per cell.
+        Either this argument or n_macroparticles should be supplied.
+
+    seed: integer, optional
+        Pseudo-random number generator seed
+
+    grid: grid instance, optional
+        Grid object specifying the grid to follow for n_macroparticles_per_cell.
+        If not specified, the underlying grid of the code is used.
     """
     def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
 

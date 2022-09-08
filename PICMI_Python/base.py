@@ -19,7 +19,13 @@ def register_codename(_codename):
 _implementation_constants = None
 
 def register_constants(implementation_constants):
-    """This must be called by the implementing code, passing in the constans object"""
+    """This must be called by the implementing code, passing in the constans object
+
+    Parameters
+    ----------
+    implementation_constants: python object
+        The object must have as attributes the physical constants
+    """
     global _implementation_constants
     _implementation_constants = implementation_constants
 
@@ -56,10 +62,18 @@ class _ClassWithInit(object):
 
     def _check_unsupported_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if an unsupported argument was specified by the user
-        - arg_name: The name of the unsupported argument (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the unsupported argument
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called in the "init" method of the
         implementing class for each unsupported argument. For example, for the
@@ -86,10 +100,18 @@ class _ClassWithInit(object):
 
     def _unsupported_value(self, arg_name, message='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
-        - arg_name: The name of the argument with an unsupported value (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the argument with an unsupported value
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called when the implementing code handles
         the input arguments. For example, for 'method' in Species:
@@ -110,10 +132,18 @@ class _ClassWithInit(object):
 
     def _check_deprecated_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if a deprecated argument was specified by the user
-        - arg_name: The name of the deprecated argument (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the deprecated argument
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called within PICMI in the "__init__" method of classes
         for each deprecated argument. This assumes that the argument is still included in the

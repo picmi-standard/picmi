@@ -19,6 +19,9 @@ should take the inputs and convert them to the appropriate inputs for the specif
 **Warning:**
 The standard is still evolving at this point. The most basic components of the standard have been defined and are being refined. New components are being added.
 
+The documentation of the classes is in the numpydoc format - see https://numpydoc.readthedocs.io.
+The classes are setup so that the doc strings of the implementation classes will have the picmistandard
+doc string prepended, followed by any implementation specific doc string.
 
 # For developers
 

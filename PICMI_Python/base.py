@@ -42,6 +42,12 @@ class _DocumentedMetaClass(type):
         if bases and bases[0].__doc__ is not None:
             implementation_doc = attrs.get('__doc__', '')
             if implementation_doc:
+                # The format of the added string is intentional.
+                # The double return "\n\n" is needed to start a new section in the documentation.
+                # Then the four spaces matches the standard level of indentation for doc strings
+                # (assuming PEP8 formatting).
+                # The final return "\n" assumes that the implementation doc string begins with a return,
+                # i.e. a line with only three quotes, """.
                 attrs['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
             else:
                 attrs['__doc__'] = bases[0].__doc__

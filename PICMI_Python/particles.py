@@ -323,10 +323,13 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
 
     This will create a distribution where the density is n0 below rmax and zero elsewhere.::
 
+    .. code-block: python
+
       dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
                                   rmax = 1.,
                                   n0 = 1.e20,
                                   ...)
+
     """
 
     def __init__(self, density_expression,

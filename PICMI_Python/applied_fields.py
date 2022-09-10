@@ -146,6 +146,7 @@ class PICMI_Mirror(_ClassWithInit):
     number_of_cells: integer, optional (see comment below)
         Minimum numer of cells zeroed out
 
+
     Only one of the [x,y,z]_front_location should be specified. The mirror will be set
     perpendicular to the respective direction and infinite in the others.
     The depth of the mirror will be the maximum of the specified depth and number_of_cells,

@@ -18,7 +18,7 @@ class PICMI_Simulation(_ClassWithInit):
     ----------
     solver: field solver instance
         This is the field solver to be used in the simulation.
-        See :doc:`field` for the list of solvers.
+        It should be an instance of field solver classes.
 
     time_step_size: float
         Absolute time step size of the simulation [s].
@@ -79,12 +79,12 @@ class PICMI_Simulation(_ClassWithInit):
         Parameters
         ----------
         species: species instance
-            An instance of one of the PICMI species object; see :doc:`species`.
+            An instance of one of the PICMI species objects.
             Defines species to be added from the *physical* point of view
             (e.g. charge, mass, initial distribution of particles).
 
         layout: layout instance
-            An instance of one of the PICMI layout object; see :doc:`layout`.
+            An instance of one of the PICMI particle layout objects.
             Defines how particles are added into the simulation, from the *numerical* point of view.
 
         initialize_self_field: bool, optional
@@ -108,12 +108,12 @@ class PICMI_Simulation(_ClassWithInit):
         Parameters
         ----------
         species: species instance
-            An instance of one of the PICMI species object; see :doc:`species`.
+            An instance of one of the PICMI species objects.
             Defines species to be added from the *physical* point of view
             (e.g. charge, mass, initial distribution of particles).
 
         layout: layout instance
-            An instance of one of the PICMI layout object; see :doc:`layout`.
+            An instance of one of the PICMI layout objects.
             Defines how particles are added into the simulation, from the *numerical* point of view.
 
         initialize_self_field: bool, optional
@@ -140,7 +140,7 @@ class PICMI_Simulation(_ClassWithInit):
         Parameters
         ----------
         laser_profile: laser instance
-            One of laser profile objects; see :doc:`lasers`.
+            One of laser profile instances.
             Specifies the **physical** properties of the laser pulse
             (e.g. spatial and temporal profile, wavelength, amplitude, etc.).
 
@@ -161,7 +161,7 @@ class PICMI_Simulation(_ClassWithInit):
         Parameters
         ----------
         applied_field: applied field instance
-            One of the applied field instance; see :doc:`applied_fields`.
+            One of the applied field instance.
             Specifies the properties of the applied field.
         """
         self.applied_fields.append(applied_field)
@@ -173,7 +173,7 @@ class PICMI_Simulation(_ClassWithInit):
         Parameters
         ----------
         diagnostic: diagnostic instance
-            One of the diagnostic objects; see :doc:`diagnostics`.
+            One of the diagnostic instances.
         """
         self.diagnostics.append(diagnostic)
 

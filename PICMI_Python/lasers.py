@@ -33,25 +33,54 @@ class PICMI_GaussianLaser(_ClassWithInit):
         formula for simplicity, but are of course taken into account by
         the code, when initializing the laser pulse away from the focal plane.
 
-    Parameters:
-    -----------
-      - wavelength: Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula
-      - waist: Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula
-      - duration: Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
-      - focal_position=[0,0,0]: Position of the laser focus (vector) [m]
-      - centroid_position=[0,0,0]: Position of the laser centroid at time 0 (vector) [m]
-      - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
-      - polarization_direction=[1,0,0]: Direction of polarization (unit vector) [1]
-      - a0: Normalized vector potential at focus
-            Specify either a0 or E0 (E0 takes precedence).
-      - E0: Maximum amplitude of the laser field [V/m]
-            Specify either a0 or E0 (E0 takes precedence).
-      - phi0: Carrier envelope phase (CEP) [rad]
-      - zeta: Spatial chirp at focus (in the lab frame) [m.s]
-      - beta: Angular dispersion at focus (in the lab frame) [rad.s]
-      - phi2: Temporal chirp at focus (in the lab frame) [s^2]
-      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
-      name=None: Optional name of the laser
+    Parameters
+    ----------
+    wavelength: float
+        Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula
+
+    waist: float
+        Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula
+
+    duration: float
+        Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
+
+    focal_position: vector of floats, default=[0,0,0]
+        Position of the laser focus [m]
+
+    centroid_position: vector of floats, default=[0,0,0]
+        Position of the laser centroid at time 0 [m]
+
+    propagation_direction: unit vector of floats, default=[0,0,1]
+        Direction of propagation [1]
+
+    polarization_direction: unit vector of floats, default=[1,0,0]
+        Direction of polarization [1]
+
+    a0: float
+        Normalized vector potential at focus
+        Specify either a0 or E0 (E0 takes precedence).
+
+    E0: float
+        Maximum amplitude of the laser field [V/m]
+        Specify either a0 or E0 (E0 takes precedence).
+
+    phi0: float
+        Carrier envelope phase (CEP) [rad]
+
+    zeta: float
+        Spatial chirp at focus (in the lab frame) [m.s]
+
+    beta: float
+        Angular dispersion at focus (in the lab frame) [rad.s]
+
+    phi2: float
+        Temporal chirp at focus (in the lab frame) [s^2]
+
+    fill_in: bool, default=True
+        Flags whether to fill in the empty spaced opened up when the grid moves
+
+    name: string, optional
+        Optional name of the laser
     """
     def __init__(self, wavelength, waist, duration,
                  focal_position = [0., 0., 0.],
@@ -99,23 +128,41 @@ class PICMI_GaussianLaser(_ClassWithInit):
 class PICMI_AnalyticLaser(_ClassWithInit):
     """
     Specifies a laser with an analytically described distribution
-      - name=None: Optional name of the laser
-      - field_expression: Analytic expression describing the electric field of the laser(string) [V/m]
-                            Expression should be in terms of the position, 'X', 'Y', in the plane orthogonal
-                            to the propagation direction, and 't' the time. The expression should describe
-                            the full field, including the oscillitory component.
-                            Parameters can be used in the expression with the values given as keyword arguments.
-      - propagation_direction=[0,0,1]: Direction of propagation (unit vector) [1]
-      - polarization_direction=[1,0,0]: Direction of polarization (unit vector) [1]
 
-      Even though the parameters below should be built into the expression, some codes require
-      specified values for numerical purposes.
+    Parameters
+    ----------
+    name=None: string, optional
+        Optional name of the laser
 
-      - wavelength: Laser wavelength
-      - amax: Maximum normalized vector potential
-      - Emax: Maximum amplitude of the laser field [V/m]
-      Specify either amax or Emax (Emax takes precedence).
-      - fill_in=True: Flags whether to fill in the empty spaced opened up when the grid moves
+    field_expression: string
+        Analytic expression describing the electric field of the laser [V/m]
+        Expression should be in terms of the position, 'X', 'Y', in the plane orthogonal
+        to the propagation direction, and 't' the time. The expression should describe
+        the full field, including the oscillitory component.
+        Parameters can be used in the expression with the values given as keyword arguments.
+
+    propagation_direction: unit vector of floats, default=[0,0,1]
+        Direction of propagation [1]
+
+    polarization_direction: unit vector of floats, default=[1,0,0]
+        Direction of polarization [1]
+
+    wavelength: float, optional
+        Laser wavelength.
+        This should be built into the expression, but some codes require a specified value for numerical purposes.
+
+    amax: float, optional
+        Maximum normalized vector potential.
+        Specify either amax or Emax (Emax takes precedence).
+        This should be built into the expression, but some codes require a specified value for numerical purposes.
+
+    Emax: float, optional
+        Maximum amplitude of the laser field [V/m].
+        Specify either amax or Emax (Emax takes precedence).
+        This should be built into the expression, but some codes require a specified value for numerical purposes.
+
+    fill_in: bool, default=True
+        Flags whether to fill in the empty spaced opened up when the grid moves
     """
     def __init__(self, field_expression,
                  wavelength,
@@ -168,8 +215,14 @@ class PICMI_AnalyticLaser(_ClassWithInit):
 class PICMI_LaserAntenna(_ClassWithInit):
     """
     Specifies the laser antenna injection method
-      - position: Position of antenna launching the laser (vector) [m]
-      - normal_vector: Vector normal to antenna plane (vector) [1]
+
+    Parameters
+    ----------
+    position: vector of strings
+        Position of antenna launching the laser [m]
+
+    normal_vector: vector of strings
+        Vector normal to antenna plane [1]
     """
     def __init__(self, position, normal_vector, **kw):
 

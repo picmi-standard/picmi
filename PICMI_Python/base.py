@@ -19,14 +19,42 @@ def register_codename(_codename):
 _implementation_constants = None
 
 def register_constants(implementation_constants):
-    """This must be called by the implementing code, passing in the constans object"""
+    """This must be called by the implementing code, passing in the constans object
+
+    Parameters
+    ----------
+    implementation_constants: python object
+        The object must have as attributes the physical constants
+    """
     global _implementation_constants
     _implementation_constants = implementation_constants
 
 def _get_constants():
     return _implementation_constants
 
-class _ClassWithInit(object):
+
+class _DocumentedMetaClass(type):
+    """This is used as a metaclass that combines the __doc__ of the picmistandard base and of the implementation"""
+    def __new__(cls, name, bases, attrs):
+        # "if bases" skips this for the _ClassWithInit (which has no bases)
+        # "if bases[0].__doc__ is not None" skips this for the picmistandard classes since their bases[0] (i.e. _ClassWithInit)
+        # has no __doc__.
+        if bases and bases[0].__doc__ is not None:
+            implementation_doc = attrs.get('__doc__', '')
+            if implementation_doc:
+                # The format of the added string is intentional.
+                # The double return "\n\n" is needed to start a new section in the documentation.
+                # Then the four spaces matches the standard level of indentation for doc strings
+                # (assuming PEP8 formatting).
+                # The final return "\n" assumes that the implementation doc string begins with a return,
+                # i.e. a line with only three quotes, """.
+                attrs['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+            else:
+                attrs['__doc__'] = bases[0].__doc__
+        return super(_DocumentedMetaClass, cls).__new__(cls, name, bases, attrs)
+
+
+class _ClassWithInit(metaclass=_DocumentedMetaClass):
     def handle_init(self, kw):
         # --- Grab all keywords for the current code.
         # --- Arguments for other supported codes are ignored.
@@ -56,10 +84,18 @@ class _ClassWithInit(object):
 
     def _check_unsupported_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if an unsupported argument was specified by the user
-        - arg_name: The name of the unsupported argument (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the unsupported argument
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called in the "init" method of the
         implementing class for each unsupported argument. For example, for the
@@ -86,10 +122,18 @@ class _ClassWithInit(object):
 
     def _unsupported_value(self, arg_name, message='', raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
-        - arg_name: The name of the argument with an unsupported value (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the argument with an unsupported value
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called when the implementing code handles
         the input arguments. For example, for 'method' in Species:
@@ -110,10 +154,18 @@ class _ClassWithInit(object):
 
     def _check_deprecated_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if a deprecated argument was specified by the user
-        - arg_name: The name of the deprecated argument (string)
-        - message: Information to include in the warning/error message (string)
-        - raise_error: If False (the default), raise a warning. If true, raise an exception
-                       (which interrupts the code).
+
+        Parameters
+        ----------
+        arg_name: string
+            The name of the deprecated argument
+
+        message: string
+            Information to include in the warning/error message
+
+        raise_error: bool
+            If False (the default), raise a warning. If true, raise an exception
+            (which interrupts the code).
 
         Implementation note: This should be called within PICMI in the "__init__" method of classes
         for each deprecated argument. This assumes that the argument is still included in the

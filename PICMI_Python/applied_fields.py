@@ -13,14 +13,32 @@ from .base import _ClassWithInit
 class PICMI_ConstantAppliedField(_ClassWithInit):
     """
     Describes a constant applied field
-      - Ex: Constant Ex field (float) [V/m]
-      - Ey: Constant Ey field (float) [V/m]
-      - Ez: Constant Ez field (float) [V/m]
-      - Bx: Constant Bx field (float) [T]
-      - By: Constant By field (float) [T]
-      - Bz: Constant Bz field (float) [T]
-      - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
-      - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
+
+    Parameters
+    ----------
+    Ex: float, default=0.
+        Constant Ex field [V/m]
+
+    Ey: float, default=0.
+        Constant Ey field [V/m]
+
+    Ez: float, default=0.
+        Constant Ez field [V/m]
+
+    Bx: float, default=0.
+        Constant Bx field [T]
+
+    By: float, default=0.
+        Constant By field [T]
+
+    Bz: float, default=0.
+        Constant Bz field [T]
+
+    lower_bound: vector, optional
+        Lower bound of the region where the field is applied [m].
+
+    upper_bound: vector, optional
+        Upper bound of the region where the field is applied [m]
     """
     def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
                  lower_bound=[None,None,None], upper_bound=[None,None,None],
@@ -42,17 +60,36 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
 class PICMI_AnalyticAppliedField(_ClassWithInit):
     """
     Describes an analytic applied field
-      - Ex_expression: Analytic expression describing Ex field (string) [V/m]
-      - Ey_expression: Analytic expression describing Ey field (string) [V/m]
-      - Ez_expression: Analytic expression describing Ez field (string) [V/m]
-      - Bx_expression: Analytic expression describing Bx field (string) [T]
-      - By_expression: Analytic expression describing By field (string) [T]
-      - Bz_expression: Analytic expression describing Bz field (string) [T]
-               Expressions should be in terms of the position and time, written as 'x', 'y', 'z', 't'.
-               Parameters can be used in the expression with the values given as additional keyword arguments.
-               Expressions should be relative to the lab frame.
-      - lower_bound=[None,None,None]: Lower bound of the region where the field is applied (vector) [m]
-      - upper_bound=[None,None,None]: Upper bound of the region where the field is applied (vector) [m]
+
+    The expressions should be in terms of the position and time, written as 'x', 'y', 'z', 't'.
+    Parameters can be used in the expression with the values given as additional keyword arguments.
+    Expressions should be relative to the lab frame.
+
+    Parameters
+    ----------
+    Ex_expression: string, optional
+        Analytic expression describing Ex field [V/m]
+
+    Ey_expression: string, optional
+        Analytic expression describing Ey field [V/m]
+
+    Ez_expression: string, optional
+        Analytic expression describing Ez field [V/m]
+
+    Bx_expression: string, optional
+        Analytic expression describing Bx field [T]
+
+    By_expression: string, optional
+        Analytic expression describing By field [T]
+
+    Bz_expression: string, optional
+        Analytic expression describing Bz field [T]
+
+    lower_bound: vector, optional
+        Lower bound of the region where the field is applied [m].
+
+    upper_bound: vector, optional
+        Upper bound of the region where the field is applied [m]
     """
     def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
                        Bx_expression=None, By_expression=None, Bz_expression=None,
@@ -91,11 +128,24 @@ class PICMI_Mirror(_ClassWithInit):
     """
     Describes a perfectly reflecting mirror, where the E and B fields are zeroed
     out in a plane of finite thickness.
-      - x_front_location: Location in x of the front of the nirror (float) [m]
-      - y_front_location: Location in y of the front of the nirror (float) [m]
-      - z_front_location: Location in z of the front of the nirror (float) [m]
-      - depth: Depth of the mirror (float) [m]
-      - number_of_cells: Minimum numer of cells zeroed out (integer)
+
+    Parameters
+    ----------
+    x_front_location: float, optional (see comment below)
+        Location in x of the front of the nirror [m]
+
+    y_front_location: float, optional (see comment below)
+        Location in y of the front of the nirror [m]
+
+    z_front_location: float, optional (see comment below)
+        Location in z of the front of the nirror [m]
+
+    depth: float, optional (see comment below)
+        Depth of the mirror [m]
+
+    number_of_cells: integer, optional (see comment below)
+        Minimum numer of cells zeroed out
+
 
     Only one of the [x,y,z]_front_location should be specified. The mirror will be set
     perpendicular to the respective direction and infinite in the others.

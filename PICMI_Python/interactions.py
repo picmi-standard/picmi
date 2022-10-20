@@ -8,9 +8,17 @@ from .base import _ClassWithInit
 class PICMI_FieldIonization(_ClassWithInit):
     """
     Field ionization on an ion species
-    - model: ionization model, e.g. "ADK" (string)
-    - ionized_species: Species that is ionized
-    - product_species: Species in which ionized electrons are stored.
+
+    Parameters
+    ----------
+    model: string
+        Ionization model, e.g. "ADK"
+
+    ionized_species: species instance
+        Species that is ionized
+
+    product_species: species instance
+        Species in which ionized electrons are stored.
     """
     def __init__(self, model, ionized_species, product_species, **kw):
         self.model = model

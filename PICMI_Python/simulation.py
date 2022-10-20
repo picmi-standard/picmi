@@ -182,8 +182,11 @@ class PICMI_Simulation(_ClassWithInit):
     def add_interaction(self, interaction):
         """
         Add an interaction
-          - interaction: object
-                One of the interaction objects.
+
+        Parameters
+        ----------
+        interaction: interaction instance
+            One of the interaction objects.
         """
         self.interactions.append(interaction)
 

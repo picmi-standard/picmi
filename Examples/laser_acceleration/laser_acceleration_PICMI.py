@@ -103,9 +103,10 @@ plasma = picmi.MultiSpecies(
 # Set the ionization for the species number 1 (Argon)
 # and place the created electrons into the species number 2 (electron)
 if picmi.codename != 'warpx':
-    plasma['Argon'].activate_field_ionization(
-        model           = "ADK", # Ammosov-Delone-Krainov model
-        product_species = plasma['e-'])
+    argon_ionization = picmi.FieldIonization(
+                model           = "ADK", # Ammosov-Delone-Krainov model
+                ionized_species = plasma['Argon'],
+                product_species = plasma['e-'])
 
 # --- electron bunch
 beam_dist = picmi.GaussianBunchDistribution(
@@ -190,6 +191,9 @@ if picmi.codename == 'warpx':
     initialize_self_field = False
 sim.add_species(species=beam, layout=beam_layout,
                 initialize_self_field=initialize_self_field)
+
+if picmi.codename != 'warpx':
+    sim.add_interaction(argon_ionization)
 
 # Add the diagnostics
 sim.add_diagnostic(field_diag)

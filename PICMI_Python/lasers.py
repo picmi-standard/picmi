@@ -50,10 +50,10 @@ class PICMI_GaussianLaser(_ClassWithInit):
     polarization_direction: unit vector of floats
         Direction of polarization [1]
 
-    focal_position: vector of floats, default=[0,0,0]
+    focal_position: vector of floats
         Position of the laser focus [m]
 
-    centroid_position: vector of floats, default=[0,0,0]
+    centroid_position: vector of floats
         Position of the laser centroid at time 0 [m]
 
     a0: float
@@ -85,8 +85,8 @@ class PICMI_GaussianLaser(_ClassWithInit):
     def __init__(self, wavelength, waist, duration,
                  propagation_direction,
                  polarization_direction,
-                 focal_position = [0., 0., 0.],
-                 centroid_position = [0., 0., 0.],
+                 focal_position,
+                 centroid_position,
                  a0 = None,
                  E0 = None,
                  phi0 = None,
@@ -222,7 +222,8 @@ class PICMI_LaserAntenna(_ClassWithInit):
         Position of antenna launching the laser [m]
 
     normal_vector: vector of strings, optional
-        Vector normal to antenna plane [1]
+        Vector normal to antenna plane, defaults to the laser direction
+        of propagation [1]
     """
     def __init__(self, position, normal_vector=None, **kw):
 

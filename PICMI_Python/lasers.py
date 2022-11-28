@@ -44,17 +44,17 @@ class PICMI_GaussianLaser(_ClassWithInit):
     duration: float
         Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
 
-    focal_position: vector of floats, default=[0,0,0]
-        Position of the laser focus [m]
-
-    centroid_position: vector of floats, default=[0,0,0]
-        Position of the laser centroid at time 0 [m]
-
-    propagation_direction: unit vector of floats, default=[0,0,1]
+    propagation_direction: unit vector of floats
         Direction of propagation [1]
 
-    polarization_direction: unit vector of floats, default=[1,0,0]
+    polarization_direction: unit vector of floats
         Direction of polarization [1]
+
+    focal_position: vector of floats
+        Position of the laser focus [m]
+
+    centroid_position: vector of floats
+        Position of the laser centroid at time 0 [m]
 
     a0: float
         Normalized vector potential at focus
@@ -83,10 +83,10 @@ class PICMI_GaussianLaser(_ClassWithInit):
         Optional name of the laser
     """
     def __init__(self, wavelength, waist, duration,
-                 focal_position = [0., 0., 0.],
-                 centroid_position = [0., 0., 0.],
-                 propagation_direction = [0., 0., 1.],
-                 polarization_direction = [1., 0., 0.],
+                 propagation_direction,
+                 polarization_direction,
+                 focal_position,
+                 centroid_position,
                  a0 = None,
                  E0 = None,
                  phi0 = None,
@@ -141,15 +141,15 @@ class PICMI_AnalyticLaser(_ClassWithInit):
         the full field, including the oscillitory component.
         Parameters can be used in the expression with the values given as keyword arguments.
 
-    propagation_direction: unit vector of floats, default=[0,0,1]
-        Direction of propagation [1]
-
-    polarization_direction: unit vector of floats, default=[1,0,0]
-        Direction of polarization [1]
-
-    wavelength: float, optional
+    wavelength: float
         Laser wavelength.
         This should be built into the expression, but some codes require a specified value for numerical purposes.
+
+    propagation_direction: unit vector of floats
+        Direction of propagation [1]
+
+    polarization_direction: unit vector of floats
+        Direction of polarization [1]
 
     amax: float, optional
         Maximum normalized vector potential.
@@ -166,8 +166,8 @@ class PICMI_AnalyticLaser(_ClassWithInit):
     """
     def __init__(self, field_expression,
                  wavelength,
-                 propagation_direction = [0., 0., 1.],
-                 polarization_direction = [1., 0., 0.],
+                 propagation_direction,
+                 polarization_direction,
                  amax = None,
                  Emax = None,
                  name = None,
@@ -221,10 +221,11 @@ class PICMI_LaserAntenna(_ClassWithInit):
     position: vector of strings
         Position of antenna launching the laser [m]
 
-    normal_vector: vector of strings
-        Vector normal to antenna plane [1]
+    normal_vector: vector of strings, optional
+        Vector normal to antenna plane, defaults to the laser direction
+        of propagation [1]
     """
-    def __init__(self, position, normal_vector, **kw):
+    def __init__(self, position, normal_vector=None, **kw):
 
         self.position = position
         self.normal_vector = normal_vector

@@ -36,7 +36,7 @@ be updated. The update has several steps, updating the version number, adding a 
 of PyPI.
 
 Currently, the version number is modified by hand by modifying the number in the version.py file, incrementing the second
-number, the minor release version. After changing the file, make a commit with the change with a comment like "Version 0.22.0",
+number, the minor release version. After changing the file, make a commit with the change with a comment like "Version 0.0.22",
 updating the version number of course.
 Please don't make any other changes in the commit. Note that it is ok to push a version update directly to the main branch assuming
 it has been approved.
@@ -44,7 +44,7 @@ it has been approved.
 Next, add a tag and push the changes to the repo:
 
   ```
-  git tag -a 0.22.0 -m "Release 0.22.0"
+  git tag -a 0.0.22 -m "Release 0.0.22"
   git push origin
   git push origin --tags
   ```

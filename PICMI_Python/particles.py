@@ -34,7 +34,7 @@ class PICMI_Species(_ClassWithInit):
         dependent.
 
         - 'Boris': Standard "leap-frog" Boris advance
-        - 'Vay': 
+        - 'Vay':
         - 'Higuera-Cary':
         - 'Li' :
         - 'free-streaming': Advance with no fields
@@ -68,9 +68,9 @@ class PICMI_Species(_ClassWithInit):
 
 
         assert method is None or method in PICMI_Species.methods_list or method.startswith('other:'), \
-            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))    
+            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))
 
-        self.method = method     
+        self.method = method
         self.particle_type = particle_type
         self.name = name
         self.charge = charge
@@ -83,12 +83,6 @@ class PICMI_Species(_ClassWithInit):
         self.interactions = []
 
         self.handle_init(kw)
-
-    def activate_field_ionization(self, model, product_species):
-        # --- TODO: One way of handling interactions is to add a class for each type
-        # ---       of interaction. Instances would be added to the interactions list
-        # ---       instead of the list of parameters.
-        self.interactions.append(['ionization', model, product_species])
 
 
 class PICMI_MultiSpecies(_ClassWithInit):
@@ -287,6 +281,56 @@ class PICMI_UniformDistribution(_ClassWithInit):
 
         self.handle_init(kw)
 
+
+class PICMI_UniformFluxDistribution(_ClassWithInit):
+    """
+    Describes a flux of particles emitted from a plane
+
+    Parameters
+    ----------
+    flux: float
+        Flux of particles [m^-2.s^-1]
+
+    flux_normal_axis: string
+        x, y, or z for 3D, x or z for 2D, or r, t, or z in RZ geometry
+
+    surface_flux_position: double
+        location of the injection plane [m] along the direction
+        specified by `flux_normal_axis`
+
+    flux_direction: int
+        Direction of the flux relative to the plane: -1 or +1
+
+    lower_bound: vector of floats, optional
+        Lower bound of the distribution [m]
+
+    upper_bound: vector of floats, optional
+        Upper bound of the distribution [m]
+
+    rms_velocity: vector of floats, default=[0.,0.,0.]
+        Thermal velocity spread [m/s]
+
+    directed_velocity: vector of floats, default=[0.,0.,0.]
+        Directed, average, velocity [m/s]
+    """
+
+    def __init__(self, flux, flux_normal_axis,
+                 surface_flux_position, flux_direction,
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 rms_velocity = [0.,0.,0.],
+                 directed_velocity = [0.,0.,0.],
+                 **kw):
+        self.flux = flux
+        self.flux_normal_axis = flux_normal_axis
+        self.surface_flux_position = surface_flux_position
+        self.flux_direction = flux_direction
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity = rms_velocity
+        self.directed_velocity = directed_velocity
+
+        self.handle_init(kw)
 
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """

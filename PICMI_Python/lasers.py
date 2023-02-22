@@ -44,16 +44,16 @@ class PICMI_GaussianLaser(_ClassWithInit):
     duration: float
         Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
 
-    propagation_direction: unit vector of floats
+    propagation_direction: unit vector of length 3 of floats
         Direction of propagation [1]
 
-    polarization_direction: unit vector of floats
+    polarization_direction: unit vector of length 3 of floats
         Direction of polarization [1]
 
-    focal_position: vector of floats
+    focal_position: vector of length 3 of floats
         Position of the laser focus [m]
 
-    centroid_position: vector of floats
+    centroid_position: vector of length 3 of floats
         Position of the laser centroid at time 0 [m]
 
     a0: float
@@ -145,10 +145,10 @@ class PICMI_AnalyticLaser(_ClassWithInit):
         Laser wavelength.
         This should be built into the expression, but some codes require a specified value for numerical purposes.
 
-    propagation_direction: unit vector of floats
+    propagation_direction: unit vector of length 3 of floats
         Direction of propagation [1]
 
-    polarization_direction: unit vector of floats
+    polarization_direction: unit vector of length 3 of floats
         Direction of polarization [1]
 
     amax: float, optional

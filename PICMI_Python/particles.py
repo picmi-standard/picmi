@@ -209,19 +209,19 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
     n_physical_particles: integer
         Number of physical particles in the bunch
 
-    rms_bunch_size: vector of floats
+    rms_bunch_size: vector of length 3 of floats
         RMS bunch size at t=0 [m]
 
-    rms_velocity: vector of floats, default=[0.,0.,0.]
+    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
         RMS velocity spread at t=0 [m/s]
 
-    centroid_position: vector of floats, default=[0.,0.,0.]
+    centroid_position: vector of length 3 of floats, default=[0.,0.,0.]
         Position of the bunch centroid at t=0 [m]
 
-    centroid_velocity: vector of floats, default=[0.,0.,0.]
+    centroid_velocity: vector of length 3 of floats, default=[0.,0.,0.]
         Velocity (gamma*V) of the bunch centroid at t=0 [m/s]
 
-    velocity_divergence: vector of floats, default=[0.,0.,0.]
+    velocity_divergence: vector of length 3 of floats, default=[0.,0.,0.]
         Expansion rate of the bunch at t=0 [m/s/m]
     """
     def __init__(self,n_physical_particles, rms_bunch_size,
@@ -249,16 +249,16 @@ class PICMI_UniformDistribution(_ClassWithInit):
     density: float
         Physical number density [m^-3]
 
-    lower_bound: vector of floats, optional
+    lower_bound: vector of length 3 of floats, optional
         Lower bound of the distribution [m]
 
-    upper_bound: vector of floats, optional
+    upper_bound: vector of length 3 of floats, optional
         Upper bound of the distribution [m]
 
-    rms_velocity: vector of floats, default=[0.,0.,0.]
+    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
         Thermal velocity spread [m/s]
 
-    directed_velocity: vector of floats, default=[0.,0.,0.]
+    directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
         Directed, average, velocity [m/s]
 
     fill_in: bool, optional
@@ -349,23 +349,23 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         Parameters can be used in the expression with the values given as keyword arguments.
         For any axis not supplied (set to None), directed_velocity will be used.
 
-    lower_bound: vector of floats, optional
+    lower_bound: vector of length 3 of floats, optional
         Lower bound of the distribution [m]
 
-    upper_bound: vector of floats, optional
+    upper_bound: vector of length 3 of floats, optional
         Upper bound of the distribution [m]
 
-    rms_velocity: vector of floats, detault=[0.,0.,0.]
+    rms_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
         Thermal velocity spread [m/s]
 
-    directed_velocity: vector of floats, detault=[0.,0.,0.]
+    directed_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
         Directed, average, velocity [m/s]
 
     fill_in: bool, optional
         Flags whether to fill in the empty spaced opened up when the grid moves
 
 
-    This will create a distribution where the density is n0 below rmax and zero elsewhere.::
+    This example will create a distribution where the density is n0 below rmax and zero elsewhere.::
 
     .. code-block: python
 
@@ -505,13 +505,13 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
 
     Parameters
     ----------
-    position: vector of floats
+    position: vector of length 3 of floats
         Position of the particle centroid [m]
 
-    plane_normal: vector of floats
+    plane_normal: vector of length 3 of floats
         Vector normal to the plane of injection [1]
 
-    plane_velocity: vector of floats
+    plane_velocity: vector of length 3 of floats
         Velocity of the plane of injection [m/s]
 
     method: {'InPlace', 'Plane'}

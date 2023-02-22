@@ -209,10 +209,10 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
         Position of the node at the upper bound [m]
 
     lower_boundary_conditions: vector of strings
-        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
+        Conditions at lower boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     upper_boundary_conditions: vector of strings
-        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+        Conditions at upper boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     nx: integer
         Number of cells along X (number of nodes=nx+1)
@@ -224,10 +224,10 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
         Position of last node along X [m]
 
     bc_xmin: vector of strings
-        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_xmax: vector of strings
-        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     moving_window_velocity: vector of floats, optional
         Moving frame velocity [m/s]
@@ -401,10 +401,10 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         Position of the node at the upper bound [m]
 
     lower_boundary_conditions: vector of strings
-        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
+        Conditions at lower boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     upper_boundary_conditions: vector of strings
-        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+        Conditions at upper boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     nr: integer
         Number of cells along R (number of nodes=nr+1)
@@ -428,16 +428,16 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         Position of last node along Z [m]
 
     bc_rmin: vector of strings
-        Boundary condition at min R: One of open, dirichlet, or neumann
+        Boundary condition at min R: One of open, dirichlet, silver_mueller, or neumann
 
     bc_rmax: vector of strings
-        Boundary condition at max R: One of open, dirichlet, or neumann
+        Boundary condition at max R: One of open, dirichlet, silver_mueller, or neumann
 
     bc_zmin: vector of strings
-        Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min Z: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_zmax: vector of strings
-        Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max Z: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     moving_window_velocity: vector of floats, optional
         Moving frame velocity [m/s]
@@ -624,10 +624,10 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         Position of the node at the upper bound [m]
 
     lower_boundary_conditions: vector of strings
-        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
+        Conditions at lower boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     upper_boundary_conditions: vector of strings
-        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+        Conditions at upper boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     nx: integer
         Number of cells along X (number of nodes=nx+1)
@@ -648,16 +648,16 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         Position of last node along Y [m]
 
     bc_xmin: vector of strings
-        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_xmax: vector of strings
-        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_ymin: vector of strings
-        Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min Y: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_ymax: vector of strings
-        Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max Y: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     moving_window_velocity: vector of floats, optional
         Moving frame velocity [m/s]
@@ -845,10 +845,10 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         Position of the node at the upper bound [m]
 
     lower_boundary_conditions: vector of strings
-        Conditions at lower boundaries, periodic, open, dirichlet, or neumann
+        Conditions at lower boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     upper_boundary_conditions: vector of strings
-        Conditions at upper boundaries, periodic, open, dirichlet, or neumann
+        Conditions at upper boundaries, periodic, open, dirichlet, silver_mueller, or neumann
 
     nx: integer
         Number of cells along X (number of nodes=nx+1)
@@ -878,22 +878,22 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         Position of last node along Z [m]
 
     bc_xmin: string
-        Boundary condition at min X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_xmax: string
-        Boundary condition at max X: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max X: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_ymin: string
-        Boundary condition at min Y: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min Y: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_ymax: string
-        Boundary condition at max Y: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max Y: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_zmin: string
-        Boundary condition at min Z: One of periodic, open, dirichlet, or neumann
+        Boundary condition at min Z: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     bc_zmax: string
-        Boundary condition at max Z: One of periodic, open, dirichlet, or neumann
+        Boundary condition at max Z: One of periodic, open, dirichlet, silver_mueller, or neumann
 
     moving_window_velocity: vector of floats, optional
         Moving frame velocity [m/s]

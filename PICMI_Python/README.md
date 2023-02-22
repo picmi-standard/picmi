@@ -35,7 +35,7 @@ Some packages specify the version of the standard that is to be used. For new fe
 be updated. The update has several steps, updating the version number, adding a tag, pushing the changes, and updating the version
 of PyPI.
 
-Currently, the version number is modified by hand by modifying the number in the version.py file, incrementing the second
+Currently, the version number is modified by hand by modifying the number in the `version.py` file, incrementing the second
 number, the minor release version. After changing the file, make a commit with the change with a comment like "Version 0.22.0",
 updating the version number of course.
 Please don't make any other changes in the commit. Note that it is ok to push a version update directly to the main branch assuming

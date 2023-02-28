@@ -75,6 +75,7 @@ laser = picmi.GaussianLaser(
     duration              = laser_length/cst.c,
     focal_position        = [0., 0., laser_focal_position],
     centroid_position     = [0., 0., laser_z0],
+    polarization_direction = [1., 0., 0.],    
     propagation_direction = [0,0,1],
     a0                    = laser_a0)
 

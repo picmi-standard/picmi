@@ -43,9 +43,6 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
     cfl: float, optional
         Fraction of the Courant-Friedrich-Lewy criteria [1]
 
-    l_nodal: bool, optional
-        Quantities are at nodes if True, staggered otherwise
-
     source_smoother: smoother instance, optional
         Smoother object to apply to the sources
 
@@ -73,7 +70,7 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
 
     methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT']
 
-    def __init__(self, grid, method=None, stencil_order=None, cfl=None, l_nodal=None,
+    def __init__(self, grid, method=None, stencil_order=None, cfl=None,
                  source_smoother=None, field_smoother=None, subcycling=None,
                  galilean_velocity=None, divE_cleaning=None, divB_cleaning=None,
                  pml_divE_cleaning=None, pml_divB_cleaning=None, **kw):
@@ -85,7 +82,6 @@ class PICMI_ElectromagneticSolver(_ClassWithInit):
         self.method = method
         self.cfl = cfl
         self.stencil_order = stencil_order
-        self.l_nodal = l_nodal
         self.source_smoother = source_smoother
         self.field_smoother = field_smoother
         self.subcycling = subcycling

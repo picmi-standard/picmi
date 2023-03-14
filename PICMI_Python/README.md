@@ -35,20 +35,21 @@ Some packages specify the version of the standard that is to be used. For new fe
 be updated. The update has several steps, updating the version number, adding a tag, pushing the changes, and updating the version
 of PyPI.
 
-Currently, the version number is modified by hand by modifying the number in the setup.py file, incrementing the third
-number. After changing the file, make a commit with the change with a comment like "Version 0.0.16", updating the number of course.
+Currently, the version number is modified by hand by modifying the number in the `version.py` file, incrementing the second
+number, the minor release version. After changing the file, make a commit with the change with a comment like "Release 0.22.0",
+updating the version number of course.
 Please don't make any other changes in the commit. Note that it is ok to push a version update directly to the main branch assuming
 it has been approved.
 
 Next, add a tag and push the changes to the repo:
 
   ```
-  git tag -a 0.0.16 -m "Release 0.0.16"
+  git tag -a 0.22.0 -m "Release 0.22.0"
   git push origin
   git push origin --tags
   ```
 
-Change the tag number as needed.
+Change the tag number as needed to match the version number.
 
 The final step is to update the version on PyPI. It is recommended to use the twine command. Here are the commands:
 

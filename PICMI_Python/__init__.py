@@ -1,3 +1,5 @@
+from .version import __version__
+
 from .base import *
 from .diagnostics import *
 from .fields import *

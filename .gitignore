@@ -1,0 +1,8 @@
+##########
+# Python #
+##########
+*.pyc
+__pycache__
+PICMI_Python/build/
+PICMI_Python/dist/
+PICMI_Python/picmistandard.egg-info/

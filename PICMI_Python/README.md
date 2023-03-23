@@ -51,9 +51,13 @@ Next, add a tag and push the changes to the repo:
 
 Change the tag number as needed to match the version number.
 
+Now, go to the [GitHub releases page](https://github.com/picmi-standard/picmi/releases) and create a release matching the pushed tag.
+If you are not signing your tags with GPG keys, the tagging and GitHub release can also be done in one step on this page.
+
 The final step is to update the version on PyPI. It is recommended to use the twine command. Here are the commands:
 
   ```
+  cd PICMI_Python
   python setup.py sdist bdist_wheel
   twine upload dist/*
   ```

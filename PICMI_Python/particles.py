@@ -312,6 +312,12 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
 
     directed_velocity: vector of floats, default=[0.,0.,0.]
         Directed, average, velocity [m/s]
+
+    flux_tmin: float, optional
+        Time at which the flux injection will be turned on.
+
+    flux_tmax: float, optional
+        Time at which the flux injection will be turned off.
     """
 
     def __init__(self, flux, flux_normal_axis,
@@ -320,6 +326,8 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
                  upper_bound = [None,None,None],
                  rms_velocity = [0.,0.,0.],
                  directed_velocity = [0.,0.,0.],
+                 flux_tmin = None,
+                 flux_tmax = None
                  **kw):
         self.flux = flux
         self.flux_normal_axis = flux_normal_axis
@@ -329,6 +337,10 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
         self.upper_bound = upper_bound
         self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
+        if flux_tmin:
+            self.flux_tmin = flux_tmin
+        if flux_tmax:
+            self.flux_tmax = flux_tmax
 
         self.handle_init(kw)
 

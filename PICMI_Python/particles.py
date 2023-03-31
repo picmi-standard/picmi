@@ -337,10 +337,8 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
         self.upper_bound = upper_bound
         self.rms_velocity = rms_velocity
         self.directed_velocity = directed_velocity
-        if flux_tmin:
-            self.flux_tmin = flux_tmin
-        if flux_tmax:
-            self.flux_tmax = flux_tmax
+        self.flux_tmin = flux_tmin
+        self.flux_tmax = flux_tmax
 
         self.handle_init(kw)
 

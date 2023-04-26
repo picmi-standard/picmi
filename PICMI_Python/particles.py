@@ -284,7 +284,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
 
 class PICMI_FoilDistribution(_ClassWithInit):
     """
-    describes a foil with optional eponential pre/plasma ramps(front lower y/back higher y)
+    describes a foil with optional exponential pre-plasma ramps (front lower y/back higher y)
 
     density: float
         Physical number density [m^-3]

@@ -284,15 +284,17 @@ class PICMI_UniformDistribution(_ClassWithInit):
 
 class PICMI_FoilDistribution(_ClassWithInit):
     """
-    describes a foil with optional exponential pre-plasma ramps (front lower y/back higher y)
+    Describes a foil with optional exponential pre- and post-plasma ramps along the propagation direction.
 
+    Parameters
+    ----------
     density: float
         Physical number density [m^-3]
 
-    y_front : float
+    front : float
         y-postion of front surface of foil [m]
 
-    thickness : float > 0
+    thickness: float > 0
         thickness of the foil [m]
 
     exponential_pre_plasma_length: float > 0, optional
@@ -322,20 +324,21 @@ class PICMI_FoilDistribution(_ClassWithInit):
     fill_in: bool, optional
         Flags whether to fill in the empty spaced opened up when the grid moves
     """
+
     def __init__(self,
-            density,
-            y_front,
-            thickness,
-            rms_velocity = [0., 0., 0.],
-            directed_velocity = [0., 0., 0.],
-            lower_bound = [None,None,None],
-            upper_bound = [None,None,None],
-            exponential_pre_plasma_length = None,
-            exponential_pre_plasma_cutoff = None,
-            exponential_post_plasma_length = None,
-            exponential_post_plasma_cutoff = None,
-            fill_in = None,
-            **kw) :
+                 density,
+                 y_front,
+                 thickness,
+                 rms_velocity = [0., 0., 0.],
+                 directed_velocity = [0., 0., 0.],
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 exponential_pre_plasma_length = None,
+                 exponential_pre_plasma_cutoff = None,
+                 exponential_post_plasma_length = None,
+                 exponential_post_plasma_cutoff = None,
+                 fill_in = None,
+                 **kw) :
         self.density = density
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound

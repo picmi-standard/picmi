@@ -292,21 +292,21 @@ class PICMI_FoilDistribution(_ClassWithInit):
         Physical number density [m^-3]
 
     front : float
-        y-postion of front surface of foil [m]
+        postion of front surface of foil [m]
 
-    thickness: float > 0
+    thickness: float >= 0
         thickness of the foil [m]
 
     exponential_pre_plasma_length: float > 0, optional
         length scale of expoential decay of pre-foil plasma density [m]
 
-    exponential_pre_plasma_cutoff : float > 0, optional
+    exponential_pre_plasma_cutoff : float >= 0, optional
         cutoff length for exponential decay of pre-foil density [m]
 
     exponential_post_plasma_length: float > 0, optional
         length scale of expoential decay of post-foil plasma density [m]
 
-    exponential_post_plasma_cutoff : float > 0, optional
+    exponential_post_plasma_cutoff : float >= 0, optional
         cutoff length for exponential decay of post-foil density [m]
 
     lower_bound: vector of length 3 of floats, optional
@@ -327,7 +327,7 @@ class PICMI_FoilDistribution(_ClassWithInit):
 
     def __init__(self,
                  density,
-                 y_front,
+                 front,
                  thickness,
                  rms_velocity = [0., 0., 0.],
                  directed_velocity = [0., 0., 0.],
@@ -346,7 +346,7 @@ class PICMI_FoilDistribution(_ClassWithInit):
         self.directed_velocity = directed_velocity
         self.fill_in = fill_in
 
-        self.y_front = y_front
+        self.front = front
         self.thickness = thickness
         self.exponential_pre_plasma_length = exponential_pre_plasma_length
         self.exponential_pre_plasma_cutoff = exponential_pre_plasma_cutof

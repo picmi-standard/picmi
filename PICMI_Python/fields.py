@@ -1125,7 +1125,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         """
         self.refined_regions.append([level, lo, hi, refinement_factor])
         
-class LoadInitialField(picmistandard.base._ClassWithInit):
+class PICMI_LoadInitialField(_ClassWithInit):
     '''Class to read in external field from file
 
     Parameters

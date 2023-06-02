@@ -1125,22 +1125,3 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
         """
         self.refined_regions.append([level, lo, hi, refinement_factor])
         
-class PICMI_LoadInitialField(_ClassWithInit):
-    '''Class to read in external field from file
-
-    Parameters
-    ----------
-    read_fields_from_path: string
-        Path to file with field data
-
-    load_B: bool, default=True
-        If False, do not load magnetic field
-
-    load_E: bool, default=True
-        If False, do not load electric field
-    '''
-    def __init__(self, read_fields_from_path,load_B=True, load_E=True, **kw) :
-        self.load_B = load_B
-        self.load_E = load_E
-        self.read_fields_from_path = read_fields_from_path
-        self.handle_init(kw)

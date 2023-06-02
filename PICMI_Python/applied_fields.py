@@ -167,3 +167,24 @@ class PICMI_Mirror(_ClassWithInit):
 
         self.handle_init(kw)
 
+        
+class PICMI_LoadGriddedField(_ClassWithInit):
+    ''' "The data read in is used to initialize the E and B fields on the grid at the start of the simulation. 
+    The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry. 
+
+    Parameters
+    ----------
+    read_fields_from_path: string
+        Path to file with field data
+
+    load_B: bool, default=True
+        If False, do not load magnetic field
+
+    load_E: bool, default=True
+        If False, do not load electric field
+    '''
+    def __init__(self, read_fields_from_path,load_B=True, load_E=True, **kw) :
+        self.load_B = load_B
+        self.load_E = load_E
+        self.read_fields_from_path = read_fields_from_path
+        self.handle_init(kw)

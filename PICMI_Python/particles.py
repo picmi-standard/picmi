@@ -282,6 +282,80 @@ class PICMI_UniformDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
+class PICMI_FoilDistribution(_ClassWithInit):
+    """
+    Describes a foil with optional exponential pre- and post-plasma ramps along the propagation direction.
+
+    Parameters
+    ----------
+    density: float
+        Physical number density [m^-3]
+
+    front : float
+        postion of front surface of foil [m]
+
+    thickness: float >= 0
+        thickness of the foil [m]
+
+    exponential_pre_plasma_length: float > 0, optional
+        length scale of expoential decay of pre-foil plasma density [m]
+
+    exponential_pre_plasma_cutoff : float >= 0, optional
+        cutoff length for exponential decay of pre-foil density [m]
+
+    exponential_post_plasma_length: float > 0, optional
+        length scale of expoential decay of post-foil plasma density [m]
+
+    exponential_post_plasma_cutoff : float >= 0, optional
+        cutoff length for exponential decay of post-foil density [m]
+
+    lower_bound: vector of length 3 of floats, optional
+        Lower bound of the distribution [m]
+
+    upper_bound: vector of length 3 of floats, optional
+        Upper bound of the distribution [m]
+
+    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
+        Thermal velocity spread [m/s]
+
+    directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
+        Directed, average, velocity [m/s]
+
+    fill_in: bool, optional
+        Flags whether to fill in the empty spaced opened up when the grid moves
+    """
+
+    def __init__(self,
+                 density,
+                 front,
+                 thickness,
+                 rms_velocity = [0., 0., 0.],
+                 directed_velocity = [0., 0., 0.],
+                 lower_bound = [None,None,None],
+                 upper_bound = [None,None,None],
+                 exponential_pre_plasma_length = None,
+                 exponential_pre_plasma_cutoff = None,
+                 exponential_post_plasma_length = None,
+                 exponential_post_plasma_cutoff = None,
+                 fill_in = None,
+                 **kw) :
+        self.density = density
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.rms_velocity = rms_velocity
+        self.directed_velocity = directed_velocity
+        self.fill_in = fill_in
+
+        self.front = front
+        self.thickness = thickness
+        self.exponential_pre_plasma_length = exponential_pre_plasma_length
+        self.exponential_pre_plasma_cutoff = exponential_pre_plasma_cutof
+        self.exponential_post_plasma_length = exponential_post_plasma_length
+        self.exponential_post_plasma_cutoff = exponential_post_plasma_cutoff
+
+        self.handle_init(kw)
+
+
 class PICMI_UniformFluxDistribution(_ClassWithInit):
     """
     Describes a flux of particles emitted from a plane

@@ -184,7 +184,7 @@ class PICMI_LoadGriddedField(_ClassWithInit):
     load_E: bool, default=True
         If False, do not load electric field
     """
-    def __init__(self, read_fields_from_path,load_B=True, load_E=True, **kw) :
+    def __init__(self, read_fields_from_path, load_B=True, load_E=True, **kw):
         self.load_B = load_B
         self.load_E = load_E
         self.read_fields_from_path = read_fields_from_path

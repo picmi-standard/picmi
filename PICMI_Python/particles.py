@@ -392,6 +392,11 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
 
     flux_tmax: float, optional
         Time at which the flux injection will be turned off.
+
+    gaussian_flux_momentum_distribution: bool, optional
+        If True, the momentum distribution is v*Gaussian,
+        in the direction normal to the plane. Otherwise,
+        the momentum distribution is simply Gaussian.
     """
 
     def __init__(self, flux, flux_normal_axis,
@@ -402,6 +407,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
                  directed_velocity = [0.,0.,0.],
                  flux_tmin = None,
                  flux_tmax = None,
+                 gaussian_flux_momentum_distribution = None,
                  **kw):
         self.flux = flux
         self.flux_normal_axis = flux_normal_axis
@@ -413,6 +419,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
         self.directed_velocity = directed_velocity
         self.flux_tmin = flux_tmin
         self.flux_tmax = flux_tmax
+        self.gaussian_flux_momentum_distribution = gaussian_flux_momentum_distribution
 
         self.handle_init(kw)
 

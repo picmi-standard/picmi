@@ -407,7 +407,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
                  directed_velocity = [0.,0.,0.],
                  flux_tmin = None,
                  flux_tmax = None,
-                 gaussian_flux_momentum_distribution = True,
+                 gaussian_flux_momentum_distribution = None,
                  **kw):
         self.flux = flux
         self.flux_normal_axis = flux_normal_axis

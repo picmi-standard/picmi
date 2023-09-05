@@ -349,7 +349,7 @@ class PICMI_FoilDistribution(_ClassWithInit):
         self.front = front
         self.thickness = thickness
         self.exponential_pre_plasma_length = exponential_pre_plasma_length
-        self.exponential_pre_plasma_cutoff = exponential_pre_plasma_cutof
+        self.exponential_pre_plasma_cutoff = exponential_pre_plasma_cutoff
         self.exponential_post_plasma_length = exponential_post_plasma_length
         self.exponential_post_plasma_cutoff = exponential_post_plasma_cutoff
 

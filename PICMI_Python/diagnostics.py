@@ -163,8 +163,8 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
     period: integer
         Period of time steps that the diagnostic is performed
 
-    species: species instance or list of species instances or None
-        Species to write out. If None, all species are written.
+    species: species instance or list of species instances, optional
+        Species to write out. If not specified, all species are written.
         Note that the name attribute must be defined for the species.
 
     data_list: list of strings, optional
@@ -287,8 +287,8 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
     dt_snapshots: float
         Time between each snapshot in lab frame
 
-    species: species instance or list of species instances
-        Species to write out. If None, all species are written.
+    species: species instance or list of species instances, optional
+        Species to write out. If not specified, all species are written.
         Note that the name attribute must be defined for the species.
 
     data_list: list of strings, optional

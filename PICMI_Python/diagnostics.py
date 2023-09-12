@@ -163,8 +163,8 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
     period: integer
         Period of time steps that the diagnostic is performed
 
-    species: species instance or list of species instances
-        Species to write out.
+    species: species instance or list of species instances or None
+        Species to write out. If None, all species are written.
         Note that the name attribute must be defined for the species.
 
     data_list: list of strings, optional
@@ -187,7 +187,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
         Sets the base name for the diagnostic output files
     """
 
-    def __init__(self, period, species, data_list=None,
+    def __init__(self, period, species=None, data_list=None,
                  write_dir = None,
                  step_min = None,
                  step_max = None,
@@ -288,7 +288,7 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
         Time between each snapshot in lab frame
 
     species: species instance or list of species instances
-        Species to write out.
+        Species to write out. If None, all species are written.
         Note that the name attribute must be defined for the species.
 
     data_list: list of strings, optional

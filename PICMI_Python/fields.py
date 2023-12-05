@@ -266,15 +266,16 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
 
     References
     ----------
-    - absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
-      Based on the Silver-Mueller Radiation Condition, e.g., in
-      - A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
-        https://doi.org/10.1109/20.376322
-      - B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
-        https://doi.org/10.1073/pnas.74.5.1765
-      - R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
-        US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
-        https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
+    absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
+    Based on the Silver-Mueller Radiation Condition, e.g., in
+
+    * A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
+      https://doi.org/10.1109/20.376322
+    * B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
+      https://doi.org/10.1073/pnas.74.5.1765
+    * R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
+      US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
+      https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx) or a
@@ -500,15 +501,16 @@ class PICMI_CylindricalGrid(_ClassWithInit):
 
     References
     ----------
-    - absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
-      Based on the Silver-Mueller Radiation Condition, e.g., in
-      - A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
-        https://doi.org/10.1109/20.376322
-      - B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
-        https://doi.org/10.1073/pnas.74.5.1765
-      - R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
-        US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
-        https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
+    absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
+    Based on the Silver-Mueller Radiation Condition, e.g., in
+
+    * A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
+      https://doi.org/10.1109/20.376322
+    * B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
+      https://doi.org/10.1073/pnas.74.5.1765
+    * R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
+      US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
+      https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nr and nz) or a
@@ -732,15 +734,16 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
 
     References
     ----------
-    - absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
-      Based on the Silver-Mueller Radiation Condition, e.g., in
-      - A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
-        https://doi.org/10.1109/20.376322
-      - B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
-        https://doi.org/10.1073/pnas.74.5.1765
-      - R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
-        US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
-        https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
+    absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
+    Based on the Silver-Mueller Radiation Condition, e.g., in
+
+    * A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
+      https://doi.org/10.1109/20.376322
+    * B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
+      https://doi.org/10.1073/pnas.74.5.1765
+    * R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
+      US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
+      https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx and ny) or a
@@ -992,15 +995,16 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
 
     References
     ----------
-    - absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
-      Based on the Silver-Mueller Radiation Condition, e.g., in
-      - A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
-        https://doi.org/10.1109/20.376322
-      - B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
-        https://doi.org/10.1073/pnas.74.5.1765
-      - R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
-        US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
-        https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
+    absorbing_silver_mueller: A local absorbing boundary condition that works best under normal incidence angle.
+    Based on the Silver-Mueller Radiation Condition, e.g., in
+
+    * A. K. Belhora and L. Pichon, "Maybe Efficient Absorbing Boundary Conditions for the Finite Element Solution of 3D Scattering Problems," 1995,
+      https://doi.org/10.1109/20.376322
+    * B Engquist and A. Majdat, "Absorbing boundary conditions for numerical simulation of waves," 1977,
+      https://doi.org/10.1073/pnas.74.5.1765
+    * R. Lehe, "Electromagnetic wave propagation in Particle-In-Cell codes," 2016,
+      US Particle Accelerator School (USPAS) Summer Session, Self-Consistent Simulations of Beam and Plasma Systems
+      https://people.nscl.msu.edu/~lund/uspas/scs_2016/lec_adv/A1b_EM_Waves.pdf
     """
     # Note for implementations, as a matter of convenience and flexibility, the user interface allows
     # specifying various quantities using either the individual named attributes (such as nx, ny, and nz) or a

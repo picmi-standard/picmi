@@ -259,7 +259,7 @@ class PICMI_UniformDistribution(_ClassWithInit):
         Thermal velocity spread [m/s]
 
     directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Directed, average, velocity [m/s]
+        Directed, average, proper velocity [m/s]
 
     fill_in: bool, optional
         Flags whether to fill in the empty spaced opened up when the grid moves
@@ -319,7 +319,7 @@ class PICMI_FoilDistribution(_ClassWithInit):
         Thermal velocity spread [m/s]
 
     directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Directed, average, velocity [m/s]
+        Directed, average, proper velocity [m/s]
 
     fill_in: bool, optional
         Flags whether to fill in the empty spaced opened up when the grid moves
@@ -385,7 +385,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
         Thermal velocity spread [m/s]
 
     directed_velocity: vector of floats, default=[0.,0.,0.]
-        Directed, average, velocity [m/s]
+        Directed, average, proper velocity [m/s]
 
     flux_tmin: float, optional
         Time at which the flux injection will be turned on.
@@ -456,7 +456,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         Thermal velocity spread [m/s]
 
     directed_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
-        Directed, average, velocity [m/s]
+        Directed, average, proper velocity [m/s]
 
     fill_in: bool, optional
         Flags whether to fill in the empty spaced opened up when the grid moves

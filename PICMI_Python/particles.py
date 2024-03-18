@@ -425,7 +425,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
 
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """
-    Describes a uniform density plasma
+    Describes a plasma with density following a provided analytic expression
 
     Parameters
     ----------
@@ -464,7 +464,7 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
 
     This example will create a distribution where the density is n0 below rmax and zero elsewhere.::
 
-    .. code-block: python
+    .. code-block:: python
 
       dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
                                   rmax = 1.,

@@ -19,14 +19,13 @@ This repository contains:
 
 - A set of **example scripts** that use the PICMI standard (in the directory `Examples`)
 
-- A **Python package** that contains the base classes for the implementation of the PICMI standard (in the directory `PICMI_Python`). In order to install this package, run:
-  ```
-  cd PICMI_Python
-  python setup.py install
-  ```
-  The latest release of this package is also available via `pip`:
+- A **Python package** that contains the base classes for the implementation of the PICMI standard (in the directory `PICMI_Python`). It is best to install the package from PyPI:
   ```
   pip install picmistandard
+  ```
+  Optionally, it can be installed from the source (run from the main directory where the pyproject.toml file is).
+  ```
+  python -m pip install .
   ```
 
 - The sources to generate the **Sphinx documentation** for the PICMI standard (in the directory `Docs`). In order to generate the Sphinx documentation, first install [Sphinx](http://www.sphinx-doc.org/en/master/), as well as the version of the PICMI standard that you would like to document (e.g. via `python setup.py`). Then type:

@@ -4,13 +4,14 @@ The *Particle-In-Cell Modeling Interface* (**PICMI**) standard establishes conve
 
 The goal of the standard is to propose a set (or dictionary) of names and definitions that can be used in simulations, with as little changes as possible between codes.
 
-This contains the base classes for the implementation of the PICMI standard. In order to install this package, run:
-  ```
-  python setup.py install
-  ```
-  The latest release of this package is also available via `pip`:
+This contains the base classes for the implementation of the PICMI standard. In order to install this package from PyPI, run:
   ```
   pip install picmistandard
+  ```
+
+Optionally, the package can be installed from the source (run from the main directory since this uses the pyproject.toml file):
+  ```
+  python -m pip install .
   ```
 
 The Python classes provided here should be the bases classes of the code specific implementation. For each class, the implementation
@@ -54,11 +55,10 @@ Change the tag number as needed to match the version number.
 Now, go to the [GitHub releases page](https://github.com/picmi-standard/picmi/releases) and create a release matching the pushed tag.
 If you are not signing your tags with GPG keys, the tagging and GitHub release can also be done in one step on this page.
 
-The final step is to update the version on PyPI. It is recommended to use the twine command. Here are the commands:
+The final step is to update the version on PyPI. It is recommended to use the twine command. Here are the commands (run from the main directory since this uses the pyproject.toml file):
 
   ```
-  cd PICMI_Python
-  python setup.py sdist bdist_wheel
+  python -m build --sdist --wheel
   twine upload dist/*
   ```
 

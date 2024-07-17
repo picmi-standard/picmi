@@ -19,14 +19,13 @@ This repository contains:
 
 - A set of **example scripts** that use the PICMI standard (in the directory `Examples`)
 
-- A **Python package** that contains the base classes for the implementation of the PICMI standard (in the directory `PICMI_Python`). In order to install this package, run:
-  ```
-  cd PICMI_Python
-  python setup.py install
-  ```
-  The latest release of this package is also available via `pip`:
+- A **Python package** that contains the base classes for the implementation of the PICMI standard (in the directory `PICMI_Python`). It is best to install the package from PyPI:
   ```
   pip install picmistandard
+  ```
+  Optionally, it can be installed from the source (run from the main directory where the pyproject.toml file is).
+  ```
+  python -m pip install .
   ```
   (The code will be automatically uploaded to PyPI upon creation of a new release on Github.)
 

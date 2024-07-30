@@ -162,7 +162,7 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
 
 class PICMI_BinomialSmoother(_ClassWithInit):
     """
-    Descibes a binomial smoother operator (applied to grids)
+    Describes a binomial smoother operator (applied to grids)
 
     Parameters
     ----------

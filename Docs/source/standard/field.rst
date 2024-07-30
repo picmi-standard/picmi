@@ -14,3 +14,8 @@ Electrostatic
 -------------
 
 .. autoclass:: picmistandard.PICMI_ElectrostaticSolver
+
+Smoothing
+---------
+
+.. autoclass:: picmistandard.PICMI_BinomialSmoother

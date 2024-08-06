@@ -329,3 +329,58 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
         self.name = name
 
         self.handle_init(kw)
+
+class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
+    """
+    Defines the particle diagnostics in the simulation frame
+
+    Parameters
+    ----------
+    period: integer
+        Period of time steps that the diagnostic is performed
+
+    species: species instance or list of species instances, optional
+        Species to write out. If not specified, all species are written.
+        Note that the name attribute must be defined for the species.
+
+    data_list: list of strings, optional
+        The data to be written out. Possible values 'position', 'momentum', 'weighting'.
+        Defaults to the output list of the implementing code.
+
+    write_dir: string, optional
+        Directory where data is to be written
+
+    step_min: integer, default=0
+        Minimum step at which diagnostics could be written
+
+    step_max: integer, default=unbounded
+        Maximum step at which diagnostics could be written
+
+    parallelio: bool, optional
+        If set to True, particle diagnostics are dumped in parallel
+
+    name: string, optional
+        Sets the base name for the diagnostic output files
+    """
+
+    def __init__(self, period, species=None, data_list=None,
+                 write_dir = None,
+                 step_min = None,
+                 step_max = None,
+                 parallelio = None,
+                 name = None,
+                 **kw):
+
+        if data_list is not None:
+            assert isinstance(data_list, list), 'ParticleBoundaryScrapingDiagnostic: data_list must be a list'
+
+        self.period = period
+        self.species = species
+        self.data_list = data_list
+        self.write_dir = write_dir
+        self.step_min = step_min
+        self.step_max = step_max
+        self.parallelio = parallelio
+        self.name = name
+
+        self.handle_init(kw)

@@ -332,7 +332,7 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
 
 class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
     """
-    Defines the particle diagnostics in the simulation frame
+    Defines the particle diagnostics that are absorbed at the boundaries, throughout the simulation.
 
     Parameters
     ----------
@@ -350,12 +350,6 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
     write_dir: string, optional
         Directory where data is to be written
 
-    step_min: integer, default=0
-        Minimum step at which diagnostics could be written
-
-    step_max: integer, default=unbounded
-        Maximum step at which diagnostics could be written
-
     parallelio: bool, optional
         If set to True, particle diagnostics are dumped in parallel
 
@@ -365,8 +359,6 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
 
     def __init__(self, period, species=None, data_list=None,
                  write_dir = None,
-                 step_min = None,
-                 step_max = None,
                  parallelio = None,
                  name = None,
                  **kw):
@@ -378,8 +370,6 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
         self.species = species
         self.data_list = data_list
         self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
         self.parallelio = parallelio
         self.name = name
 

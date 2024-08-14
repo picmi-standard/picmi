@@ -9,6 +9,8 @@ Particle distributions
 
 .. autoclass:: picmistandard.PICMI_UniformDistribution
 
+.. autoclass:: picmistandard.PICMI_UniformFluxDistribution
+
 .. autoclass:: picmistandard.PICMI_AnalyticDistribution
 
 .. autoclass:: picmistandard.PICMI_ParticleListDistribution

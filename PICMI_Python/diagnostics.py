@@ -213,6 +213,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
 class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
     """
     Defines the particle diagnostics that are used to collect the particles that are absorbed at the boundaries, throughout the simulation.
+
     Parameters
     ----------
     period: integer

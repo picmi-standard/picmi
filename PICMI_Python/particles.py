@@ -356,14 +356,15 @@ class PICMI_FoilDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_UniformFluxDistribution(_ClassWithInit):
+class PICMI_AnalyticFluxDistribution(_ClassWithInit):
     """
-    Describes a flux of particles following a provided analytic expression
+    Describes a flux of particles emitted from a plane
 
     Parameters
     ----------
-    flux: float
-        Flux of particles [m^-2.s^-1]
+    flux: srting
+        Analytic expression describing flux of particles [m^-2.s^-1]
+        Expression should be in terms of the position and time, written as 'x', 'y', 'z', and 't'.
 
     flux_normal_axis: string
         x, y, or z for 3D, x or z for 2D, or r, t, or z in RZ geometry
@@ -409,75 +410,7 @@ class PICMI_UniformFluxDistribution(_ClassWithInit):
                  flux_tmax = None,
                  gaussian_flux_momentum_distribution = None,
                  **kw):
-        self.flux = flux
-        self.flux_normal_axis = flux_normal_axis
-        self.surface_flux_position = surface_flux_position
-        self.flux_direction = flux_direction
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.flux_tmin = flux_tmin
-        self.flux_tmax = flux_tmax
-        self.gaussian_flux_momentum_distribution = gaussian_flux_momentum_distribution
-
-        self.handle_init(kw)
-
-class PICMI_AnalyticFluxDistribution(_ClassWithInit):
-    """
-    Describes a flux of particles emitted from a plane
-
-    Parameters
-    ----------
-    flux: string
-        Analytic expression describing flux of particles [m^-2.s^-1]
-        Expression should be in terms of the position and time, written as 'x', 'y', 'z', and 't'.
-
-    flux_normal_axis: string
-        x, y, or z for 3D, x or z for 2D, or r, t, or z in RZ geometry
-
-    surface_flux_position: double
-        location of the injection plane [m] along the direction
-        specified by `flux_normal_axis`
-
-    flux_direction: int
-        Direction of the flux relative to the plane: -1 or +1
-
-    lower_bound: vector of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of floats, default=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of floats, default=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    flux_tmin: float, optional
-        Time at which the flux injection will be turned on.
-
-    flux_tmax: float, optional
-        Time at which the flux injection will be turned off.
-
-    gaussian_flux_momentum_distribution: bool, optional
-        If True, the momentum distribution is v*Gaussian,
-        in the direction normal to the plane. Otherwise,
-        the momentum distribution is simply Gaussian.
-    """
-
-    def __init__(self, flux_expression, flux_normal_axis,
-                 surface_flux_position, flux_direction,
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 flux_tmin = None,
-                 flux_tmax = None,
-                 gaussian_flux_momentum_distribution = None,
-                 **kw):
-        self.flux_expression = f'{flux_expression}'.replace('\n', '')
+        self.flux = f'{flux}'.replace('\n', '')
         self.flux_normal_axis = flux_normal_axis
         self.surface_flux_position = surface_flux_position
         self.flux_direction = flux_direction
@@ -491,11 +424,13 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
 
         self.user_defined_kw = {}
         for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, self.flux_expression):
+            if re.search(r'\b%s\b'%k, self.flux):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
 
         self.handle_init(kw)
+
+PICMI_UniformFluxDistribution = PICMI_AnalyticFluxDistribution
 
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """

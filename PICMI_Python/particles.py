@@ -362,7 +362,7 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
 
     Parameters
     ----------
-    flux: srting
+    flux: string
         Analytic expression describing flux of particles [m^-2.s^-1]
         Expression should be in terms of the position and time, written as 'x', 'y', 'z', and 't'.
 

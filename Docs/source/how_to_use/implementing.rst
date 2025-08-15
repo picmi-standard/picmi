@@ -45,3 +45,4 @@ the following step:
         - `WarpX <https://github.com/ECP-WarpX/WarpX/blob/master/Python/pywarpx/picmi.py>`__
         - `Warp <https://bitbucket.org/berkeleylab/warp/src/master/scripts/picmi.py>`__
         - `FBPIC <https://github.com/fbpic/fbpic/tree/dev/fbpic/picmi>`__
+        - `PIConGPU <https://github.com/ComputationalRadiationPhysics/picongpu/tree/dev/lib/python/picongpu/picmi>`__

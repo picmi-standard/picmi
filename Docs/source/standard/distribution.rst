@@ -16,3 +16,5 @@ Particle distributions
 .. autoclass:: picmistandard.PICMI_AnalyticFluxDistribution
 
 .. autoclass:: picmistandard.PICMI_ParticleListDistribution
+
+.. autoclass:: picmistandard.PICMI_FromFileDistribution

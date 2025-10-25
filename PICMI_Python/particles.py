@@ -601,6 +601,16 @@ class PICMI_ParticleListDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
+class PICMI_FromFileDistribution(_ClassWithInit):
+    """
+    Load particles from an openPMD file.
+
+    The openPMD file must contain the attributes `position`, `momentum`, `weighting`.
+    """
+    def __init__(self, file_path, **kw):
+        self.file_path = file_path
+        self.handle_init(kw)
+
 # ------------------
 # Numeric Objects
 # ------------------

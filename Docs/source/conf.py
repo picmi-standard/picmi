@@ -44,8 +44,41 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinxcontrib.autodoc_pydantic',
 ]
 autodoc_member_order = 'bysource'
+
+# -- Options for autodoc_pydantic --------------------------------------------
+# Model configuration
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_validator_summary = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_model_show_field_summary = True  # Show field summary
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_model_undoc_members = False
+autodoc_pydantic_model_members = True  # This should show individual field members with descriptions
+autodoc_pydantic_model_hide_paramlist = False  # Don't hide parameter lists - show field details
+
+# Settings configuration (same as model)
+autodoc_pydantic_settings_show_default = True
+autodoc_pydantic_settings_show_json = False
+autodoc_pydantic_settings_show_validators = False
+autodoc_pydantic_settings_show_field_summary = True
+
+# Field configuration - show docstrings for each field
+autodoc_pydantic_field_doc_policy = "both"  # Show both Field description and docstring
+autodoc_pydantic_field_list_validators = False  # Too detailed, irrelevant for user-facing docs
+autodoc_pydantic_field_show_constraints = True
+autodoc_pydantic_field_show_default = True
+
+# General autodoc options to hide private members
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': False,  # Don't show undocumented members
+    'private-members': False,  # Don't show private members (starting with _)
+    'special-members': False,  # Don't show special members (__init__, etc.)
+    'exclude-members': '__class_vars__,__private_attributes__,__model_fields__,__pydantic_core_schema__,__pydantic_validators__,__annotations__,__pydantic_decorators__,model_config,model_post_init',
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,7 +97,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

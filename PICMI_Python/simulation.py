@@ -1,10 +1,79 @@
 """Simulation class following the PICMI standard
 This should be the base classes for Python implementation of the PICMI standard
 """
-import math
-import sys
+from __future__ import annotations
+from typing import Any, Literal
+from collections.abc import Sequence
+
+from pydantic import Field
 
 from .base import _ClassWithInit
+
+# Import classes needed for type aliases (safe at runtime since these modules don't import simulation)
+from .fields import (
+    PICMI_ElectromagneticSolver,
+    PICMI_ElectrostaticSolver,
+    PICMI_MagnetostaticSolver,
+)
+from .particles import (
+    PICMI_Species,
+    PICMI_MultiSpecies,
+    PICMI_GriddedLayout,
+    PICMI_PseudoRandomLayout,
+    PICMI_ParticleDistributionPlanarInjector,
+)
+from .lasers import (
+    PICMI_GaussianLaser,
+    PICMI_AnalyticLaser,
+    PICMI_LaserAntenna,
+)
+from .applied_fields import (
+    PICMI_ConstantAppliedField,
+    PICMI_AnalyticAppliedField,
+    PICMI_Mirror,
+    PICMI_LoadAppliedField,
+    PICMI_LoadGriddedField,
+)
+from .diagnostics import (
+    PICMI_FieldDiagnostic,
+    PICMI_ElectrostaticFieldDiagnostic,
+    PICMI_ParticleDiagnostic,
+    PICMI_ParticleBoundaryScrapingDiagnostic,
+    PICMI_LabFrameFieldDiagnostic,
+    PICMI_LabFrameParticleDiagnostic,
+)
+from .interactions import PICMI_FieldIonization
+
+# Type unions for PICMI objects using Python 3.10+ union syntax
+# (Note: Not used in type hints anymore, but kept for backwards compatibility)
+PICMI_Solver = (
+    PICMI_ElectromagneticSolver
+    | PICMI_ElectrostaticSolver
+    | PICMI_MagnetostaticSolver
+)
+PICMI_SpeciesType = PICMI_Species | PICMI_MultiSpecies
+PICMI_Layout = (
+    PICMI_GriddedLayout
+    | PICMI_PseudoRandomLayout
+    | PICMI_ParticleDistributionPlanarInjector
+)
+PICMI_Laser = PICMI_GaussianLaser | PICMI_AnalyticLaser
+PICMI_AppliedField = (
+    PICMI_ConstantAppliedField
+    | PICMI_AnalyticAppliedField
+    | PICMI_Mirror
+    | PICMI_LoadAppliedField
+    | PICMI_LoadGriddedField
+)
+PICMI_Diagnostic = (
+    PICMI_FieldDiagnostic
+    | PICMI_ElectrostaticFieldDiagnostic
+    | PICMI_ParticleDiagnostic
+    | PICMI_ParticleBoundaryScrapingDiagnostic
+    | PICMI_LabFrameFieldDiagnostic
+    | PICMI_LabFrameParticleDiagnostic
+)
+PICMI_Interaction = PICMI_FieldIonization
 
 # ---------------------
 # Main simulation object
@@ -12,68 +81,62 @@ from .base import _ClassWithInit
 
 class PICMI_Simulation(_ClassWithInit):
     """
-    Creates a Simulation object
-
-    Parameters
-    ----------
-    solver: field solver instance
-        This is the field solver to be used in the simulation.
-        It should be an instance of field solver classes.
-
-    time_step_size: float
-        Absolute time step size of the simulation [s].
-        Needed if the CFL is not specified elsewhere.
-
-    max_steps: integer
-        Maximum number of time steps.
-        Specify either this, or `max_time`, or use the `step` function directly.
-
-    max_time: float
-        Maximum physical time to run the simulation [s].
-        Specify either this, or `max_steps`, or use the `step` function directly.
-
-    verbose: integer, optional
-        Verbosity flag. A larger integer results in more verbose output
-
-    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
-        Default particle shape for species added to this simulation
-
-    gamma_boost: float, optional
-        Lorentz factor of the boosted simulation frame.
-        Note that all input values should be in the lab frame.
+    Creates a Simulation object.
     """
+    solver: "PICMI_ElectromagneticSolver | PICMI_ElectrostaticSolver | PICMI_MagnetostaticSolver | None" = Field(
+        default=None,
+        description="Field solver instance. This is the field solver to be used in the simulation. It should be an instance of field solver classes (PICMI_ElectromagneticSolver, PICMI_ElectrostaticSolver, or PICMI_MagnetostaticSolver)."
+    )
+    time_step_size: float | None = Field(
+        default=None,
+        description="Absolute time step size of the simulation [s]. Needed if the CFL is not specified elsewhere."
+    )
+    verbose: int | None = Field(
+        default=None,
+        description="Verbosity flag. A larger integer results in more verbose output"
+    )
+    max_steps: int | None = Field(
+        default=None,
+        description="Maximum number of time steps. Specify either this, or max_time, or use the step function directly."
+    )
+    max_time: float | None = Field(
+        default=None,
+        description="Maximum physical time to run the simulation [s]. Specify either this, or max_steps, or use the step function directly."
+    )
+    particle_shape: Literal['NGP', 'linear', 'quadratic', 'cubic'] = Field(
+        default='linear',
+        description="Default particle shape for species added to this simulation"
+    )
+    gamma_boost: float | None = Field(
+        default=None,
+        description="Lorentz factor of the boosted simulation frame. Note that all input values should be in the lab frame."
+    )
+    load_balancing: Any = Field(
+        default=None, description="Load balancing configuration"
+    )  # Keep as Any - no specific PICMI class for this yet
 
-    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', gamma_boost=None, load_balancing=None, **kw):
+    # Runtime lists that are populated via methods
+    species: "list[PICMI_Species | PICMI_MultiSpecies]" = Field(default_factory=list, exclude=True)
+    layouts: "list[PICMI_GriddedLayout | PICMI_PseudoRandomLayout | PICMI_ParticleDistributionPlanarInjector]" = Field(default_factory=list, exclude=True)
+    initialize_self_fields: list[bool | None] = Field(default_factory=list, exclude=True)
+    injection_plane_positions: list[Sequence[float] | None] = Field(default_factory=list, exclude=True)
+    injection_plane_normal_vectors: list[Sequence[float] | None] = Field(default_factory=list, exclude=True)
+    lasers: "list[PICMI_GaussianLaser | PICMI_AnalyticLaser]" = Field(default_factory=list, exclude=True)
+    laser_injection_methods: list[PICMI_LaserAntenna] = Field(default_factory=list, exclude=True)
+    applied_fields: "list[PICMI_ConstantAppliedField | PICMI_AnalyticAppliedField | PICMI_Mirror | PICMI_LoadAppliedField | PICMI_LoadGriddedField]" = Field(default_factory=list, exclude=True)
+    diagnostics: "list[PICMI_FieldDiagnostic | PICMI_ElectrostaticFieldDiagnostic | PICMI_ParticleDiagnostic | PICMI_ParticleBoundaryScrapingDiagnostic | PICMI_LabFrameFieldDiagnostic | PICMI_LabFrameParticleDiagnostic]" = Field(default_factory=list, exclude=True)
+    interactions: "list[PICMI_FieldIonization]" = Field(
+        default_factory=list,
+        exclude=True,
+        description="List of interaction objects"
+    )
 
-        self.solver = solver
-        self.time_step_size = time_step_size
-        self.verbose = verbose
-        self.max_steps = max_steps
-        self.max_time = max_time
-        self.particle_shape = particle_shape
-        self.gamma_boost = gamma_boost
-
-        self.species = []
-        self.layouts = []
-        self.initialize_self_fields = []
-        self.injection_plane_positions = []
-        self.injection_plane_normal_vectors = []
-
-        self.lasers = []
-        self.laser_injection_methods = []
-
-        self.applied_fields = []
-
-        self.diagnostics = []
-
-        self.interactions = []
-
-        self.load_balancing = load_balancing
-
-        self.handle_init(kw)
-
-    def add_species(self, species, layout, initialize_self_field=None):
+    def add_species(
+        self,
+        species: "PICMI_Species | PICMI_MultiSpecies",
+        layout: "PICMI_GriddedLayout | PICMI_PseudoRandomLayout | PICMI_ParticleDistributionPlanarInjector",
+        initialize_self_field: bool | None = None,
+    ):
         """
         Add species to be used in the simulation
 
@@ -99,9 +162,14 @@ class PICMI_Simulation(_ClassWithInit):
         self.injection_plane_normal_vectors.append(None)
 
 
-    def add_species_through_plane(self, species, layout,
-                                  injection_plane_position, injection_plane_normal_vector,
-                                  initialize_self_field=None):
+    def add_species_through_plane(
+        self,
+        species: "PICMI_Species | PICMI_MultiSpecies",
+        layout: "PICMI_GriddedLayout | PICMI_PseudoRandomLayout | PICMI_ParticleDistributionPlanarInjector",
+        injection_plane_position: Sequence[float],
+        injection_plane_normal_vector: Sequence[float],
+        initialize_self_field: bool | None = None,
+    ):
         """
         Add species to be used in the simulation that are injected through a plane
         during the simulation.
@@ -134,7 +202,11 @@ class PICMI_Simulation(_ClassWithInit):
         self.injection_plane_normal_vectors.append(injection_plane_normal_vector)
 
 
-    def add_laser(self, laser, injection_method):
+    def add_laser(
+        self,
+        laser: "PICMI_GaussianLaser | PICMI_AnalyticLaser",
+        injection_method: PICMI_LaserAntenna,
+    ):
         """
         Add a laser pulses that to be injected in the simulation
 
@@ -155,7 +227,10 @@ class PICMI_Simulation(_ClassWithInit):
         self.lasers.append(laser)
         self.laser_injection_methods.append(injection_method)
 
-    def add_applied_field(self, applied_field):
+    def add_applied_field(
+        self,
+        applied_field: "PICMI_ConstantAppliedField | PICMI_AnalyticAppliedField | PICMI_Mirror | PICMI_LoadAppliedField | PICMI_LoadGriddedField",
+    ):
         """
         Add an applied field
 
@@ -167,7 +242,10 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.applied_fields.append(applied_field)
 
-    def add_diagnostic(self, diagnostic):
+    def add_diagnostic(
+        self,
+        diagnostic: "PICMI_FieldDiagnostic | PICMI_ElectrostaticFieldDiagnostic | PICMI_ParticleDiagnostic | PICMI_ParticleBoundaryScrapingDiagnostic | PICMI_LabFrameFieldDiagnostic | PICMI_LabFrameParticleDiagnostic",
+    ):
         """
         Add a diagnostic
 
@@ -178,7 +256,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.diagnostics.append(diagnostic)
 
-    def add_interaction(self, interaction):
+    def add_interaction(self, interaction: "PICMI_FieldIonization"):
         """
         Add an interaction
 
@@ -189,7 +267,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.interactions.append(interaction)
 
-    def set_max_step(self, max_steps):
+    def set_max_step(self, max_steps: int):
         """
         Set the default number of steps for the simulation (i.e. the number
         of steps that gets written when calling `write_input_file`).
@@ -204,7 +282,7 @@ class PICMI_Simulation(_ClassWithInit):
         """
         self.max_steps = max_steps
 
-    def write_input_file(self, file_name):
+    def write_input_file(self, file_name: str):
         """
         Write the parameters of the simulation, as defined in the PICMI input,
         into a code-specific input file.

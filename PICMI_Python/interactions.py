@@ -2,28 +2,22 @@
 These should be the base classes for Python implementation of the PICMI standard
 The classes in this file are related to interactions (e.g. field ionization, collisions, QED)
 """
+from __future__ import annotations
+from typing import Any
+
+from pydantic import Field
 
 from .base import _ClassWithInit
 
+from .particles import PICMI_Species, PICMI_MultiSpecies
+
+PICMI_SpeciesType = PICMI_Species | PICMI_MultiSpecies
+
 class PICMI_FieldIonization(_ClassWithInit):
     """
-    Field ionization on an ion species
-
-    Parameters
-    ----------
-    model: string
-        Ionization model, e.g. "ADK"
-
-    ionized_species: species instance
-        Species that is ionized
-
-    product_species: species instance
-        Species in which ionized electrons are stored.
+    Field ionization on an ion species.
     """
-    def __init__(self, model, ionized_species, product_species, **kw):
-        self.model = model
-        self.ionized_species = ionized_species
-        self.product_species = product_species
-
-        self.handle_init(kw)
+    model: str = Field(description="Ionization model, e.g. 'ADK'")
+    ionized_species: "PICMI_Species | PICMI_MultiSpecies" = Field(description="Species that is ionized")
+    product_species: "PICMI_Species | PICMI_MultiSpecies" = Field(description="Species in which ionized electrons are stored")
 

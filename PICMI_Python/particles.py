@@ -615,46 +615,30 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_GriddedLayout(_ClassWithInit):
+class PICMI_GriddedLayout(BaseModel):
     """
     Specifies a gridded layout of particles
-
-    Parameters
-    ----------
-    n_macroparticle_per_cell: vector of integers
-        Number of particles per cell along each axis
-
-    grid: grid instance, optional
-        Grid object specifying the grid to follow.
-        If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticles_per_cell=None, grid=None, **kw):
-        self.n_macroparticles_per_cell = n_macroparticles_per_cell
-        self.grid = grid
+    n_macroparticles_per_cell: list[int] = Field(
+        min_length=3, max_length=3,
+        description="Number of particles per cell along each axis"
+    )
+    grid: PICMI_AnyGrid | None = Field(
+        default=None,
+        description="Grid object specifying the grid to follow. If not specified, the underlying grid of the code is used."
+    )
 
-        self._handle_n_macroparticle_per_cell(kw.pop('n_macroparticle_per_cell', None))
-        self.handle_init(kw)
-
-    def _handle_n_macroparticle_per_cell(self, n_macroparticle_per_cell):
-        """
-        Handle the deprecation of n_macroparticle_per_cell gracefully after being renamed in >v0.34.0.
-        """
-        self._check_deprecated_argument(
-            "n_macroparticle_per_cell",
-            message="n_macroparticle_per_cell was renamed. It is deprecated in favor of n_macroparticles_per_cell and will be removed in a future version.",
-            raise_error=False,
-        )
-        if n_macroparticle_per_cell is not None:
-            if self.n_macroparticles_per_cell is None:
-                self.n_macroparticles_per_cell = n_macroparticle_per_cell
-            else:
-                raise ValueError(
-                    f"PICMI_GriddedLayout: You have specified {self.n_macroparticles_per_cell=} as well as the deprecated {n_macroparticle_per_cell=}."
-                )
-        if self.n_macroparticles_per_cell is None:
+    def __init__(self, *args, **kwargs):
+        if "n_macroparticle_per_cell" in kwargs and "n_macroparticles_per_cell" in kwargs:
             raise ValueError(
-                "PICMI_GriddedLayout: You have not specified n_macroparticles_per_cell."
+                f"You have given {kwargs['n_macroparticles_per_cell']=} and {kwargs['n_macroparticle_per_cell']=}. "
+                    "Please only provide the former."
             )
+        kwargs.setdefault("n_macroparticles_per_cell", kwargs.pop("n_macroparticle_per_cell", None))
+        return super().__init__(*args, **kwargs)
+
+    # This is to temporarily accomodate for Grids not being BaseModels yet.
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
     def n_macroparticle_per_cell(self):

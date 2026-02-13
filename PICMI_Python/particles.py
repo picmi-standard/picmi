@@ -615,24 +615,21 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_GriddedLayout(_ClassWithInit):
+class PICMI_GriddedLayout(BaseModel):
     """
     Specifies a gridded layout of particles
-
-    Parameters
-    ----------
-    n_macroparticle_per_cell: vector of integers
-        Number of particles per cell along each axis
-
-    grid: grid instance, optional
-        Grid object specifying the grid to follow.
-        If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
-        self.n_macroparticle_per_cell = n_macroparticle_per_cell
-        self.grid = grid
+    n_macroparticle_per_cell: list[int] = Field(
+        min_length=3, max_length=3,
+        description="Number of particles per cell along each axis"
+    )
+    grid: PICMI_AnyGrid | None = Field(
+        default=None,
+        description="Grid object specifying the grid to follow. If not specified, the underlying grid of the code is used."
+    )
 
-        self.handle_init(kw)
+    # This is to temporarily accomodate for Grids not being BaseModels yet.
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class PICMI_PseudoRandomLayout(BaseModel):

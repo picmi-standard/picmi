@@ -3,11 +3,13 @@ These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all particle related
 """
 import re
+from typing import Self
 
 import numpy as np
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .base import _ClassWithInit
+from .fields import PICMI_AnyGrid
 
 # ---------------
 # Physics objects
@@ -633,35 +635,32 @@ class PICMI_GriddedLayout(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_PseudoRandomLayout(_ClassWithInit):
+class PICMI_PseudoRandomLayout(BaseModel):
     """
     Specifies a pseudo-random layout of the particles
-
-    Parameters
-    ----------
-    n_macroparticles: integer
-        Total number of macroparticles to load.
-        Either this argument or n_macroparticles_per_cell should be supplied.
-
-    n_macroparticles_per_cell: integer
-        Number of macroparticles to load per cell.
-        Either this argument or n_macroparticles should be supplied.
-
-    seed: integer, optional
-        Pseudo-random number generator seed
-
-    grid: grid instance, optional
-        Grid object specifying the grid to follow for n_macroparticles_per_cell.
-        If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
+    n_macroparticles: int | None = Field(ge=0,
+        default=None,
+        description="Total number of macroparticles to load. Either this argument or n_macroparticles_per_cell should be supplied (not both)."
+    )
+    n_macroparticles_per_cell: int | None = Field(ge=0,
+        default=None,
+        description="Number of macroparticles to load per cell. Either this argument or n_macroparticles should be supplied (not both)."
+    )
+    seed: int | None = Field(
+        default=None,
+        description="Pseudo-random number generator seed"
+    )
+    grid: PICMI_AnyGrid | None = Field(
+        default=None,
+        description="Grid object specifying the grid to follow for n_macroparticles_per_cell. If not specified, the underlying grid of the code is used."
+    )
 
-        assert (n_macroparticles is not None)^(n_macroparticles_per_cell is not None), \
-               Exception('Only one of n_macroparticles and n_macroparticles_per_cell must be specified')
+    # This is to temporarily accomodate for Grids not being BaseModels yet.
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-        self.n_macroparticles = n_macroparticles
-        self.n_macroparticles_per_cell = n_macroparticles_per_cell
-        self.seed = seed
-        self.grid = grid
-
-        self.handle_init(kw)
+    @model_validator(mode='after')
+    def _validate_either_or(self) -> Self:
+        if (self.n_macroparticles is None) == (self.n_macroparticles_per_cell is None):
+            raise ValueError('Exactly one of n_macroparticles or n_macroparticles_per_cell must be specified')
+        return self

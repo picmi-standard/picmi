@@ -240,46 +240,34 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_UniformDistribution(_ClassWithInit):
+class PICMI_UniformDistribution(BaseModel):
     """
     Describes a uniform density distribution of particles
-
-    Parameters
-    ----------
-    density: float
-        Physical number density [m^-3]
-
-    lower_bound: vector of length 3 of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of length 3 of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    fill_in: bool, optional
-        Flags whether to fill in the empty spaced opened up when the grid moves
     """
+    density: float = Field(ge=0.,
+        description="Physical number density [m^-3]"
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the distribution [m]"
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the distribution [m]"
+    )
+    rms_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Thermal velocity spread [m/s]"
+    )
+    directed_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Directed, average, proper velocity [m/s]"
+    )
+    fill_in: bool | None = Field(
+        default=None,
+        description="Flags whether to fill in the empty spaced opened up when the grid moves"
+    )
 
-    def __init__(self, density,
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
-        self.density = density
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.fill_in = fill_in
-
-        self.handle_init(kw)
 
 class PICMI_FoilDistribution(BaseModel):
     """

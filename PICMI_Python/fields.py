@@ -1128,3 +1128,6 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
             Defaulting to [2,2,2] (relative to next lower level)
         """
         self.refined_regions.append([level, lo, hi, refinement_factor])
+
+
+PICMI_AnyGrid = PICMI_CylindricalGrid | PICMI_Cartesian1DGrid | PICMI_Cartesian2DGrid | PICMI_Cartesian3DGrid

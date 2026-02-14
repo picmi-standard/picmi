@@ -3,12 +3,13 @@ These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all particle related
 """
 import re
-from typing import Self
+from functools import partial
+from typing import Annotated
 
 import numpy as np
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
-from .base import _ClassWithInit
+from .base import _ClassWithInit, broadcast_validation, with_mutually_exclusive
 from .fields import PICMI_AnyGrid
 
 # ---------------
@@ -619,7 +620,7 @@ class PICMI_GriddedLayout(BaseModel):
     """
     Specifies a gridded layout of particles
     """
-    n_macroparticle_per_cell: list[int] = Field(
+    n_macroparticle_per_cell: Annotated[list[int], AfterValidator(partial(broadcast_validation, condition=lambda v: v>0, message="All n_macroparticle_per_cell must be greater than 0."))] = Field(
         min_length=3, max_length=3,
         description="Number of particles per cell along each axis"
     )
@@ -631,7 +632,7 @@ class PICMI_GriddedLayout(BaseModel):
     # This is to temporarily accomodate for Grids not being BaseModels yet.
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-
+@with_mutually_exclusive("n_macroparticles_per_cell", "n_macroparticles")
 class PICMI_PseudoRandomLayout(BaseModel):
     """
     Specifies a pseudo-random layout of the particles
@@ -655,9 +656,3 @@ class PICMI_PseudoRandomLayout(BaseModel):
 
     # This is to temporarily accomodate for Grids not being BaseModels yet.
     model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    @model_validator(mode='after')
-    def _validate_either_or(self) -> Self:
-        if (self.n_macroparticles is None) == (self.n_macroparticles_per_cell is None):
-            raise ValueError('Exactly one of n_macroparticles or n_macroparticles_per_cell must be specified')
-        return self

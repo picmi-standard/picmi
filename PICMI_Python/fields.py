@@ -1,8 +1,9 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
-import math
-import sys
+
+from typing import Sequence
+from pydantic import BaseModel, Field
 
 from .base import _ClassWithInit
 
@@ -160,32 +161,26 @@ class PICMI_MagnetostaticSolver(_ClassWithInit):
 # ------------------
 
 
-class PICMI_BinomialSmoother(_ClassWithInit):
+class PICMI_BinomialSmoother(BaseModel):
     """
-    Describes a binomial smoother operator (applied to grids)
-
-    Parameters
-    ----------
-    n_pass: vector of integers
-        Number of passes along each axis
-
-    compensation: vector of booleans, optional
-        Flags whether to apply comensation along each axis
-
-    stride: vector of integers, optional
-        Stride along each axis
-
-    alpha: vector of floats, optional
-        Smoothing coefficients along each axis
+    Describes a binomial smoother operator (applied to grids).
     """
-    def __init__(self, n_pass=None, compensation=None, stride=None, alpha=None, **kw):
-        self.n_pass = n_pass
-        self.compensation = compensation
-        self.stride = stride
-        self.alpha = alpha
-
-        self.handle_init(kw)
-
+    n_pass: Sequence[int] | None = Field(
+        default_factory=None,
+        description="Vector of integers. Number of passes along each axis"
+    )
+    compensation: Sequence[bool] | None = Field(
+        default=None,
+        description="Flags whether to apply compensation along each axis"
+    )
+    stride: Sequence[int] | None = Field(
+        default=None,
+        description="Stride along each axis"
+    )
+    alpha: Sequence[float] | None = Field(
+        default=None,
+        description="Smoothing coefficients along each axis"
+    )
 
 class PICMI_Cartesian1DGrid(_ClassWithInit):
     """

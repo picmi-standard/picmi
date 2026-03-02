@@ -4,7 +4,7 @@ import inspect
 from itertools import repeat
 import warnings
 from typing import Self
-from pydantic import model_validator
+from pydantic import model_validator, BaseModel, SerializeAsAny
 
 codename = None
 
@@ -215,3 +215,8 @@ def with_mutually_exclusive(*args, defaults=None):
                 return self
         return Decorated
     return decorator
+
+class _PICMI_Extension(BaseModel):
+    pass
+
+PICMI_Extension = SerializeAsAny[_PICMI_Extension]

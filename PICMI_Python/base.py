@@ -1,7 +1,10 @@
 """base code for the PICMI standard
 """
 import inspect
+from itertools import repeat
 import warnings
+from typing import Self
+from pydantic import model_validator, BaseModel, SerializeAsAny
 
 codename = None
 
@@ -191,3 +194,29 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
             else:
                 warnings.warn(full_message)
 
+def broadcast_validation(values, condition, message="Condition not met."):
+    if not all(condition(value) for value in values):
+        raise ValueError(f"{message} You gave: {values}.")
+    return values
+
+
+def with_mutually_exclusive(*args, defaults=None):
+    def decorator(cls):
+        class Decorated(cls):
+            @model_validator(mode='after')
+            def _mutually_exclusive(self) -> Self:
+                # make sure we don't override previously implemented behaviour:
+                try:
+                    super()._mutually_exclusive()
+                except AttributeError:
+                    pass
+                if len(non_default := {arg: value for arg, default in zip(args, repeat(None) if defaults is None else defaults) if (value:=getattr(self, arg)) != default}) > 1: 
+                    raise ValueError(f"The arguments {args} are mutually exclusive. You gave: {non_default=}.")
+                return self
+        return Decorated
+    return decorator
+
+class _PICMI_Extension(BaseModel):
+    pass
+
+PICMI_Extension = SerializeAsAny[_PICMI_Extension]

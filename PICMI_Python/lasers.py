@@ -2,28 +2,52 @@
 These should be the base classes for Python implementation of the PICMI standard
 """
 import math
-import sys
 import re
+from typing import Self, Sequence
+
+from pydantic import BaseModel, Field, model_validator
 
 from .base import _ClassWithInit, _get_constants
+
 
 # ---------------
 # Physics objects
 # ---------------
+def _compute_k0_E0_a0(wavelength, original_E0, original_a0):
+        if original_E0 is None and original_a0 is None:
+            raise ValueError('One of E0 or a0 must be specified')
 
-class PICMI_GaussianLaser(_ClassWithInit):
-    """
+        k0 = 2.*math.pi/wavelength
+        constants = _get_constants()
+        factor = constants.m_e * constants.c**2 * k0 / constants.q_e
+
+        E0 = original_E0 or original_a0 * factor
+        a0 = original_a0 or E0 / factor
+
+        # Both might have been given, so we check for consistency.
+        # The rhs value is just an arbitrary cutoff for floating point errors.
+        # Let's presume that the user did not purposefully choose a value
+        # ever so slightly off to derail us here.
+        if abs(E0/a0/ factor - 1.) > 1.e-6:
+           raise ValueError(f"You provided inconsistent {original_a0=} and {original_E0=} which resulted in {a0=} and {E0=}.") 
+        return k0, E0, a0
+ 
+
+
+
+class PICMI_GaussianLaser(BaseModel):
+    r"""
     Specifies a Gaussian laser distribution.
 
     More precisely, the electric field **near the focal plane** is given by:
 
     .. math::
 
-        E(\\boldsymbol{x},t) = a_0\\times E_0\,
-        \exp\left( -\\frac{r^2}{w_0^2} - \\frac{(z-z_0-ct)^2}{c^2\\tau^2} \\right)
+        E(\boldsymbol{x},t) = a_0\times E_0\,
+        \exp\left( -\frac{r^2}{w_0^2} - \frac{(z-z_0-ct)^2}{c^2\tau^2} \right)
         \cos[ k_0( z - z_0 - ct ) - \phi_{cep} ]
 
-    where :math:`k_0 = 2\pi/\\lambda_0` is the wavevector and where
+    where :math:`k_0 = 2\pi/\lambda_0` is the wavevector and where
     :math:`E_0 = m_e c^2 k_0 / q_e` is the field amplitude for :math:`a_0=1`.
 
     .. note::
@@ -32,97 +56,67 @@ class PICMI_GaussianLaser(_ClassWithInit):
         (Gouy phase, wavefront curvature, ...) are not included in the above
         formula for simplicity, but are of course taken into account by
         the code, when initializing the laser pulse away from the focal plane.
-
-    Parameters
-    ----------
-    wavelength: float
-        Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula
-
-    waist: float
-        Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula
-
-    duration: float
-        Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula
-
-    propagation_direction: unit vector of length 3 of floats
-        Direction of propagation [1]
-
-    polarization_direction: unit vector of length 3 of floats
-        Direction of polarization [1]
-
-    focal_position: vector of length 3 of floats
-        Position of the laser focus [m]
-
-    centroid_position: vector of length 3 of floats
-        Position of the laser centroid at time 0 [m]
-
-    a0: float
-        Normalized vector potential at focus
-        Specify either a0 or E0 (E0 takes precedence).
-
-    E0: float
-        Maximum amplitude of the laser field [V/m]
-        Specify either a0 or E0 (E0 takes precedence).
-
-    phi0: float
-        Carrier envelope phase (CEP) [rad]
-
-    zeta: float
-        Spatial chirp at focus (in the lab frame) [m.s]
-
-    beta: float
-        Angular dispersion at focus (in the lab frame) [rad.s]
-
-    phi2: float
-        Temporal chirp at focus (in the lab frame) [s^2]
-
-    fill_in: bool, default=True
-        Flags whether to fill in the empty spaced opened up when the grid moves
-
-    name: string, optional
-        Optional name of the laser
     """
-    def __init__(self, wavelength, waist, duration,
-                 propagation_direction,
-                 polarization_direction,
-                 focal_position,
-                 centroid_position,
-                 a0 = None,
-                 E0 = None,
-                 phi0 = None,
-                 zeta = None,
-                 beta = None,
-                 phi2 = None,
-                 name = None,
-                 fill_in = True,
-                 **kw):
-
-        assert E0 is not None or a0 is not None, 'One of E0 or a0 must be speficied'
-
-        k0 = 2.*math.pi/wavelength
-        if E0 is None:
-            E0 = a0*_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e
-        if a0 is None:
-            a0 = E0/(_get_constants().m_e*_get_constants().c**2*k0/_get_constants().q_e)
-
-        self.wavelength = wavelength
-        self.k0 = k0
-        self.waist = waist
-        self.duration = duration
-        self.focal_position = focal_position
-        self.centroid_position = centroid_position
-        self.propagation_direction = propagation_direction
-        self.polarization_direction = polarization_direction
-        self.a0 = a0
-        self.E0 = E0
-        self.phi0 = phi0
-        self.zeta = zeta
-        self.beta = beta
-        self.phi2 = phi2
-        self.name = name
-        self.fill_in = fill_in
-
-        self.handle_init(kw)
+    wavelength: float = Field(
+        gt=0.,
+        description="Laser wavelength [m], defined as :math:`\\lambda_0` in the above formula"
+    )
+    waist: float = Field(
+        gt=0.,
+        description="Waist of the Gaussian pulse at focus [m], defined as :math:`w_0` in the above formula"
+    )
+    duration: float = Field(
+        gt=0.,
+        description="Duration of the Gaussian pulse [s], defined as :math:`\\tau` in the above formula"
+    )
+    propagation_direction: Sequence[float] = Field(
+        description="Unit vector of length 3. Direction of propagation [1]"
+    )
+    polarization_direction: Sequence[float] = Field(
+        description="Unit vector of length 3. Direction of polarization [1]"
+    )
+    focal_position: Sequence[float] = Field(
+        description="Vector of length 3 of floats. Position of the laser focus [m]"
+    )
+    centroid_position: Sequence[float] = Field(
+        description="Vector of length 3 of floats. Position of the laser centroid at time 0 [m]"
+    )
+    a0: float | None = Field(
+        default=None,
+        description="Normalized vector potential at focus. Specify either a0 or E0 (E0 takes precedence)."
+    )
+    E0: float | None = Field(
+        default=None,
+        description="Maximum amplitude of the laser field [V/m]. Specify either a0 or E0 (E0 takes precedence)."
+    )
+    phi0: float | None = Field(
+        default=None,
+        description="Carrier envelope phase (CEP) [rad]"
+    )
+    zeta: float | None = Field(
+        default=None,
+        description="Spatial chirp at focus (in the lab frame) [m.s]"
+    )
+    beta: float | None = Field(
+        default=None,
+        description="Angular dispersion at focus (in the lab frame) [rad.s]"
+    )
+    phi2: float | None = Field(
+        default=None,
+        description="Temporal chirp at focus (in the lab frame) [s^2]"
+    )
+    name: str | None = Field(
+        default=None,
+        description="Optional name of the laser"
+    )
+    fill_in: bool = Field(default=True, description="Flags whether to fill in the empty spaced opened up when the grid moves")
+    k0: float = Field(default=0.0, exclude=True, init_var=False)
+    
+    @model_validator(mode='after')
+    def _compute_k0_a0_e0(self) -> Self:
+        """Compute a0 and E0 from each other if needed"""
+        self.k0, self.E0, self.a0 = _compute_k0_E0_a0(self.wavelength, self.E0, self.a0) 
+        return self
 
 
 class PICMI_AnalyticLaser(_ClassWithInit):

@@ -2,8 +2,7 @@
 These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all particle related
 """
-import math
-import sys
+
 import re
 import numpy as np
 
@@ -61,14 +60,26 @@ class PICMI_Species(_ClassWithInit):
         Other values maybe specified that are code dependent.
     """
 
-    methods_list = ['Boris' , 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4']
+    methods_list = ["Boris", "Vay", "Higuera-Cary", "Li", "free-streaming", "LLRK4"]
 
-    def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, density_scale=None, method=None, **kw):
+    def __init__(
+        self,
+        particle_type=None,
+        name=None,
+        charge_state=None,
+        charge=None,
+        mass=None,
+        initial_distribution=None,
+        particle_shape=None,
+        density_scale=None,
+        method=None,
+        **kw,
+    ):
 
-
-        assert method is None or method in PICMI_Species.methods_list or method.startswith('other:'), \
-            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))
+        assert method is None or method in PICMI_Species.methods_list or method.startswith("other:"), Exception(
+            'method must starts with either "other:", or be one of the following '
+            + ", ".join(PICMI_Species.methods_list)
+        )
 
         self.method = method
         self.particle_type = particle_type
@@ -122,13 +133,23 @@ class PICMI_MultiSpecies(_ClassWithInit):
         If not specified, the value from the `Simulation` object will be used.
         Other values maybe specified that are code dependent.
     """
+
     # --- Note to developer: This class attribute needs to be set to the Species class
     # --- defined in the codes PICMI implementation.
     Species_class = None
 
-    def __init__(self, particle_types=None, names=None, charge_states=None, charges=None, masses=None,
-                 proportions=None, initial_distribution=None, particle_shape=None,
-                 **kw):
+    def __init__(
+        self,
+        particle_types=None,
+        names=None,
+        charge_states=None,
+        charges=None,
+        masses=None,
+        proportions=None,
+        initial_distribution=None,
+        particle_shape=None,
+        **kw,
+    ):
 
         self.particle_types = particle_types
         self.names = names
@@ -157,13 +178,15 @@ class PICMI_MultiSpecies(_ClassWithInit):
             charge_state = self.get_input_item(charge_states, i)
             mass = self.get_input_item(masses, i)
             proportion = self.get_input_item(proportions, i)
-            specie = PICMI_MultiSpecies.Species_class(particle_type = particle_type,
-                                                      name = name,
-                                                      charge = charge,
-                                                      charge_state = charge_state,
-                                                      mass = mass,
-                                                      initial_distribution = initial_distribution,
-                                                      density_scale = proportion)
+            specie = PICMI_MultiSpecies.Species_class(
+                particle_type=particle_type,
+                name=name,
+                charge=charge,
+                charge_state=charge_state,
+                mass=mass,
+                initial_distribution=initial_distribution,
+                density_scale=proportion,
+            )
             self.species_instances_list.append(specie)
             if name is not None:
                 self.species_instances_dict[name] = specie
@@ -176,7 +199,7 @@ class PICMI_MultiSpecies(_ClassWithInit):
                 nvars = len(var)
             except TypeError:
                 nvars = 1
-            assert self.nspecies is None or self.nspecies == nvars, Exception('All inputs must have the same length')
+            assert self.nspecies is None or self.nspecies == nvars, Exception("All inputs must have the same length")
             self.nspecies = nvars
 
     def get_input_item(self, var, i):
@@ -224,12 +247,17 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
     velocity_divergence: vector of length 3 of floats, default=[0.,0.,0.]
         Expansion rate of the bunch at t=0 [m/s/m]
     """
-    def __init__(self,n_physical_particles, rms_bunch_size,
-                 rms_velocity = [0.,0.,0.],
-                 centroid_position = [0.,0.,0.],
-                 centroid_velocity = [0.,0.,0.],
-                 velocity_divergence = [0.,0.,0.],
-                 **kw):
+
+    def __init__(
+        self,
+        n_physical_particles,
+        rms_bunch_size,
+        rms_velocity=[0.0, 0.0, 0.0],
+        centroid_position=[0.0, 0.0, 0.0],
+        centroid_velocity=[0.0, 0.0, 0.0],
+        velocity_divergence=[0.0, 0.0, 0.0],
+        **kw,
+    ):
         self.n_physical_particles = n_physical_particles
         self.rms_bunch_size = rms_bunch_size
         self.rms_velocity = rms_velocity
@@ -265,13 +293,16 @@ class PICMI_UniformDistribution(_ClassWithInit):
         Flags whether to fill in the empty spaced opened up when the grid moves
     """
 
-    def __init__(self, density,
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
+    def __init__(
+        self,
+        density,
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        rms_velocity=[0.0, 0.0, 0.0],
+        directed_velocity=[0.0, 0.0, 0.0],
+        fill_in=None,
+        **kw,
+    ):
         self.density = density
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -325,20 +356,22 @@ class PICMI_FoilDistribution(_ClassWithInit):
         Flags whether to fill in the empty spaced opened up when the grid moves
     """
 
-    def __init__(self,
-                 density,
-                 front,
-                 thickness,
-                 rms_velocity = [0., 0., 0.],
-                 directed_velocity = [0., 0., 0.],
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 exponential_pre_plasma_length = None,
-                 exponential_pre_plasma_cutoff = None,
-                 exponential_post_plasma_length = None,
-                 exponential_post_plasma_cutoff = None,
-                 fill_in = None,
-                 **kw) :
+    def __init__(
+        self,
+        density,
+        front,
+        thickness,
+        rms_velocity=[0.0, 0.0, 0.0],
+        directed_velocity=[0.0, 0.0, 0.0],
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        exponential_pre_plasma_length=None,
+        exponential_pre_plasma_cutoff=None,
+        exponential_post_plasma_length=None,
+        exponential_post_plasma_cutoff=None,
+        fill_in=None,
+        **kw,
+    ):
         self.density = density
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -400,17 +433,22 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
         the momentum distribution is simply Gaussian.
     """
 
-    def __init__(self, flux, flux_normal_axis,
-                 surface_flux_position, flux_direction,
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 flux_tmin = None,
-                 flux_tmax = None,
-                 gaussian_flux_momentum_distribution = None,
-                 **kw):
-        self.flux = f'{flux}'.replace('\n', '')
+    def __init__(
+        self,
+        flux,
+        flux_normal_axis,
+        surface_flux_position,
+        flux_direction,
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        rms_velocity=[0.0, 0.0, 0.0],
+        directed_velocity=[0.0, 0.0, 0.0],
+        flux_tmin=None,
+        flux_tmax=None,
+        gaussian_flux_momentum_distribution=None,
+        **kw,
+    ):
+        self.flux = f"{flux}".replace("\n", "")
         self.flux_normal_axis = flux_normal_axis
         self.surface_flux_position = surface_flux_position
         self.flux_direction = flux_direction
@@ -424,13 +462,15 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
 
         self.user_defined_kw = {}
         for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, self.flux):
+            if re.search(r"\b%s\b" % k, self.flux):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
 
         self.handle_init(kw)
 
+
 PICMI_UniformFluxDistribution = PICMI_AnalyticFluxDistribution
+
 
 class PICMI_AnalyticDistribution(_ClassWithInit):
     """
@@ -482,16 +522,19 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
 
     """
 
-    def __init__(self, density_expression,
-                 momentum_expressions = [None, None, None],
-                 momentum_spread_expressions = [None, None, None],
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
-        self.density_expression = f'{density_expression}'.replace('\n', '')
+    def __init__(
+        self,
+        density_expression,
+        momentum_expressions=[None, None, None],
+        momentum_spread_expressions=[None, None, None],
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        rms_velocity=[0.0, 0.0, 0.0],
+        directed_velocity=[0.0, 0.0, 0.0],
+        fill_in=None,
+        **kw,
+    ):
+        self.density_expression = f"{density_expression}".replace("\n", "")
         self.momentum_expressions = momentum_expressions
         self.momentum_spread_expressions = momentum_spread_expressions
         self.lower_bound = lower_bound
@@ -503,9 +546,9 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         # --- Convert momentum expressions to string if needed.
         for idir in range(3):
             if self.momentum_expressions[idir] is not None:
-                self.momentum_expressions[idir] = f'{self.momentum_expressions[idir]}'.replace('\n', '')
+                self.momentum_expressions[idir] = f"{self.momentum_expressions[idir]}".replace("\n", "")
             if self.momentum_spread_expressions[idir] is not None:
-                self.momentum_spread_expressions[idir] = f'{self.momentum_spread_expressions[idir]}'.replace('\n', '')
+                self.momentum_spread_expressions[idir] = f"{self.momentum_spread_expressions[idir]}".replace("\n", "")
 
         # --- Find any user defined keywords in the kw dictionary.
         # --- Save them and delete them from kw.
@@ -513,16 +556,16 @@ class PICMI_AnalyticDistribution(_ClassWithInit):
         # --- used in the expression are defined.
         self.user_defined_kw = {}
         for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, self.density_expression):
+            if re.search(r"\b%s\b" % k, self.density_expression):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
-            elif self.momentum_expressions[0] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[0]):
+            elif self.momentum_expressions[0] is not None and re.search(r"\b%s\b" % k, self.momentum_expressions[0]):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
-            elif self.momentum_expressions[1] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[1]):
+            elif self.momentum_expressions[1] is not None and re.search(r"\b%s\b" % k, self.momentum_expressions[1]):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
-            elif self.momentum_expressions[2] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[2]):
+            elif self.momentum_expressions[2] is not None and re.search(r"\b%s\b" % k, self.momentum_expressions[2]):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
 
@@ -556,8 +599,8 @@ class PICMI_ParticleListDistribution(_ClassWithInit):
     weight: float
         Particle weight or list of weights, number of real particles per simulation particle
     """
-    def __init__(self, x=0., y=0., z=0., ux=0., uy=0., uz=0., weight=0.,
-                 **kw):
+
+    def __init__(self, x=0.0, y=0.0, z=0.0, ux=0.0, uy=0.0, uz=0.0, weight=0.0, **kw):
         # --- Get length of arrays, set to one for scalars
         lenx = np.size(x)
         leny = np.size(y)
@@ -568,26 +611,26 @@ class PICMI_ParticleListDistribution(_ClassWithInit):
         lenw = np.size(weight)
 
         maxlen = max(lenx, leny, lenz, lenux, lenuy, lenuz, lenw)
-        assert lenx==maxlen or lenx==1, "Length of x doesn't match len of others"
-        assert leny==maxlen or leny==1, "Length of y doesn't match len of others"
-        assert lenz==maxlen or lenz==1, "Length of z doesn't match len of others"
-        assert lenux==maxlen or lenux==1, "Length of ux doesn't match len of others"
-        assert lenuy==maxlen or lenuy==1, "Length of uy doesn't match len of others"
-        assert lenuz==maxlen or lenuz==1, "Length of uz doesn't match len of others"
-        assert lenw==maxlen or lenw==1, "Length of weight doesn't match len of others"
+        assert lenx == maxlen or lenx == 1, "Length of x doesn't match len of others"
+        assert leny == maxlen or leny == 1, "Length of y doesn't match len of others"
+        assert lenz == maxlen or lenz == 1, "Length of z doesn't match len of others"
+        assert lenux == maxlen or lenux == 1, "Length of ux doesn't match len of others"
+        assert lenuy == maxlen or lenuy == 1, "Length of uy doesn't match len of others"
+        assert lenuz == maxlen or lenuz == 1, "Length of uz doesn't match len of others"
+        assert lenw == maxlen or lenw == 1, "Length of weight doesn't match len of others"
 
         if lenx == 1:
-            x = np.array(x)*np.ones(maxlen)
+            x = np.array(x) * np.ones(maxlen)
         if leny == 1:
-            y = np.array(y)*np.ones(maxlen)
+            y = np.array(y) * np.ones(maxlen)
         if lenz == 1:
-            z = np.array(z)*np.ones(maxlen)
+            z = np.array(z) * np.ones(maxlen)
         if lenux == 1:
-            ux = np.array(ux)*np.ones(maxlen)
+            ux = np.array(ux) * np.ones(maxlen)
         if lenuy == 1:
-            uy = np.array(uy)*np.ones(maxlen)
+            uy = np.array(uy) * np.ones(maxlen)
         if lenuz == 1:
-            uz = np.array(uz)*np.ones(maxlen,'d')
+            uz = np.array(uz) * np.ones(maxlen, "d")
         # --- Note that weight can be a scalar
 
         self.weight = weight
@@ -607,9 +650,11 @@ class PICMI_FromFileDistribution(_ClassWithInit):
 
     The openPMD file must contain the attributes `position`, `momentum`, `weighting`.
     """
+
     def __init__(self, file_path, **kw):
         self.file_path = file_path
         self.handle_init(kw)
+
 
 # ------------------
 # Numeric Objects
@@ -633,7 +678,8 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
 
     method: {'InPlace', 'Plane'}
     """
-    def __init__(self, position, plane_normal, plane_velocity=[0.,0.,0.], method='InPlace', **kw):
+
+    def __init__(self, position, plane_normal, plane_velocity=[0.0, 0.0, 0.0], method="InPlace", **kw):
         self.position = position
         self.plane_normal = plane_normal
         self.plane_velocity = plane_velocity
@@ -655,11 +701,37 @@ class PICMI_GriddedLayout(_ClassWithInit):
         Grid object specifying the grid to follow.
         If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
-        self.n_macroparticle_per_cell = n_macroparticle_per_cell
+
+    def __init__(self, n_macroparticles_per_cell=None, grid=None, n_macroparticle_per_cell=None, **kw):
+        self.n_macroparticles_per_cell = n_macroparticles_per_cell
         self.grid = grid
 
+        self._handle_n_macroparticle_per_cell(n_macroparticle_per_cell)
         self.handle_init(kw)
+
+    def _handle_n_macroparticle_per_cell(self, n_macroparticle_per_cell):
+        """
+        Handle the deprecation of n_macroparticle_per_cell gracefully after being renamed in >v0.35.0.
+        """
+        self._check_deprecated_argument(
+            "n_macroparticle_per_cell",
+            message="n_macroparticle_per_cell was renamed. It is deprecated in favor of n_macroparticles_per_cell and will be removed in a future version.",
+            raise_error=False,
+        )
+        if n_macroparticle_per_cell is not None and self.n_macroparticles_per_cell is None:
+            self.n_macroparticles_per_cell = n_macroparticle_per_cell
+        if self.n_macroparticles_per_cell is None:
+            raise ValueError(
+                f"You have specified {self.n_macroparticles_per_cell=} as well as the deprecated {n_macroparticle_per_cell=}."
+            )
+
+    @property
+    def n_macroparticle_per_cell(self):
+        return self.n_macroparticles_per_cell
+
+    @n_macroparticle_per_cell.setter
+    def _(self, value):
+        self.n_macroparticles_per_cell = value
 
 
 class PICMI_PseudoRandomLayout(_ClassWithInit):
@@ -683,10 +755,12 @@ class PICMI_PseudoRandomLayout(_ClassWithInit):
         Grid object specifying the grid to follow for n_macroparticles_per_cell.
         If not specified, the underlying grid of the code is used.
     """
+
     def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
 
-        assert (n_macroparticles is not None)^(n_macroparticles_per_cell is not None), \
-               Exception('Only one of n_macroparticles and n_macroparticles_per_cell must be specified')
+        assert (n_macroparticles is not None) ^ (n_macroparticles_per_cell is not None), Exception(
+            "Only one of n_macroparticles and n_macroparticles_per_cell must be specified"
+        )
 
         self.n_macroparticles = n_macroparticles
         self.n_macroparticles_per_cell = n_macroparticles_per_cell

@@ -1,31 +1,30 @@
 [build-system]
-requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+requires = [ "setuptools" ]
 
 [project]
 name = "picmistandard"
-dynamic = ["version"]
-dependencies = ["numpy>=1.15",
-                "scipy~=1.5"]
 description = "Python base classes for PICMI standard"
 readme = "README.md"
-license = {file = "License.txt"}
+license = { file = "License.txt" }
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 4 - Beta",
-  "Programming Language :: Python :: 3",
   "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering",
-  "Topic :: Software Development :: User Interfaces"
+  "Topic :: Software Development :: User Interfaces",
 ]
-requires-python = ">=3.11"
-
-[tool.setuptools.dynamic]
-version = {attr = "PICMI_Python.version.__version__"}
+dynamic = [ "version" ]
+dependencies = [ "numpy>=1.15", "scipy~=1.5" ]
+urls.Documentation = "https://picmi.readthedocs.io/en/latest"
+urls.Repository = "https://github.com/picmi-standard/picmi"
 
 [tool.setuptools]
-packages = ["picmistandard"]
-package-dir = {"picmistandard" = "PICMI_Python"}
-
-[project.urls]
-Repository = "https://github.com/picmi-standard/picmi"
-Documentation = "https://picmi.readthedocs.io/en/latest"
+packages = [ "picmistandard" ]
+package-dir = { "picmistandard" = "PICMI_Python" }
+dynamic.version = { attr = "PICMI_Python.version.__version__" }

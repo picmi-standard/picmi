@@ -5,6 +5,7 @@ The classes in this file are related to interactions (e.g. field ionization, col
 
 from .base import _ClassWithInit
 
+
 class PICMI_FieldIonization(_ClassWithInit):
     """
     Field ionization on an ion species
@@ -20,10 +21,10 @@ class PICMI_FieldIonization(_ClassWithInit):
     product_species: species instance
         Species in which ionized electrons are stored.
     """
+
     def __init__(self, model, ionized_species, product_species, **kw):
         self.model = model
         self.ionized_species = ionized_species
         self.product_species = product_species
 
         self.handle_init(kw)
-

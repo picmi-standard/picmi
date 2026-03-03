@@ -655,11 +655,41 @@ class PICMI_GriddedLayout(_ClassWithInit):
         Grid object specifying the grid to follow.
         If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticle_per_cell, grid=None, **kw):
-        self.n_macroparticle_per_cell = n_macroparticle_per_cell
+    def __init__(self, n_macroparticles_per_cell=None, grid=None, **kw):
+        self.n_macroparticles_per_cell = n_macroparticles_per_cell
         self.grid = grid
 
+        self._handle_n_macroparticle_per_cell(kw.pop('n_macroparticle_per_cell', None))
         self.handle_init(kw)
+
+    def _handle_n_macroparticle_per_cell(self, n_macroparticle_per_cell):
+        """
+        Handle the deprecation of n_macroparticle_per_cell gracefully after being renamed in >v0.34.0.
+        """
+        self._check_deprecated_argument(
+            "n_macroparticle_per_cell",
+            message="n_macroparticle_per_cell was renamed. It is deprecated in favor of n_macroparticles_per_cell and will be removed in a future version.",
+            raise_error=False,
+        )
+        if n_macroparticle_per_cell is not None:
+            if self.n_macroparticles_per_cell is None:
+                self.n_macroparticles_per_cell = n_macroparticle_per_cell
+            else:
+                raise ValueError(
+                    f"PICMI_GriddedLayout: You have specified {self.n_macroparticles_per_cell=} as well as the deprecated {n_macroparticle_per_cell=}."
+                )
+        if self.n_macroparticles_per_cell is None:
+            raise ValueError(
+                "PICMI_GriddedLayout: You have not specified n_macroparticles_per_cell."
+            )
+
+    @property
+    def n_macroparticle_per_cell(self):
+        return self.n_macroparticles_per_cell
+
+    @n_macroparticle_per_cell.setter
+    def _(self, value):
+        self.n_macroparticles_per_cell = value
 
 
 class PICMI_PseudoRandomLayout(_ClassWithInit):

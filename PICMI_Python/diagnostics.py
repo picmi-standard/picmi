@@ -53,19 +53,25 @@ class PICMI_FieldDiagnostic(_ClassWithInit):
     name: string, optional
         Sets the base name for the diagnostic output files
     """
-    def __init__(self, grid, period, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 number_of_cells = None,
-                 lower_bound = None,
-                 upper_bound = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+
+    def __init__(
+        self,
+        grid,
+        period,
+        data_list=None,
+        write_dir=None,
+        step_min=None,
+        step_max=None,
+        number_of_cells=None,
+        lower_bound=None,
+        upper_bound=None,
+        parallelio=None,
+        name=None,
+        **kw,
+    ):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'FieldDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "FieldDiagnostic: data_list must be a list"
 
         self.grid = grid
         self.period = period
@@ -125,19 +131,25 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
     name: string, optional
         Sets the base name for the diagnostic output files
     """
-    def __init__(self, grid, period, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 number_of_cells = None,
-                 lower_bound = None,
-                 upper_bound = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+
+    def __init__(
+        self,
+        grid,
+        period,
+        data_list=None,
+        write_dir=None,
+        step_min=None,
+        step_max=None,
+        number_of_cells=None,
+        lower_bound=None,
+        upper_bound=None,
+        parallelio=None,
+        name=None,
+        **kw,
+    ):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'ElectrostaticFieldDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "ElectrostaticFieldDiagnostic: data_list must be a list"
 
         self.grid = grid
         self.period = period
@@ -154,7 +166,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_ParticleDiagnostic(_ClassWithInit) :
+class PICMI_ParticleDiagnostic(_ClassWithInit):
     """
     Defines the particle diagnostics in the simulation frame
 
@@ -187,16 +199,21 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
         Sets the base name for the diagnostic output files
     """
 
-    def __init__(self, period, species=None, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+    def __init__(
+        self,
+        period,
+        species=None,
+        data_list=None,
+        write_dir=None,
+        step_min=None,
+        step_max=None,
+        parallelio=None,
+        name=None,
+        **kw,
+    ):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'ParticleDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "ParticleDiagnostic: data_list must be a list"
 
         self.period = period
         self.species = species
@@ -210,7 +227,7 @@ class PICMI_ParticleDiagnostic(_ClassWithInit) :
         self.handle_init(kw)
 
 
-class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
+class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit):
     """
     Defines the particle diagnostics that are used to collect the particles that are absorbed at the boundaries, throughout the simulation.
 
@@ -237,14 +254,10 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
         Sets the base name for the diagnostic output files
     """
 
-    def __init__(self, period, species=None, data_list=None,
-                 write_dir = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+    def __init__(self, period, species=None, data_list=None, write_dir=None, parallelio=None, name=None, **kw):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'ParticleBoundaryScrapingDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "ParticleBoundaryScrapingDiagnostic: data_list must be a list"
 
         self.period = period
         self.species = species
@@ -254,6 +267,7 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :
         self.name = name
 
         self.handle_init(kw)
+
 
 # ----------------------------
 # Lab frame diagnostics
@@ -294,15 +308,23 @@ class PICMI_LabFrameFieldDiagnostic(_ClassWithInit):
     name: string, optional
         Sets the base name for the diagnostic output files
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
-                 z_subsampling = 1, time_start = 0.,
-                 write_dir = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+
+    def __init__(
+        self,
+        grid,
+        num_snapshots,
+        dt_snapshots,
+        data_list=None,
+        z_subsampling=1,
+        time_start=0.0,
+        write_dir=None,
+        parallelio=None,
+        name=None,
+        **kw,
+    ):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'LabFrameFieldDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "LabFrameFieldDiagnostic: data_list must be a list"
 
         self.grid = grid
         self.num_snapshots = num_snapshots
@@ -352,16 +374,23 @@ class PICMI_LabFrameParticleDiagnostic(_ClassWithInit):
     name: string, optional
         Sets the base name for the diagnostic output files
     """
-    def __init__(self, grid, num_snapshots, dt_snapshots, data_list=None,
-                 time_start = 0.,
-                 species = None,
-                 write_dir = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
+
+    def __init__(
+        self,
+        grid,
+        num_snapshots,
+        dt_snapshots,
+        data_list=None,
+        time_start=0.0,
+        species=None,
+        write_dir=None,
+        parallelio=None,
+        name=None,
+        **kw,
+    ):
 
         if data_list is not None:
-            assert isinstance(data_list, list), 'LabFrameParticleDiagnostic: data_list must be a list'
+            assert isinstance(data_list, list), "LabFrameParticleDiagnostic: data_list must be a list"
 
         self.grid = grid
         self.num_snapshots = num_snapshots

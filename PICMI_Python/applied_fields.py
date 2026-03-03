@@ -1,6 +1,7 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
+
 import re
 
 from .base import _ClassWithInit
@@ -40,9 +41,19 @@ class PICMI_ConstantAppliedField(_ClassWithInit):
     upper_bound: vector, optional
         Upper bound of the region where the field is applied [m]
     """
-    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
+
+    def __init__(
+        self,
+        Ex=None,
+        Ey=None,
+        Ez=None,
+        Bx=None,
+        By=None,
+        Bz=None,
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        **kw,
+    ):
 
         self.Ex = Ex
         self.Ey = Ey
@@ -91,10 +102,19 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
     upper_bound: vector, optional
         Upper bound of the region where the field is applied [m]
     """
-    def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
-                       Bx_expression=None, By_expression=None, Bz_expression=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
+
+    def __init__(
+        self,
+        Ex_expression=None,
+        Ey_expression=None,
+        Ez_expression=None,
+        Bx_expression=None,
+        By_expression=None,
+        Bz_expression=None,
+        lower_bound=[None, None, None],
+        upper_bound=[None, None, None],
+        **kw,
+    ):
 
         self.Ex_expression = Ex_expression
         self.Ey_expression = Ey_expression
@@ -112,12 +132,14 @@ class PICMI_AnalyticAppliedField(_ClassWithInit):
         # --- used in the expression are defined.
         self.user_defined_kw = {}
         for k in list(kw.keys()):
-            if ((self.Ex_expression is not None and re.search(r'\b%s\b'%k, self.Ex_expression)) or
-                (self.Ey_expression is not None and re.search(r'\b%s\b'%k, self.Ey_expression)) or
-                (self.Ez_expression is not None and re.search(r'\b%s\b'%k, self.Ez_expression)) or
-                (self.Bx_expression is not None and re.search(r'\b%s\b'%k, self.Bx_expression)) or
-                (self.By_expression is not None and re.search(r'\b%s\b'%k, self.By_expression)) or
-                (self.Bz_expression is not None and re.search(r'\b%s\b'%k, self.Bz_expression))):
+            if (
+                (self.Ex_expression is not None and re.search(r"\b%s\b" % k, self.Ex_expression))
+                or (self.Ey_expression is not None and re.search(r"\b%s\b" % k, self.Ey_expression))
+                or (self.Ez_expression is not None and re.search(r"\b%s\b" % k, self.Ez_expression))
+                or (self.Bx_expression is not None and re.search(r"\b%s\b" % k, self.Bx_expression))
+                or (self.By_expression is not None and re.search(r"\b%s\b" % k, self.By_expression))
+                or (self.Bz_expression is not None and re.search(r"\b%s\b" % k, self.Bz_expression))
+            ):
                 self.user_defined_kw[k] = kw[k]
                 del kw[k]
 
@@ -153,11 +175,19 @@ class PICMI_Mirror(_ClassWithInit):
     or the code's default value if neither are specified.
     """
 
-    def __init__(self, x_front_location=None, y_front_location=None, z_front_location=None,
-                 depth=None, number_of_cells=None, **kw):
+    def __init__(
+        self,
+        x_front_location=None,
+        y_front_location=None,
+        z_front_location=None,
+        depth=None,
+        number_of_cells=None,
+        **kw,
+    ):
 
-        assert [x_front_location,y_front_location,z_front_location].count(None) == 2,\
-               Exception('At least one and only one of [x,y,z]_front_location should be specified.')
+        assert [x_front_location, y_front_location, z_front_location].count(None) == 2, Exception(
+            "At least one and only one of [x,y,z]_front_location should be specified."
+        )
 
         self.x_front_location = x_front_location
         self.y_front_location = y_front_location
@@ -166,6 +196,7 @@ class PICMI_Mirror(_ClassWithInit):
         self.number_of_cells = number_of_cells
 
         self.handle_init(kw)
+
 
 class PICMI_LoadAppliedField(_ClassWithInit):
     """
@@ -183,6 +214,7 @@ class PICMI_LoadAppliedField(_ClassWithInit):
     load_E: bool, default=True
         If False, do not load electric field
     """
+
     def __init__(self, read_fields_from_path, load_B=True, load_E=True, **kw):
         self.load_B = load_B
         self.load_E = load_E
@@ -207,6 +239,7 @@ class PICMI_LoadGriddedField(_ClassWithInit):
     load_E: bool, default=True
         If False, do not load electric field
     """
+
     def __init__(self, read_fields_from_path, load_B=True, load_E=True, **kw):
         self.load_B = load_B
         self.load_E = load_E

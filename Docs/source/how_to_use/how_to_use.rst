@@ -6,5 +6,3 @@ How to use the PICMI standard
 
    using
    implementing
-
-

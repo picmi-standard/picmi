@@ -1,14 +1,13 @@
 """Simulation class following the PICMI standard
 This should be the base classes for Python implementation of the PICMI standard
 """
-import math
-import sys
 
 from .base import _ClassWithInit
 
 # ---------------------
 # Main simulation object
 # ---------------------
+
 
 class PICMI_Simulation(_ClassWithInit):
     """
@@ -43,8 +42,18 @@ class PICMI_Simulation(_ClassWithInit):
         Note that all input values should be in the lab frame.
     """
 
-    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', gamma_boost=None, load_balancing=None, **kw):
+    def __init__(
+        self,
+        solver=None,
+        time_step_size=None,
+        max_steps=None,
+        max_time=None,
+        verbose=None,
+        particle_shape="linear",
+        gamma_boost=None,
+        load_balancing=None,
+        **kw,
+    ):
 
         self.solver = solver
         self.time_step_size = time_step_size
@@ -98,10 +107,9 @@ class PICMI_Simulation(_ClassWithInit):
         self.injection_plane_positions.append(None)
         self.injection_plane_normal_vectors.append(None)
 
-
-    def add_species_through_plane(self, species, layout,
-                                  injection_plane_position, injection_plane_normal_vector,
-                                  initialize_self_field=None):
+    def add_species_through_plane(
+        self, species, layout, injection_plane_position, injection_plane_normal_vector, initialize_self_field=None
+    ):
         """
         Add species to be used in the simulation that are injected through a plane
         during the simulation.
@@ -132,7 +140,6 @@ class PICMI_Simulation(_ClassWithInit):
         self.initialize_self_fields.append(initialize_self_field)
         self.injection_plane_positions.append(injection_plane_position)
         self.injection_plane_normal_vectors.append(injection_plane_normal_vector)
-
 
     def add_laser(self, laser, injection_method):
         """

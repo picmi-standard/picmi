@@ -17,6 +17,7 @@ classifiers = [
   "Topic :: Scientific/Engineering",
   "Topic :: Software Development :: User Interfaces"
 ]
+requires-python = ">=3.11"
 
 [tool.setuptools.dynamic]
 version = {attr = "PICMI_Python.version.__version__"}

@@ -29,3 +29,8 @@ package-dir = {"picmistandard" = "PICMI_Python"}
 [project.urls]
 Repository = "https://github.com/picmi-standard/picmi"
 Documentation = "https://picmi.readthedocs.io/en/latest"
+
+[tool.ruff.lint]
+# These rules are currently not followed by some files.
+# Shortening this list should be a future PR.
+ignore = ["E402", "F401","F403","F821"]

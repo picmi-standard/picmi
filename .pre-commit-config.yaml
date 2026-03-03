@@ -1,0 +1,38 @@
+minimum_pre_commit_version: 3.2.0 # necessitated by Lucas-C's hooks
+default_install_hook_types: [pre-commit, pre-push]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: no-commit-to-branch
+        args: [-b, master]
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+        exclude_types: [markdown, rst]
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-yaml
+      - id: mixed-line-ending
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: pretty-format-json
+        args:
+          - "--autofix"
+          - "--no-ensure-ascii"
+          - "--no-sort-keys"
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.6
+    hooks:
+      - id: forbid-tabs
+        types_or: [file]
+        exclude_types: [rst, tex, tsv]
+      - id: remove-tabs
+        types_or: [file]
+        exclude_types: [rst, tex, tsv]
+      - id: forbid-crlf
+      - id: remove-crlf
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.4
+    hooks:
+      - id: ruff-check
+        args: [--fix]

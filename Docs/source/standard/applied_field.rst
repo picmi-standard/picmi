@@ -19,4 +19,3 @@ Refecting mirrors
 -----------------
 
 .. autoclass:: picmistandard.PICMI_Mirror
-

@@ -1,191 +1,32 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
-import math
-import sys
+
+from typing import Sequence, get_args, Literal
+from pydantic import BaseModel, Field, computed_field
 
 from .base import _ClassWithInit
 
-# ---------------
-# Physics objects
-# ---------------
-
-class PICMI_ElectromagneticSolver(_ClassWithInit):
+class PICMI_BinomialSmoother(BaseModel):
     """
-    Electromagnetic field solver
-
-    Parameters
-    ----------
-    grid: grid instance
-        Grid object for the diagnostic
-
-    method: {'Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT'}
-        The advance method use to solve Maxwell's equations. The default method is code dependent.
-
-        - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
-
-        - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties
-          (https://doi.org/10.1103/PhysRevSTAB.16.041303)
-
-        - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
-
-        - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
-
-        - 'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
-
-        - 'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
-
-        - 'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
-
-    stencil_order: vector of integers
-        Order of stencil for each axis (-1=infinite)
-
-    cfl: float, optional
-        Fraction of the Courant-Friedrich-Lewy criteria [1]
-
-    source_smoother: smoother instance, optional
-        Smoother object to apply to the sources
-
-    field_smoother: smoother instance, optional
-        Smoother object to apply to the fields
-
-    subcycling: integer, optional
-        Level of subcycling for the GPSTD solver
-
-    galilean_velocity: vector of floats, optional
-        Velocity of Galilean reference frame [m/s]
-
-    divE_cleaning: bool, optional
-        Solver uses div(E) cleaning if True
-
-    divB_cleaning: bool, optional
-        Solver uses div(B) cleaning if True
-
-    pml_divE_cleaning: bool, optional
-        Solver uses div(E) cleaning in the PML if True
-
-    pml_divB_cleaning: bool, optional
-        Solver uses div(B) cleaning in the PML if True
+    Describes a binomial smoother operator (applied to grids).
     """
-
-    methods_list = ['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT']
-
-    def __init__(self, grid, method=None, stencil_order=None, cfl=None,
-                 source_smoother=None, field_smoother=None, subcycling=None,
-                 galilean_velocity=None, divE_cleaning=None, divB_cleaning=None,
-                 pml_divE_cleaning=None, pml_divB_cleaning=None, **kw):
-
-        assert method is None or method in PICMI_ElectromagneticSolver.methods_list, \
-               Exception('method must be one of '+', '.join(PICMI_ElectromagneticSolver.methods_list))
-
-        self.grid = grid
-        self.method = method
-        self.cfl = cfl
-        self.stencil_order = stencil_order
-        self.source_smoother = source_smoother
-        self.field_smoother = field_smoother
-        self.subcycling = subcycling
-        self.galilean_velocity = galilean_velocity
-        self.divE_cleaning = divE_cleaning
-        self.divB_cleaning = divB_cleaning
-        self.pml_divE_cleaning = pml_divE_cleaning
-        self.pml_divB_cleaning = pml_divB_cleaning
-
-        self.handle_init(kw)
-
-
-class PICMI_ElectrostaticSolver(_ClassWithInit):
-    """
-    Electrostatic field solver
-
-    Parameters
-    ----------
-    grid: grid instance
-        Grid object for the diagnostic
-
-    method: string
-        One of 'FFT', or 'Multigrid'
-
-    required_precision: float, optional
-        Level of precision required for iterative solvers
-
-    maximum_iterations: integer, optional
-        Maximum number of iterations for iterative solvers
-    """
-
-    methods_list = ['FFT', 'Multigrid']
-
-    def __init__(self, grid, method=None,
-                 required_precision=None, maximum_iterations=None, **kw):
-
-        assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
-               Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
-
-        self.grid = grid
-        self.method = method
-        self.required_precision = required_precision
-        self.maximum_iterations = maximum_iterations
-
-        self.handle_init(kw)
-
-
-class PICMI_MagnetostaticSolver(_ClassWithInit):
-    """
-    Magnetostatic field solver
-
-    Parameters
-    ----------
-    grid: grid instance
-        Grid object for the diagnostic
-
-    method: string
-        One of 'FFT', or 'Multigrid'
-    """
-
-    methods_list = ['FFT', 'Multigrid']
-
-    def __init__(self, grid, method=None, **kw):
-
-        assert method is None or method in PICMI_MagnetostaticSolver.methods_list, \
-               Exception('method must be one of '+', '.join(PICMI_MagnetostaticSolver.methods_list))
-
-        self.grid = grid
-        self.method = method
-
-        self.handle_init(kw)
-
-
-# ------------------
-# Numeric Objects
-# ------------------
-
-
-class PICMI_BinomialSmoother(_ClassWithInit):
-    """
-    Describes a binomial smoother operator (applied to grids)
-
-    Parameters
-    ----------
-    n_pass: vector of integers
-        Number of passes along each axis
-
-    compensation: vector of booleans, optional
-        Flags whether to apply comensation along each axis
-
-    stride: vector of integers, optional
-        Stride along each axis
-
-    alpha: vector of floats, optional
-        Smoothing coefficients along each axis
-    """
-    def __init__(self, n_pass=None, compensation=None, stride=None, alpha=None, **kw):
-        self.n_pass = n_pass
-        self.compensation = compensation
-        self.stride = stride
-        self.alpha = alpha
-
-        self.handle_init(kw)
-
+    n_pass: Sequence[int] | None = Field(
+        default_factory=None,
+        description="Vector of integers. Number of passes along each axis"
+    )
+    compensation: Sequence[bool] | None = Field(
+        default=None,
+        description="Flags whether to apply compensation along each axis"
+    )
+    stride: Sequence[int] | None = Field(
+        default=None,
+        description="Stride along each axis"
+    )
+    alpha: Sequence[float] | None = Field(
+        default=None,
+        description="Smoothing coefficients along each axis"
+    )
 
 class PICMI_Cartesian1DGrid(_ClassWithInit):
     """
@@ -1128,3 +969,139 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
             Defaulting to [2,2,2] (relative to next lower level)
         """
         self.refined_regions.append([level, lo, hi, refinement_factor])
+
+
+PICMI_AnyGrid = PICMI_CylindricalGrid | PICMI_Cartesian1DGrid | PICMI_Cartesian2DGrid | PICMI_Cartesian3DGrid
+
+class PICMI_ElectromagneticSolver(BaseModel):
+    """
+    Electromagnetic field solver.
+
+    The advance method used to solve Maxwell's equations. The default method is code dependent.
+
+    Method options:
+
+    - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
+    - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties (https://doi.org/10.1103/PhysRevSTAB.16.041303)
+    - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
+    - 'PSTD': Spectral solver with finite difference in time domain, e.g., Q. H. Liu, Letters 15 (3) (1997) 158–165
+    - 'PSATD': Spectral solver with analytic in time domain (https://doi.org/10.1016/j.jcp.2013.03.010)
+    - 'DS': Directional Splitting after Yasuhiko Sentoku (https://doi.org/10.1140/epjd/e2014-50162-y)
+    - 'ECT': Enlarged Cell Technique solver, allowing internal conductors (https://doi.org/10.1109/APS.2005.1551259)
+    """
+
+    @computed_field
+    def methods_list(self) -> list[str]:
+        # Retained for backwards compatibility reasons.
+        # The type annotation of `method` is the ground-truth.
+        return list(get_args(type(self).__annotations__['method']))
+
+    grid: PICMI_AnyGrid = Field(description="Grid object for the diagnostic")
+    method: Literal['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT'] | None = Field(
+        default=None,
+        description="The advance method use to solve Maxwell's equations. The default method is code dependent."
+    )
+    stencil_order: Sequence[int] | None = Field(
+        default=None,
+        description="Order of stencil for each axis (-1=infinite)"
+    )
+    cfl: float | None = Field(
+        default=None,
+        description="Fraction of the Courant-Friedrich-Lewy criteria [1]"
+    )
+    source_smoother: PICMI_BinomialSmoother | None = Field(
+        default=None,
+        description="Smoother object to apply to the sources"
+    )
+    field_smoother: PICMI_BinomialSmoother | None = Field(
+        default=None,
+        description="Smoother object to apply to the fields"
+    )
+    subcycling: int | None = Field(
+        default=None,
+        description="Level of subcycling for the GPSTD solver"
+    )
+    galilean_velocity: Sequence[float] | None = Field(
+        default=None,
+        description="Velocity of Galilean reference frame [m/s]"
+    )
+    divE_cleaning: bool | None = Field(
+        default=None,
+        description="Solver uses div(E) cleaning if True"
+    )
+    divB_cleaning: bool | None = Field(
+        default=None,
+        description="Solver uses div(B) cleaning if True"
+    )
+    pml_divE_cleaning: bool | None = Field(
+        default=None,
+        description="Solver uses div(E) cleaning in the PML if True"
+    )
+    pml_divB_cleaning: bool | None = Field(
+        default=None,
+        description="Solver uses div(B) cleaning in the PML if True"
+    )
+
+    class Config:
+        arbitrary_types_allowed=True
+
+
+class PICMI_ElectrostaticSolver(_ClassWithInit):
+    """
+    Electrostatic field solver
+
+    Parameters
+    ----------
+    grid: grid instance
+        Grid object for the diagnostic
+
+    method: string
+        One of 'FFT', or 'Multigrid'
+
+    required_precision: float, optional
+        Level of precision required for iterative solvers
+
+    maximum_iterations: integer, optional
+        Maximum number of iterations for iterative solvers
+    """
+
+    methods_list = ['FFT', 'Multigrid']
+
+    def __init__(self, grid, method=None,
+                 required_precision=None, maximum_iterations=None, **kw):
+
+        assert method is None or method in PICMI_ElectrostaticSolver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_ElectrostaticSolver.methods_list))
+
+        self.grid = grid
+        self.method = method
+        self.required_precision = required_precision
+        self.maximum_iterations = maximum_iterations
+
+        self.handle_init(kw)
+
+
+class PICMI_MagnetostaticSolver(_ClassWithInit):
+    """
+    Magnetostatic field solver
+
+    Parameters
+    ----------
+    grid: grid instance
+        Grid object for the diagnostic
+
+    method: string
+        One of 'FFT', or 'Multigrid'
+    """
+
+    methods_list = ['FFT', 'Multigrid']
+
+    def __init__(self, grid, method=None, **kw):
+
+        assert method is None or method in PICMI_MagnetostaticSolver.methods_list, \
+               Exception('method must be one of '+', '.join(PICMI_MagnetostaticSolver.methods_list))
+
+        self.grid = grid
+        self.method = method
+
+        self.handle_init(kw)

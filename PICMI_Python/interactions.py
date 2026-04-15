@@ -3,7 +3,7 @@ These should be the base classes for Python implementation of the PICMI standard
 The classes in this file are related to interactions (e.g. field ionization, collisions, QED)
 """
 
-from .base import _ClassWithInit
+from .base import _ClassWithInit, PICMI_Extension
 
 class PICMI_FieldIonization(_ClassWithInit):
     """
@@ -26,3 +26,5 @@ class PICMI_FieldIonization(_ClassWithInit):
         self.product_species = product_species
 
         self.handle_init(kw)
+
+PICMI_AnyInteraction = PICMI_FieldIonization | PICMI_Extension

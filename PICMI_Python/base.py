@@ -190,4 +190,3 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
                 raise Exception(full_message)
             else:
                 warnings.warn(full_message)
-

@@ -26,4 +26,3 @@ class PICMI_FieldIonization(_ClassWithInit):
         self.product_species = product_species
 
         self.handle_init(kw)
-

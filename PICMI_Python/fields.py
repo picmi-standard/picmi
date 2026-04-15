@@ -976,11 +976,11 @@ PICMI_AnyGrid = PICMI_CylindricalGrid | PICMI_Cartesian1DGrid | PICMI_Cartesian2
 class PICMI_ElectromagneticSolver(BaseModel):
     """
     Electromagnetic field solver.
-    
+
     The advance method used to solve Maxwell's equations. The default method is code dependent.
-    
+
     Method options:
-    
+
     - 'Yee': standard solver using the staggered Yee grid (https://doi.org/10.1109/TAP.1966.1138693)
     - 'CKC': solver with the extended Cole-Karkkainen-Cowan stencil with better dispersion properties (https://doi.org/10.1103/PhysRevSTAB.16.041303)
     - 'Lehe': CKC-style solver with modified dispersion (https://doi.org/10.1103/PhysRevSTAB.16.021301)
@@ -995,7 +995,7 @@ class PICMI_ElectromagneticSolver(BaseModel):
         # Retained for backwards compatibility reasons.
         # The type annotation of `method` is the ground-truth.
         return list(get_args(type(self).__annotations__['method']))
-    
+
     grid: PICMI_AnyGrid = Field(description="Grid object for the diagnostic")
     method: Literal['Yee', 'CKC', 'Lehe', 'PSTD', 'PSATD', 'GPSTD', 'DS', 'ECT'] | None = Field(
         default=None,

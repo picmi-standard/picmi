@@ -29,9 +29,9 @@ def _compute_k0_E0_a0(wavelength, original_E0, original_a0):
         # Let's presume that the user did not purposefully choose a value
         # ever so slightly off to derail us here.
         if abs(E0/a0/ factor - 1.) > 1.e-6:
-           raise ValueError(f"You provided inconsistent {original_a0=} and {original_E0=} which resulted in {a0=} and {E0=}.") 
+           raise ValueError(f"You provided inconsistent {original_a0=} and {original_E0=} which resulted in {a0=} and {E0=}.")
         return k0, E0, a0
- 
+
 
 
 
@@ -111,11 +111,11 @@ class PICMI_GaussianLaser(BaseModel):
     )
     fill_in: bool = Field(default=True, description="Flags whether to fill in the empty spaced opened up when the grid moves")
     k0: float = Field(default=0.0, exclude=True, init_var=False)
-    
+
     @model_validator(mode='after')
     def _compute_k0_a0_e0(self) -> Self:
         """Compute a0 and E0 from each other if needed"""
-        self.k0, self.E0, self.a0 = _compute_k0_E0_a0(self.wavelength, self.E0, self.a0) 
+        self.k0, self.E0, self.a0 = _compute_k0_E0_a0(self.wavelength, self.E0, self.a0)
         return self
 
 

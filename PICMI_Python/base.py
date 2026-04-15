@@ -210,7 +210,7 @@ def with_mutually_exclusive(*args, defaults=None):
                     super()._mutually_exclusive()
                 except AttributeError:
                     pass
-                if len(non_default := {arg: value for arg, default in zip(args, repeat(None) if defaults is None else defaults) if (value:=getattr(self, arg)) != default}) > 1: 
+                if len(non_default := {arg: value for arg, default in zip(args, repeat(None) if defaults is None else defaults) if (value:=getattr(self, arg)) != default}) > 1:
                     raise ValueError(f"The arguments {args} are mutually exclusive. You gave: {non_default=}.")
                 return self
         return Decorated

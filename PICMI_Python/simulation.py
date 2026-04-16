@@ -230,6 +230,12 @@ class PICMI_Simulation(_ClassWithInit):
         """
         raise NotImplementedError
 
+    def run(self):
+        """
+        Run the full simulation (up to max_time or max_step are reached)
+        """
+        raise NotImplementedError
+
     def extension(self):
         """
         Reserved for code-specific extensions, for example returns a class instance

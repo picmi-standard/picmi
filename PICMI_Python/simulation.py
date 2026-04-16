@@ -232,11 +232,9 @@ class PICMI_Simulation(_ClassWithInit):
 
     def run(self):
         """
-        Run the full simulation (typically up to max_step steps)
+        Run the full simulation (up to max_time or max_step are reached)
         """
         raise NotImplementedError
-
-
 
     def extension(self):
         """

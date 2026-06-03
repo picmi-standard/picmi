@@ -4,7 +4,7 @@ import inspect
 from itertools import repeat
 import warnings
 from typing import Self
-from pydantic import model_validator, BaseModel, SerializeAsAny
+from pydantic import model_validator, BaseModel, SerializeAsAny, ConfigDict
 
 codename = None
 
@@ -55,6 +55,59 @@ class _DocumentedMetaClass(type):
             else:
                 attrs['__doc__'] = bases[0].__doc__
         return super(_DocumentedMetaClass, cls).__new__(cls, name, bases, attrs)
+
+
+class _DocumentedModelMetaClass(type(BaseModel)):
+    """Pydantic-compatible variant of _DocumentedMetaClass.
+
+    It combines the __doc__ of the picmistandard base and of the implementation, so that
+    downstream codes (e.g. WarpX) can extend the documentation of a pydantic PICMI class
+    simply by adding a docstring to their subclass. It derives from pydantic's metaclass
+    (``type(BaseModel)`` is ``ModelMetaclass``) so that it composes with ``BaseModel``.
+    """
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        # Skip the infrastructure base itself (its only base is BaseModel) and any class
+        # whose first base carries no docstring (e.g. _PICMIModel), mirroring the guard in
+        # _DocumentedMetaClass.
+        if bases and bases[0] is not BaseModel and bases[0].__doc__ is not None:
+            implementation_doc = namespace.get('__doc__', '')
+            if implementation_doc:
+                # See _DocumentedMetaClass for the rationale of this exact format.
+                namespace['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+            else:
+                namespace['__doc__'] = bases[0].__doc__
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
+
+
+class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
+    # Shared configuration for all pydantic-based PICMI classes.
+    # - ``extra="forbid"`` restores the old behaviour of raising on unexpected keyword
+    #   arguments (pydantic's default silently ignores them).
+    # - ``populate_by_name`` lets downstream codes expose extension inputs under a
+    #   ``<code>_`` alias while keeping their internal attribute name.
+    # - ``arbitrary_types_allowed`` is needed while some referenced objects (grids,
+    #   solvers, code-specific helper objects) are not yet pydantic models.
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        extra="forbid",
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ignore_other_codes_arguments(cls, data):
+        # Mirror the old handle_init() behaviour: keyword arguments prefixed with the name
+        # of *another* supported code are silently ignored, so that a single PICMI input
+        # script can carry code-specific arguments for several codes at once. Arguments
+        # prefixed with the active codename (or otherwise unknown arguments) are left in
+        # place and validated normally, so that genuine typos are still reported thanks to
+        # ``extra="forbid"``.
+        if not isinstance(data, dict):
+            return data
+        return {
+            k: v for k, v in data.items()
+            if not ((prefix := k.split('_')[0]) in supported_codes and prefix != codename)
+        }
 
 
 class _ClassWithInit(metaclass=_DocumentedMetaClass):

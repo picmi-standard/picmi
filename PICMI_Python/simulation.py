@@ -3,75 +3,65 @@ This should be the base classes for Python implementation of the PICMI standard
 """
 import math
 import sys
+from typing import Any
 
-from .base import _ClassWithInit
+from pydantic import Field
+
+from .base import _ClassWithInit, _PICMIModel
 
 # ---------------------
 # Main simulation object
 # ---------------------
 
-class PICMI_Simulation(_ClassWithInit):
+class PICMI_Simulation(_PICMIModel):
     """
     Creates a Simulation object
-
-    Parameters
-    ----------
-    solver: field solver instance
-        This is the field solver to be used in the simulation.
-        It should be an instance of field solver classes.
-
-    time_step_size: float
-        Absolute time step size of the simulation [s].
-        Needed if the CFL is not specified elsewhere.
-
-    max_steps: integer
-        Maximum number of time steps.
-        Specify either this, or `max_time`, or use the `step` function directly.
-
-    max_time: float
-        Maximum physical time to run the simulation [s].
-        Specify either this, or `max_steps`, or use the `step` function directly.
-
-    verbose: integer, optional
-        Verbosity flag. A larger integer results in more verbose output
-
-    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
-        Default particle shape for species added to this simulation
-
-    gamma_boost: float, optional
-        Lorentz factor of the boosted simulation frame.
-        Note that all input values should be in the lab frame.
     """
 
-    def __init__(self, solver=None, time_step_size=None, max_steps=None, max_time=None, verbose=None,
-                particle_shape='linear', gamma_boost=None, load_balancing=None, **kw):
+    solver: Any | None = Field(
+        default=None,
+        description="This is the field solver to be used in the simulation. It should be an instance of field solver classes."
+    )
+    time_step_size: float | None = Field(
+        default=None,
+        description="Absolute time step size of the simulation [s]. Needed if the CFL is not specified elsewhere."
+    )
+    max_steps: int | None = Field(
+        default=None,
+        description="Maximum number of time steps. Specify either this, or max_time, or use the step function directly."
+    )
+    max_time: float | None = Field(
+        default=None,
+        description="Maximum physical time to run the simulation [s]. Specify either this, or max_steps, or use the step function directly."
+    )
+    verbose: int | None = Field(
+        default=None,
+        description="Verbosity flag. A larger integer results in more verbose output"
+    )
+    particle_shape: str = Field(
+        default="linear",
+        description="Default particle shape for species added to this simulation. One of 'NGP', 'linear', 'quadratic', 'cubic'."
+    )
+    gamma_boost: float | None = Field(
+        default=None,
+        description="Lorentz factor of the boosted simulation frame. Note that all input values should be in the lab frame."
+    )
+    load_balancing: Any | None = Field(
+        default=None,
+        description="Controls load balancing (code dependent)."
+    )
 
-        self.solver = solver
-        self.time_step_size = time_step_size
-        self.verbose = verbose
-        self.max_steps = max_steps
-        self.max_time = max_time
-        self.particle_shape = particle_shape
-        self.gamma_boost = gamma_boost
-
-        self.species = []
-        self.layouts = []
-        self.initialize_self_fields = []
-        self.injection_plane_positions = []
-        self.injection_plane_normal_vectors = []
-
-        self.lasers = []
-        self.laser_injection_methods = []
-
-        self.applied_fields = []
-
-        self.diagnostics = []
-
-        self.interactions = []
-
-        self.load_balancing = load_balancing
-
-        self.handle_init(kw)
+    # The following lists are populated through the add_* methods rather than at construction.
+    species: list = Field(default_factory=list)
+    layouts: list = Field(default_factory=list)
+    initialize_self_fields: list = Field(default_factory=list)
+    injection_plane_positions: list = Field(default_factory=list)
+    injection_plane_normal_vectors: list = Field(default_factory=list)
+    lasers: list = Field(default_factory=list)
+    laser_injection_methods: list = Field(default_factory=list)
+    applied_fields: list = Field(default_factory=list)
+    diagnostics: list = Field(default_factory=list)
+    interactions: list = Field(default_factory=list)
 
     def add_species(self, species, layout, initialize_self_field=None):
         """

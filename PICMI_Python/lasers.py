@@ -7,7 +7,7 @@ from typing import Self, Sequence
 
 from pydantic import BaseModel, Field, model_validator
 
-from .base import _ClassWithInit, _get_constants
+from .base import _ClassWithInit, _PICMIModel, _get_constants
 
 
 # ---------------
@@ -35,7 +35,7 @@ def _compute_k0_E0_a0(wavelength, original_E0, original_a0):
 
 
 
-class PICMI_GaussianLaser(BaseModel):
+class PICMI_GaussianLaser(_PICMIModel):
     r"""
     Specifies a Gaussian laser distribution.
 

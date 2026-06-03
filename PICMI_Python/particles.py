@@ -8,9 +8,9 @@ from functools import partial
 from typing import Annotated, Literal
 
 import numpy as np
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from .base import _ClassWithInit, broadcast_validation, with_mutually_exclusive, PICMI_Extension
+from .base import _ClassWithInit, _PICMIModel, broadcast_validation, with_mutually_exclusive, PICMI_Extension
 from .fields import PICMI_AnyGrid
 from .interactions import PICMI_AnyInteraction
 
@@ -59,7 +59,7 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_UniformDistribution(BaseModel):
+class PICMI_UniformDistribution(_PICMIModel):
     """
     Describes a uniform density distribution of particles
     """
@@ -88,7 +88,7 @@ class PICMI_UniformDistribution(BaseModel):
     )
 
 
-class PICMI_FoilDistribution(BaseModel):
+class PICMI_FoilDistribution(_PICMIModel):
     """
     Describes a foil with optional exponential pre- and post-plasma ramps along the propagation direction.
     """
@@ -222,101 +222,96 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
 
 PICMI_UniformFluxDistribution = PICMI_AnalyticFluxDistribution
 
-class PICMI_AnalyticDistribution(_ClassWithInit):
+class PICMI_AnalyticDistribution(_PICMIModel):
     """
     Describes a plasma with density following a provided analytic expression
 
-    Parameters
-    ----------
-    density_expression: string
-        Analytic expression describing physical number density (string) [m^-3].
-        Expression should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
+    Parameters can be used in the expressions, with their values given as keyword arguments.
+    For example, this creates a distribution where the density is ``n0`` below ``rmax`` and
+    zero elsewhere::
 
-    momentum_expressions: list of strings
-        Analytic expressions describing the gamma*velocity for each axis [m/s].
-        Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
-        For any axis not supplied (set to None), directed_velocity will be used.
-
-    momentum_spread_expressions: list of strings
-        Analytic expressions describing the gamma*velocity Gaussian thermal spread sigma for each axis [m/s].
-        Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
-        For any axis not supplied (set to None), zero will be used.
-
-    lower_bound: vector of length 3 of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of length 3 of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    fill_in: bool, optional
-        Flags whether to fill in the empty spaced opened up when the grid moves
-
-
-    This example will create a distribution where the density is n0 below rmax and zero elsewhere.::
-
-    .. code-block:: python
-
-      dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
-                                  rmax = 1.,
-                                  n0 = 1.e20,
-                                  ...)
-
+        dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
+                                    rmax = 1.,
+                                    n0 = 1.e20,
+                                    ...)
     """
+    density_expression: str = Field(
+        description="Analytic expression describing physical number density [m^-3]. Expression should be in terms of the position, written as 'x', 'y', and 'z'. Parameters can be used in the expression with the values given as keyword arguments."
+    )
+    momentum_expressions: list[str | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Analytic expressions describing the gamma*velocity for each axis [m/s]. Expressions should be in terms of the position, written as 'x', 'y', and 'z'. For any axis not supplied (set to None), directed_velocity will be used."
+    )
+    momentum_spread_expressions: list[str | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Analytic expressions describing the gamma*velocity Gaussian thermal spread sigma for each axis [m/s]. For any axis not supplied (set to None), zero will be used."
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the distribution [m]"
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the distribution [m]"
+    )
+    rms_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Thermal velocity spread [m/s]"
+    )
+    directed_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Directed, average, proper velocity [m/s]"
+    )
+    fill_in: bool | None = Field(
+        default=None,
+        description="Flags whether to fill in the empty spaced opened up when the grid moves"
+    )
+    user_defined_kw: dict = Field(
+        default_factory=dict,
+        description="Constants referenced in the analytic expressions, collected from otherwise-unrecognized keyword arguments."
+    )
 
-    def __init__(self, density_expression,
-                 momentum_expressions = [None, None, None],
-                 momentum_spread_expressions = [None, None, None],
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
-        self.density_expression = f'{density_expression}'.replace('\n', '')
-        self.momentum_expressions = momentum_expressions
-        self.momentum_spread_expressions = momentum_spread_expressions
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.fill_in = fill_in
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_expressions_and_collect_kw(cls, data):
+        # Stringify expressions (so e.g. a numeric density may be passed) and collect any
+        # keyword arguments that are referenced in the expressions into user_defined_kw.
+        # It is up to the implementing code to make sure all parameters used in the
+        # expressions are defined.
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
 
-        # --- Convert momentum expressions to string if needed.
-        for idir in range(3):
-            if self.momentum_expressions[idir] is not None:
-                self.momentum_expressions[idir] = f'{self.momentum_expressions[idir]}'.replace('\n', '')
-            if self.momentum_spread_expressions[idir] is not None:
-                self.momentum_spread_expressions[idir] = f'{self.momentum_spread_expressions[idir]}'.replace('\n', '')
+        if data.get("density_expression") is not None:
+            data["density_expression"] = f'{data["density_expression"]}'.replace('\n', '')
+        for key in ("momentum_expressions", "momentum_spread_expressions"):
+            exprs = data.get(key)
+            if exprs is not None:
+                data[key] = [None if e is None else f'{e}'.replace('\n', '') for e in exprs]
 
-        # --- Find any user defined keywords in the kw dictionary.
-        # --- Save them and delete them from kw.
-        # --- It's up to the code to make sure that all parameters
-        # --- used in the expression are defined.
-        self.user_defined_kw = {}
-        for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, self.density_expression):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[0] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[0]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[1] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[1]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[2] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[2]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
+        density_expression = data.get("density_expression") or ""
+        momentum_expressions = data.get("momentum_expressions") or [None, None, None]
 
-        self.handle_init(kw)
+        known = set()
+        for fname, finfo in cls.model_fields.items():
+            known.add(fname)
+            if finfo.alias:
+                known.add(finfo.alias)
+
+        user_defined_kw = dict(data.get("user_defined_kw", {}))
+        for k in list(data.keys()):
+            if k in known:
+                continue
+            referenced = bool(re.search(r'\b%s\b' % re.escape(k), density_expression))
+            if not referenced:
+                for me in momentum_expressions:
+                    if me is not None and re.search(r'\b%s\b' % re.escape(k), me):
+                        referenced = True
+                        break
+            if referenced:
+                user_defined_kw[k] = data.pop(k)
+        data["user_defined_kw"] = user_defined_kw
+        return data
 
 
 class PICMI_ParticleListDistribution(_ClassWithInit):
@@ -447,13 +442,13 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_GriddedLayout(BaseModel):
+class PICMI_GriddedLayout(_PICMIModel):
     """
     Specifies a gridded layout of particles
     """
-    n_macroparticles_per_cell: Annotated[list[int], AfterValidator(partial(broadcast_validation, condition=lambda v: v>0, message="All n_macroparticle_per_cell must be greater than 0."))] = Field(
-        min_length=3, max_length=3,
-        description="Number of particles per cell along each axis"
+    n_macroparticles_per_cell: Annotated[list[int], AfterValidator(partial(broadcast_validation, condition=lambda v: v>=0, message="All n_macroparticle_per_cell must be greater than or equal to 0."))] = Field(
+        min_length=1, max_length=3,
+        description="Number of particles per cell along each axis (one entry per grid dimension)"
     )
     grid: PICMI_AnyGrid | None = Field(
         default=None,
@@ -469,9 +464,6 @@ class PICMI_GriddedLayout(BaseModel):
         kwargs.setdefault("n_macroparticles_per_cell", kwargs.pop("n_macroparticle_per_cell", None))
         return super().__init__(*args, **kwargs)
 
-    # This is to temporarily accomodate for Grids not being BaseModels yet.
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
     @property
     def n_macroparticle_per_cell(self):
         return self.n_macroparticles_per_cell
@@ -482,7 +474,7 @@ class PICMI_GriddedLayout(BaseModel):
 
 
 @with_mutually_exclusive("n_macroparticles_per_cell", "n_macroparticles")
-class PICMI_PseudoRandomLayout(BaseModel):
+class PICMI_PseudoRandomLayout(_PICMIModel):
     """
     Specifies a pseudo-random layout of the particles
     """
@@ -503,11 +495,8 @@ class PICMI_PseudoRandomLayout(BaseModel):
         description="Grid object specifying the grid to follow for n_macroparticles_per_cell. If not specified, the underlying grid of the code is used."
     )
 
-    # This is to temporarily accomodate for Grids not being BaseModels yet.
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-
-class PICMI_Species(BaseModel):
+class PICMI_Species(_PICMIModel):
     """
     Sets up the species to be simulated.
     The species charge and mass can be specified by setting the particle type or by setting them directly.
@@ -567,9 +556,6 @@ class PICMI_Species(BaseModel):
                 f'method must start with either "other:", or be one of the following: {", ".join(PICMI_Species.methods_list)}'
             )
         return v
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 class PICMI_MultiSpecies(_ClassWithInit):

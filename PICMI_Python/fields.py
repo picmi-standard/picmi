@@ -2,12 +2,12 @@
 These should be the base classes for Python implementation of the PICMI standard
 """
 
-from typing import Sequence, get_args, Literal
-from pydantic import BaseModel, Field, computed_field
+from typing import ClassVar, Self, Sequence, get_args, Literal
+from pydantic import BaseModel, Field, computed_field, model_validator
 
-from .base import _ClassWithInit
+from .base import _ClassWithInit, _PICMIModel
 
-class PICMI_BinomialSmoother(BaseModel):
+class PICMI_BinomialSmoother(_PICMIModel):
     """
     Describes a binomial smoother operator (applied to grids).
     """
@@ -28,7 +28,7 @@ class PICMI_BinomialSmoother(BaseModel):
         description="Smoothing coefficients along each axis"
     )
 
-class PICMI_Cartesian1DGrid(_ClassWithInit):
+class PICMI_Cartesian1DGrid(_PICMIModel):
     """
     One-dimensional Cartesian grid
     Parameters can be specified either as vectors or separately.
@@ -123,106 +123,108 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
     # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
-    number_of_dimensions = 1
+    number_of_dimensions: ClassVar[int] = 1
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, xmin=None, xmax=None, bc_xmin=None, bc_xmax=None,
-                 moving_window_velocity=None, refined_regions=[],lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None,
-                 guard_cells=None, pml_cells=None,
-                 **kw):
+    # Vector forms (the internally-used representation)
+    number_of_cells: list[int] | None = None
+    lower_bound: list[float] | None = None
+    upper_bound: list[float] | None = None
+    lower_boundary_conditions: list[str] | None = None
+    upper_boundary_conditions: list[str] | None = None
+    # Per-axis scalar forms (resolved into the vector forms during validation)
+    nx: int | None = None
+    xmin: float | None = None
+    xmax: float | None = None
+    bc_xmin: str | None = None
+    bc_xmax: str | None = None
+    moving_window_velocity: list[float] | None = None
+    refined_regions: list = Field(default_factory=list)
+    lower_bound_particles: list[float] | None = None
+    upper_bound_particles: list[float] | None = None
+    xmin_particles: float | None = None
+    xmax_particles: float | None = None
+    lower_boundary_conditions_particles: list[str] | None = None
+    upper_boundary_conditions_particles: list[str] | None = None
+    bc_xmin_particles: str | None = None
+    bc_xmax_particles: str | None = None
+    guard_cells: list[int] | None = None
+    pml_cells: list[int] | None = None
+
+    @model_validator(mode="after")
+    def _resolve_grid(self) -> Self:
 
         # Sanity check and init of input arguments related to grid parameters
-        assert (number_of_cells is None) and (nx is not None) or \
-               (number_of_cells is not None) and (nx is None), \
-                Exception('Either number_of_cells or nx must be specified')
-        assert (lower_bound is None) and (xmin is not None) or \
-               (lower_bound is not None) and (xmin is None), \
-                Exception('Either lower_bound or xmin must be specified')
-        assert (upper_bound is None) and (xmax is not None) or \
-               (upper_bound is not None) and (xmax is None), \
-                Exception('Either upper_bound or xmax must be specified')
-        assert (lower_boundary_conditions is None) and (bc_xmin is not None) or \
-               (lower_boundary_conditions is not None) and (bc_xmin is None), \
-                Exception('Either lower_boundary_conditions or bc_xmin')
-        assert (upper_boundary_conditions is None) and (bc_xmax is not None) or \
-               (upper_boundary_conditions is not None) and (bc_xmax is None), \
-                Exception('Either upper_boundary_conditions or bc_xmax must be specified')
+        assert (self.number_of_cells is None) and (self.nx is not None) or \
+               (self.number_of_cells is not None) and (self.nx is None), \
+                'Either number_of_cells or nx must be specified'
+        assert (self.lower_bound is None) and (self.xmin is not None) or \
+               (self.lower_bound is not None) and (self.xmin is None), \
+                'Either lower_bound or xmin must be specified'
+        assert (self.upper_bound is None) and (self.xmax is not None) or \
+               (self.upper_bound is not None) and (self.xmax is None), \
+                'Either upper_bound or xmax must be specified'
+        assert (self.lower_boundary_conditions is None) and (self.bc_xmin is not None) or \
+               (self.lower_boundary_conditions is not None) and (self.bc_xmin is None), \
+                'Either lower_boundary_conditions or bc_xmin'
+        assert (self.upper_boundary_conditions is None) and (self.bc_xmax is not None) or \
+               (self.upper_boundary_conditions is not None) and (self.bc_xmax is None), \
+                'Either upper_boundary_conditions or bc_xmax must be specified'
 
-        if number_of_cells is None:
-            number_of_cells = [nx]
-        if lower_bound is None:
-            lower_bound = [xmin]
-        if upper_bound is None:
-            upper_bound = [xmax]
-        if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin]
-        if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax,]
+        if self.number_of_cells is None:
+            self.number_of_cells = [self.nx]
+        if self.lower_bound is None:
+            self.lower_bound = [self.xmin]
+        if self.upper_bound is None:
+            self.upper_bound = [self.xmax]
+        if self.lower_boundary_conditions is None:
+            self.lower_boundary_conditions = [self.bc_xmin]
+        if self.upper_boundary_conditions is None:
+            self.upper_boundary_conditions = [self.bc_xmax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        if lower_bound_particles is None:
-            if (xmin_particles is None):
-                lower_bound_particles = lower_bound
+        if self.lower_bound_particles is None:
+            if (self.xmin_particles is None):
+                self.lower_bound_particles = self.lower_bound
             else:
-                lower_bound_particles = [xmin_particles]
-        if upper_bound_particles is None:
-            if (xmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.lower_bound_particles = [self.xmin_particles]
+        if self.upper_bound_particles is None:
+            if (self.xmax_particles is None):
+                self.upper_bound_particles = self.upper_bound
             else:
-                upper_bound_particles=[xmax_particles]
+                self.upper_bound_particles = [self.xmax_particles]
 
-        if lower_boundary_conditions_particles is None:
-            if (bc_xmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+        if self.lower_boundary_conditions_particles is None:
+            if (self.bc_xmin_particles is None):
+                self.lower_boundary_conditions_particles = self.lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles]
-        if upper_boundary_conditions_particles is None:
-            if (bc_xmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.lower_boundary_conditions_particles = [self.bc_xmin_particles]
+        if self.upper_boundary_conditions_particles is None:
+            if (self.bc_xmax_particles is None):
+                self.upper_boundary_conditions_particles = self.upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles]
+                self.upper_boundary_conditions_particles = [self.bc_xmax_particles]
 
         # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 1, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 1, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 1, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 1, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 1, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 1, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 1, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 1, Exception('Wrong number of lower particle boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 1, Exception('Wrong number of upper particle boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
+        assert len(self.number_of_cells) == 1, 'Wrong number of cells specified'
+        assert len(self.lower_bound) == 1, 'Wrong number of lower bounds specified'
+        assert len(self.upper_bound) == 1, 'Wrong number of upper bounds specified'
+        assert len(self.lower_boundary_conditions) == 1, 'Wrong number of lower boundary conditions specified'
+        assert len(self.upper_boundary_conditions) == 1, 'Wrong number of upper boundary conditions specified'
+        assert len(self.lower_bound_particles) == 1, 'Wrong number of particle lower bounds specified'
+        assert len(self.upper_bound_particles) == 1, 'Wrong number of particle upper bounds specified'
+        assert len(self.lower_boundary_conditions_particles) == 1, 'Wrong number of lower particle boundary conditions specified'
+        assert len(self.upper_boundary_conditions_particles) == 1, 'Wrong number of upper particle boundary conditions specified'
 
         for region in self.refined_regions:
             if len(region) == 3:
                 region.append([2])
-            assert len(region[1]) == 1, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 1, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 1, Exception('The refinement factor of the refined region must be a vector of length 2')
+            assert len(region[1]) == 1, 'The lo extent of the refined region must be a vector of length 1'
+            assert len(region[2]) == 1, 'The hi extent of the refined region must be a vector of length 1'
+            assert len(region[3]) == 1, 'The refinement factor of the refined region must be a vector of length 1'
 
-        self.handle_init(kw)
+        return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2]):
         """Add a refined region.
@@ -233,7 +235,7 @@ class PICMI_Cartesian1DGrid(_ClassWithInit):
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
-class PICMI_CylindricalGrid(_ClassWithInit):
+class PICMI_CylindricalGrid(_PICMIModel):
     """
     Axisymmetric, cylindrical grid
     Parameters can be specified either as vectors or separately.
@@ -358,107 +360,115 @@ class PICMI_CylindricalGrid(_ClassWithInit):
     # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
-    number_of_dimensions = 2
+    number_of_dimensions: ClassVar[int] = 2
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nr=None, nz=None, n_azimuthal_modes=None,
-                 rmin=None, rmax=None, zmin=None, zmax=None,
-                 bc_rmin=None, bc_rmax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, refined_regions=[],
-                 lower_bound_particles=None, upper_bound_particles=None,
-                 rmin_particles=None, rmax_particles=None, zmin_particles=None, zmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_rmin_particles=None, bc_rmax_particles=None, bc_zmin_particles=None, bc_zmax_particles=None,
-                 guard_cells=None, pml_cells=None, **kw):
+    # Vector forms (the internally-used representation)
+    number_of_cells: list[int] | None = None
+    lower_bound: list[float] | None = None
+    upper_bound: list[float] | None = None
+    lower_boundary_conditions: list[str | None] | None = None
+    upper_boundary_conditions: list[str] | None = None
+    # Per-axis scalar forms (resolved into the vector forms during validation)
+    nr: int | None = None
+    nz: int | None = None
+    n_azimuthal_modes: int | None = None
+    rmin: float | None = None
+    rmax: float | None = None
+    zmin: float | None = None
+    zmax: float | None = None
+    bc_rmin: str | None = None
+    bc_rmax: str | None = None
+    bc_zmin: str | None = None
+    bc_zmax: str | None = None
+    moving_window_velocity: list[float] | None = None
+    refined_regions: list = Field(default_factory=list)
+    lower_bound_particles: list[float] | None = None
+    upper_bound_particles: list[float] | None = None
+    rmin_particles: float | None = None
+    rmax_particles: float | None = None
+    zmin_particles: float | None = None
+    zmax_particles: float | None = None
+    lower_boundary_conditions_particles: list[str] | None = None
+    upper_boundary_conditions_particles: list[str] | None = None
+    bc_rmin_particles: str | None = None
+    bc_rmax_particles: str | None = None
+    bc_zmin_particles: str | None = None
+    bc_zmax_particles: str | None = None
+    guard_cells: list[int] | None = None
+    pml_cells: list[int] | None = None
+
+    @model_validator(mode="after")
+    def _resolve_grid(self) -> Self:
 
         # Sanity check and init of input arguments related to grid parameters
-        assert (number_of_cells is None) and (nr is not None and nz is not None) or \
-               (number_of_cells is not None) and (nr is None and nz is None), \
-                Exception('Either number_of_cells or nr and nz must be specified')
-        assert (lower_bound is None) and (rmin is not None and zmin is not None) or \
-               (lower_bound is not None) and (rmin is None and zmin is None), \
-                Exception('Either lower_bound or rmin and zmin must be specified')
-        assert (upper_bound is None) and (rmax is not None and zmax is not None) or \
-               (upper_bound is not None) and (rmax is None and zmax is None), \
-                Exception('Either upper_bound or rmax and zmax must be specified')
+        assert (self.number_of_cells is None) and (self.nr is not None and self.nz is not None) or \
+               (self.number_of_cells is not None) and (self.nr is None and self.nz is None), \
+                'Either number_of_cells or nr and nz must be specified'
+        assert (self.lower_bound is None) and (self.rmin is not None and self.zmin is not None) or \
+               (self.lower_bound is not None) and (self.rmin is None and self.zmin is None), \
+                'Either lower_bound or rmin and zmin must be specified'
+        assert (self.upper_bound is None) and (self.rmax is not None and self.zmax is not None) or \
+               (self.upper_bound is not None) and (self.rmax is None and self.zmax is None), \
+                'Either upper_bound or rmax and zmax must be specified'
         # --Allow bc_rmin to be None since it will usually be the axis.
-        assert (lower_boundary_conditions is None) and (bc_zmin is not None) or \
-               (lower_boundary_conditions is not None) and (bc_rmin is None and bc_zmin is None), \
-                Exception('Either lower_boundary_conditions or bc_rmin and bc_zmin must be specified')
-        assert (upper_boundary_conditions is None) and (bc_rmax is not None and bc_zmax is not None) or \
-               (upper_boundary_conditions is not None) and (bc_rmax is None and bc_zmax is None), \
-                Exception('Either upper_boundary_conditions or bc_rmax and bc_zmax must be specified')
+        assert (self.lower_boundary_conditions is None) and (self.bc_zmin is not None) or \
+               (self.lower_boundary_conditions is not None) and (self.bc_rmin is None and self.bc_zmin is None), \
+                'Either lower_boundary_conditions or bc_rmin and bc_zmin must be specified'
+        assert (self.upper_boundary_conditions is None) and (self.bc_rmax is not None and self.bc_zmax is not None) or \
+               (self.upper_boundary_conditions is not None) and (self.bc_rmax is None and self.bc_zmax is None), \
+                'Either upper_boundary_conditions or bc_rmax and bc_zmax must be specified'
 
-        if number_of_cells is None:
-            number_of_cells = [nr, nz]
-        if lower_bound is None:
-            lower_bound = [rmin, zmin]
-        if upper_bound is None:
-            upper_bound = [rmax, zmax]
-        if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_rmin, bc_zmin]
-        if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_rmax, bc_zmax]
+        if self.number_of_cells is None:
+            self.number_of_cells = [self.nr, self.nz]
+        if self.lower_bound is None:
+            self.lower_bound = [self.rmin, self.zmin]
+        if self.upper_bound is None:
+            self.upper_bound = [self.rmax, self.zmax]
+        if self.lower_boundary_conditions is None:
+            self.lower_boundary_conditions = [self.bc_rmin, self.bc_zmin]
+        if self.upper_boundary_conditions is None:
+            self.upper_boundary_conditions = [self.bc_rmax, self.bc_zmax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        if lower_bound_particles is None:
-            if (rmin_particles is None) and (zmin_particles is None):
-                lower_bound_particles = lower_bound
+        if self.lower_bound_particles is None:
+            if (self.rmin_particles is None) and (self.zmin_particles is None):
+                self.lower_bound_particles = self.lower_bound
             else:
-                lower_bound_particles = [rmin_particles, zmin_particles]
-        if upper_bound_particles is None:
-            if (rmax_particles is None) and (zmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.lower_bound_particles = [self.rmin_particles, self.zmin_particles]
+        if self.upper_bound_particles is None:
+            if (self.rmax_particles is None) and (self.zmax_particles is None):
+                self.upper_bound_particles = self.upper_bound
             else:
-                upper_bound_particles=[rmax_particles, zmax_particles]
+                self.upper_bound_particles = [self.rmax_particles, self.zmax_particles]
 
-        if lower_boundary_conditions_particles is None:
-            if (bc_rmin_particles is None) and (bc_zmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+        if self.lower_boundary_conditions_particles is None:
+            if (self.bc_rmin_particles is None) and (self.bc_zmin_particles is None):
+                self.lower_boundary_conditions_particles = self.lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_rmin_particles, bc_zmin_particles]
-        if upper_boundary_conditions_particles is None:
-            if (bc_rmax_particles is None) and (bc_zmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.lower_boundary_conditions_particles = [self.bc_rmin_particles, self.bc_zmin_particles]
+        if self.upper_boundary_conditions_particles is None:
+            if (self.bc_rmax_particles is None) and (self.bc_zmax_particles is None):
+                self.upper_boundary_conditions_particles = self.upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_rmax_particles, bc_zmax_particles]
+                self.upper_boundary_conditions_particles = [self.bc_rmax_particles, self.bc_zmax_particles]
 
         # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 2, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
+        assert len(self.number_of_cells) == 2, 'Wrong number of cells specified'
+        assert len(self.lower_bound) == 2, 'Wrong number of lower bounds specified'
+        assert len(self.upper_bound) == 2, 'Wrong number of upper bounds specified'
+        assert len(self.lower_boundary_conditions) == 2, 'Wrong number of lower boundary conditions specified'
+        assert len(self.upper_boundary_conditions) == 2, 'Wrong number of upper boundary conditions specified'
 
-        self.number_of_cells = number_of_cells
-
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.n_azimuthal_modes = n_azimuthal_modes
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
         for region in self.refined_regions:
             if len(region) == 3:
                 region.append([2,2])
-            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
+            assert len(region[1]) == 2, 'The lo extent of the refined region must be a vector of length 2'
+            assert len(region[2]) == 2, 'The hi extent of the refined region must be a vector of length 2'
+            assert len(region[3]) == 2, 'The refinement factor of the refined region must be a vector of length 2'
 
-        self.handle_init(kw)
+        return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
         """Add a refined region.
@@ -469,7 +479,7 @@ class PICMI_CylindricalGrid(_ClassWithInit):
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
-class PICMI_Cartesian2DGrid(_ClassWithInit):
+class PICMI_Cartesian2DGrid(_PICMIModel):
     """
     Two dimensional Cartesian grid
     Parameters can be specified either as vectors or separately.
@@ -591,108 +601,117 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
     # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
-    number_of_dimensions = 2
+    number_of_dimensions: ClassVar[int] = 2
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, ny=None,
-                 xmin=None, xmax=None, ymin=None, ymax=None,
-                 bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None,
-                 moving_window_velocity=None, refined_regions=[],lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 guard_cells=None, pml_cells=None,
-                 **kw):
+    # Vector forms (the internally-used representation)
+    number_of_cells: list[int] | None = None
+    lower_bound: list[float] | None = None
+    upper_bound: list[float] | None = None
+    lower_boundary_conditions: list[str] | None = None
+    upper_boundary_conditions: list[str] | None = None
+    # Per-axis scalar forms (resolved into the vector forms during validation)
+    nx: int | None = None
+    ny: int | None = None
+    xmin: float | None = None
+    xmax: float | None = None
+    ymin: float | None = None
+    ymax: float | None = None
+    bc_xmin: str | None = None
+    bc_xmax: str | None = None
+    bc_ymin: str | None = None
+    bc_ymax: str | None = None
+    moving_window_velocity: list[float] | None = None
+    refined_regions: list = Field(default_factory=list)
+    lower_bound_particles: list[float] | None = None
+    upper_bound_particles: list[float] | None = None
+    xmin_particles: float | None = None
+    xmax_particles: float | None = None
+    ymin_particles: float | None = None
+    ymax_particles: float | None = None
+    lower_boundary_conditions_particles: list[str] | None = None
+    upper_boundary_conditions_particles: list[str] | None = None
+    bc_xmin_particles: str | None = None
+    bc_xmax_particles: str | None = None
+    bc_ymin_particles: str | None = None
+    bc_ymax_particles: str | None = None
+    guard_cells: list[int] | None = None
+    pml_cells: list[int] | None = None
+
+    @model_validator(mode="after")
+    def _resolve_grid(self) -> Self:
 
         # Sanity check and init of input arguments related to grid parameters
-        assert (number_of_cells is None) and (nx is not None and ny is not None) or \
-               (number_of_cells is not None) and (nx is None and ny is None), \
-                Exception('Either number_of_cells or nx and ny must be specified')
-        assert (lower_bound is None) and (xmin is not None and ymin is not None) or \
-               (lower_bound is not None) and (xmin is None and ymin is None), \
-                Exception('Either lower_bound or xmin and ymin must be specified')
-        assert (upper_bound is None) and (xmax is not None and ymax is not None) or \
-               (upper_bound is not None) and (xmax is None and ymax is None), \
-                Exception('Either upper_bound or xmax and ymax must be specified')
-        assert (lower_boundary_conditions is None) and (bc_xmin is not None and bc_ymin is not None) or \
-               (lower_boundary_conditions is not None) and (bc_xmin is None and bc_ymin is None), \
-                Exception('Either lower_boundary_conditions or bc_xmin and bc_ymin must be specified')
-        assert (upper_boundary_conditions is None) and (bc_xmax is not None and bc_ymax is not None) or \
-               (upper_boundary_conditions is not None) and (bc_xmax is None and bc_ymax is None), \
-                Exception('Either upper_boundary_conditions or bc_xmax and bc_ymax must be specified')
+        assert (self.number_of_cells is None) and (self.nx is not None and self.ny is not None) or \
+               (self.number_of_cells is not None) and (self.nx is None and self.ny is None), \
+                'Either number_of_cells or nx and ny must be specified'
+        assert (self.lower_bound is None) and (self.xmin is not None and self.ymin is not None) or \
+               (self.lower_bound is not None) and (self.xmin is None and self.ymin is None), \
+                'Either lower_bound or xmin and ymin must be specified'
+        assert (self.upper_bound is None) and (self.xmax is not None and self.ymax is not None) or \
+               (self.upper_bound is not None) and (self.xmax is None and self.ymax is None), \
+                'Either upper_bound or xmax and ymax must be specified'
+        assert (self.lower_boundary_conditions is None) and (self.bc_xmin is not None and self.bc_ymin is not None) or \
+               (self.lower_boundary_conditions is not None) and (self.bc_xmin is None and self.bc_ymin is None), \
+                'Either lower_boundary_conditions or bc_xmin and bc_ymin must be specified'
+        assert (self.upper_boundary_conditions is None) and (self.bc_xmax is not None and self.bc_ymax is not None) or \
+               (self.upper_boundary_conditions is not None) and (self.bc_xmax is None and self.bc_ymax is None), \
+                'Either upper_boundary_conditions or bc_xmax and bc_ymax must be specified'
 
-        if number_of_cells is None:
-            number_of_cells = [nx, ny]
-        if lower_bound is None:
-            lower_bound = [xmin, ymin]
-        if upper_bound is None:
-            upper_bound = [xmax, ymax]
-        if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin, bc_ymin]
-        if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax, bc_ymax]
+        if self.number_of_cells is None:
+            self.number_of_cells = [self.nx, self.ny]
+        if self.lower_bound is None:
+            self.lower_bound = [self.xmin, self.ymin]
+        if self.upper_bound is None:
+            self.upper_bound = [self.xmax, self.ymax]
+        if self.lower_boundary_conditions is None:
+            self.lower_boundary_conditions = [self.bc_xmin, self.bc_ymin]
+        if self.upper_boundary_conditions is None:
+            self.upper_boundary_conditions = [self.bc_xmax, self.bc_ymax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        if lower_bound_particles is None:
-            if (xmin_particles is None) and (ymin_particles is None):
-                lower_bound_particles = lower_bound
+        if self.lower_bound_particles is None:
+            if (self.xmin_particles is None) and (self.ymin_particles is None):
+                self.lower_bound_particles = self.lower_bound
             else:
-                lower_bound_particles = [xmin_particles, ymin_particles]
-        if upper_bound_particles is None:
-            if (xmax_particles is None) and (ymax_particles is None):
-                upper_bound_particles = upper_bound
+                self.lower_bound_particles = [self.xmin_particles, self.ymin_particles]
+        if self.upper_bound_particles is None:
+            if (self.xmax_particles is None) and (self.ymax_particles is None):
+                self.upper_bound_particles = self.upper_bound
             else:
-                upper_bound_particles=[xmax_particles, ymax_particles]
+                self.upper_bound_particles = [self.xmax_particles, self.ymax_particles]
 
-        if lower_boundary_conditions_particles is None:
-            if (bc_xmin_particles is None) and (bc_ymin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+        if self.lower_boundary_conditions_particles is None:
+            if (self.bc_xmin_particles is None) and (self.bc_ymin_particles is None):
+                self.lower_boundary_conditions_particles = self.lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles]
-        if upper_boundary_conditions_particles is None:
-            if (bc_xmax_particles is None) and (bc_ymax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.lower_boundary_conditions_particles = [self.bc_xmin_particles, self.bc_ymin_particles]
+        if self.upper_boundary_conditions_particles is None:
+            if (self.bc_xmax_particles is None) and (self.bc_ymax_particles is None):
+                self.upper_boundary_conditions_particles = self.upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles]
+                self.upper_boundary_conditions_particles = [self.bc_xmax_particles, self.bc_ymax_particles]
 
         # Sanity check on dimensionality of vector quantities
-        assert len(number_of_cells) == 2, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 2, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 2, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 2, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 2, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 2, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 2, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 2, Exception('Wrong number of lower particle boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 2, Exception('Wrong number of upper particle boundary conditions specified')
-
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
+        assert len(self.number_of_cells) == 2, 'Wrong number of cells specified'
+        assert len(self.lower_bound) == 2, 'Wrong number of lower bounds specified'
+        assert len(self.upper_bound) == 2, 'Wrong number of upper bounds specified'
+        assert len(self.lower_boundary_conditions) == 2, 'Wrong number of lower boundary conditions specified'
+        assert len(self.upper_boundary_conditions) == 2, 'Wrong number of upper boundary conditions specified'
+        assert len(self.lower_bound_particles) == 2, 'Wrong number of particle lower bounds specified'
+        assert len(self.upper_bound_particles) == 2, 'Wrong number of particle upper bounds specified'
+        assert len(self.lower_boundary_conditions_particles) == 2, 'Wrong number of lower particle boundary conditions specified'
+        assert len(self.upper_boundary_conditions_particles) == 2, 'Wrong number of upper particle boundary conditions specified'
 
         for region in self.refined_regions:
             if len(region) == 3:
                 region.append([2,2])
-            assert len(region[1]) == 2, Exception('The lo extent of the refined region must be a vector of length 2')
-            assert len(region[2]) == 2, Exception('The hi extent of the refined region must be a vector of length 2')
-            assert len(region[3]) == 2, Exception('The refinement factor of the refined region must be a vector of length 2')
+            assert len(region[1]) == 2, 'The lo extent of the refined region must be a vector of length 2'
+            assert len(region[2]) == 2, 'The hi extent of the refined region must be a vector of length 2'
+            assert len(region[3]) == 2, 'The refinement factor of the refined region must be a vector of length 2'
 
-        self.handle_init(kw)
+        return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2,2]):
         """Add a refined region.
@@ -703,7 +722,7 @@ class PICMI_Cartesian2DGrid(_ClassWithInit):
         self.refined_regions.append([level, lo, hi, refinement_factor])
 
 
-class PICMI_Cartesian3DGrid(_ClassWithInit):
+class PICMI_Cartesian3DGrid(_PICMIModel):
     """
     Three dimensional Cartesian grid
     Parameters can be specified either as vectors or separately.
@@ -852,107 +871,126 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
     # vector of values (such as number_of_cells). However, internally, only the vectors are saved and
     # the implementation needs to use the those to access the user input.
 
-    number_of_dimensions = 3
+    number_of_dimensions: ClassVar[int] = 3
 
-    def __init__(self, number_of_cells=None, lower_bound=None, upper_bound=None,
-                 lower_boundary_conditions=None, upper_boundary_conditions=None,
-                 nx=None, ny=None, nz=None,
-                 xmin=None, xmax=None, ymin=None, ymax=None, zmin=None, zmax=None,
-                 bc_xmin=None, bc_xmax=None, bc_ymin=None, bc_ymax=None, bc_zmin=None, bc_zmax=None,
-                 moving_window_velocity=None, refined_regions=[], lower_bound_particles=None, upper_bound_particles=None,
-                 xmin_particles=None, xmax_particles=None, ymin_particles=None, ymax_particles=None, zmin_particles=None, zmax_particles=None,
-                 lower_boundary_conditions_particles=None, upper_boundary_conditions_particles=None,
-                 bc_xmin_particles=None, bc_xmax_particles=None, bc_ymin_particles=None, bc_ymax_particles=None,
-                 bc_zmin_particles=None, bc_zmax_particles=None, guard_cells=None, pml_cells=None,
-                 **kw):
+    # Vector forms (the internally-used representation)
+    number_of_cells: list[int] | None = None
+    lower_bound: list[float] | None = None
+    upper_bound: list[float] | None = None
+    lower_boundary_conditions: list[str] | None = None
+    upper_boundary_conditions: list[str] | None = None
+    # Per-axis scalar forms (resolved into the vector forms during validation)
+    nx: int | None = None
+    ny: int | None = None
+    nz: int | None = None
+    xmin: float | None = None
+    xmax: float | None = None
+    ymin: float | None = None
+    ymax: float | None = None
+    zmin: float | None = None
+    zmax: float | None = None
+    bc_xmin: str | None = None
+    bc_xmax: str | None = None
+    bc_ymin: str | None = None
+    bc_ymax: str | None = None
+    bc_zmin: str | None = None
+    bc_zmax: str | None = None
+    moving_window_velocity: list[float] | None = None
+    refined_regions: list = Field(default_factory=list)
+    lower_bound_particles: list[float] | None = None
+    upper_bound_particles: list[float] | None = None
+    xmin_particles: float | None = None
+    xmax_particles: float | None = None
+    ymin_particles: float | None = None
+    ymax_particles: float | None = None
+    zmin_particles: float | None = None
+    zmax_particles: float | None = None
+    lower_boundary_conditions_particles: list[str] | None = None
+    upper_boundary_conditions_particles: list[str] | None = None
+    bc_xmin_particles: str | None = None
+    bc_xmax_particles: str | None = None
+    bc_ymin_particles: str | None = None
+    bc_ymax_particles: str | None = None
+    bc_zmin_particles: str | None = None
+    bc_zmax_particles: str | None = None
+    guard_cells: list[int] | None = None
+    pml_cells: list[int] | None = None
+
+    @model_validator(mode="after")
+    def _resolve_grid(self) -> Self:
 
         # Sanity check and init of input arguments related to grid parameters
-        assert (number_of_cells is None) and (nx is not None and ny is not None and nz is not None) or \
-               (number_of_cells is not None) and (nx is None and ny is None and nz is None), \
-                Exception('Either number_of_cells or nx, ny, and nz must be specified')
-        assert (lower_bound is None) and (xmin is not None and ymin is not None and zmin is not None) or \
-               (lower_bound is not None) and (xmin is None and ymin is None and zmin is None), \
-                Exception('Either lower_bound or xmin, ymin, and zmin must be specified')
-        assert (upper_bound is None) and (xmax is not None and ymax is not None and zmax is not None) or \
-               (upper_bound is not None) and (xmax is None and ymax is None and zmax is None), \
-                Exception('Either upper_bound or xmax, ymax, and zmax must be specified')
-        assert (lower_boundary_conditions is None) and (bc_xmin is not None and bc_ymin is not None and bc_zmin is not None) or \
-               (lower_boundary_conditions is not None) and (bc_xmin is None and bc_ymin is None and bc_zmin is None), \
-                Exception('Either lower_boundary_conditions or bc_xmin, bc_ymin, and bc_zmin must be specified')
-        assert (upper_boundary_conditions is None) and (bc_xmax is not None and bc_ymax is not None and bc_zmax is not None) or \
-               (upper_boundary_conditions is not None) and (bc_xmax is None and bc_ymax is None and bc_zmax is None), \
-                Exception('Either upper_boundary_conditions or bc_xmax, bc_ymax, and bc_zmax must be specified')
+        assert (self.number_of_cells is None) and (self.nx is not None and self.ny is not None and self.nz is not None) or \
+               (self.number_of_cells is not None) and (self.nx is None and self.ny is None and self.nz is None), \
+                'Either number_of_cells or nx, ny, and nz must be specified'
+        assert (self.lower_bound is None) and (self.xmin is not None and self.ymin is not None and self.zmin is not None) or \
+               (self.lower_bound is not None) and (self.xmin is None and self.ymin is None and self.zmin is None), \
+                'Either lower_bound or xmin, ymin, and zmin must be specified'
+        assert (self.upper_bound is None) and (self.xmax is not None and self.ymax is not None and self.zmax is not None) or \
+               (self.upper_bound is not None) and (self.xmax is None and self.ymax is None and self.zmax is None), \
+                'Either upper_bound or xmax, ymax, and zmax must be specified'
+        assert (self.lower_boundary_conditions is None) and (self.bc_xmin is not None and self.bc_ymin is not None and self.bc_zmin is not None) or \
+               (self.lower_boundary_conditions is not None) and (self.bc_xmin is None and self.bc_ymin is None and self.bc_zmin is None), \
+                'Either lower_boundary_conditions or bc_xmin, bc_ymin, and bc_zmin must be specified'
+        assert (self.upper_boundary_conditions is None) and (self.bc_xmax is not None and self.bc_ymax is not None and self.bc_zmax is not None) or \
+               (self.upper_boundary_conditions is not None) and (self.bc_xmax is None and self.bc_ymax is None and self.bc_zmax is None), \
+                'Either upper_boundary_conditions or bc_xmax, bc_ymax, and bc_zmax must be specified'
 
-        if number_of_cells is None:
-            number_of_cells = [nx, ny, nz]
-        if lower_bound is None:
-            lower_bound = [xmin, ymin, zmin]
-        if upper_bound is None:
-            upper_bound = [xmax, ymax, zmax]
-        if lower_boundary_conditions is None:
-            lower_boundary_conditions = [bc_xmin, bc_ymin, bc_zmin]
-        if upper_boundary_conditions is None:
-            upper_boundary_conditions = [bc_xmax, bc_ymax, bc_zmax]
+        if self.number_of_cells is None:
+            self.number_of_cells = [self.nx, self.ny, self.nz]
+        if self.lower_bound is None:
+            self.lower_bound = [self.xmin, self.ymin, self.zmin]
+        if self.upper_bound is None:
+            self.upper_bound = [self.xmax, self.ymax, self.zmax]
+        if self.lower_boundary_conditions is None:
+            self.lower_boundary_conditions = [self.bc_xmin, self.bc_ymin, self.bc_zmin]
+        if self.upper_boundary_conditions is None:
+            self.upper_boundary_conditions = [self.bc_xmax, self.bc_ymax, self.bc_zmax]
 
         # Sanity check and init of input arguments related to particle boundary parameters
         # By default, if not specified, particle boundary values are the same as field boundary values
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        if lower_bound_particles is None:
-            if (xmin_particles is None) and (ymin_particles is None) and (zmin_particles is None):
-                lower_bound_particles = lower_bound
+        if self.lower_bound_particles is None:
+            if (self.xmin_particles is None) and (self.ymin_particles is None) and (self.zmin_particles is None):
+                self.lower_bound_particles = self.lower_bound
             else:
-                lower_bound_particles = [xmin_particles, ymin_particles, zmin_particles]
-        if upper_bound_particles is None:
-            if (xmax_particles is None) and (ymax_particles is None) and (zmax_particles is None):
-                upper_bound_particles = upper_bound
+                self.lower_bound_particles = [self.xmin_particles, self.ymin_particles, self.zmin_particles]
+        if self.upper_bound_particles is None:
+            if (self.xmax_particles is None) and (self.ymax_particles is None) and (self.zmax_particles is None):
+                self.upper_bound_particles = self.upper_bound
             else:
-                upper_bound_particles = [xmax_particles, ymax_particles, zmax_particles]
+                self.upper_bound_particles = [self.xmax_particles, self.ymax_particles, self.zmax_particles]
 
-        if lower_boundary_conditions_particles is None:
-            if (bc_xmin_particles is None) and (bc_ymin_particles is None) and (bc_zmin_particles is None):
-                lower_boundary_conditions_particles = lower_boundary_conditions
+        if self.lower_boundary_conditions_particles is None:
+            if (self.bc_xmin_particles is None) and (self.bc_ymin_particles is None) and (self.bc_zmin_particles is None):
+                self.lower_boundary_conditions_particles = self.lower_boundary_conditions
             else:
-                lower_boundary_conditions_particles = [bc_xmin_particles, bc_ymin_particles, bc_zmin_particles]
-        if upper_boundary_conditions_particles is None:
-            if (bc_xmax_particles is None) and (bc_ymax_particles is None) and (bc_zmax_particles is None):
-                upper_boundary_conditions_particles = upper_boundary_conditions
+                self.lower_boundary_conditions_particles = [self.bc_xmin_particles, self.bc_ymin_particles, self.bc_zmin_particles]
+        if self.upper_boundary_conditions_particles is None:
+            if (self.bc_xmax_particles is None) and (self.bc_ymax_particles is None) and (self.bc_zmax_particles is None):
+                self.upper_boundary_conditions_particles = self.upper_boundary_conditions
             else:
-                upper_boundary_conditions_particles = [bc_xmax_particles, bc_ymax_particles, bc_zmax_particles]
+                self.upper_boundary_conditions_particles = [self.bc_xmax_particles, self.bc_ymax_particles, self.bc_zmax_particles]
 
         # Sanity check on number of arguments of vector quantities
-        assert len(number_of_cells) == 3, Exception('Wrong number of cells specified')
-        assert len(lower_bound) == 3, Exception('Wrong number of lower bounds specified')
-        assert len(upper_bound) == 3, Exception('Wrong number of upper bounds specified')
-        assert len(lower_boundary_conditions) == 3, Exception('Wrong number of lower boundary conditions specified')
-        assert len(upper_boundary_conditions) == 3, Exception('Wrong number of upper boundary conditions specified')
-        assert len(lower_bound_particles) == 3, Exception('Wrong number of particle lower bounds specified')
-        assert len(upper_bound_particles) == 3, Exception('Wrong number of particle upper bounds specified')
-        assert len(lower_boundary_conditions_particles) == 3, Exception('Wrong number of particle lower boundary conditions specified')
-        assert len(upper_boundary_conditions_particles) == 3, Exception('Wrong number of particle upper boundary conditions specified')
+        assert len(self.number_of_cells) == 3, 'Wrong number of cells specified'
+        assert len(self.lower_bound) == 3, 'Wrong number of lower bounds specified'
+        assert len(self.upper_bound) == 3, 'Wrong number of upper bounds specified'
+        assert len(self.lower_boundary_conditions) == 3, 'Wrong number of lower boundary conditions specified'
+        assert len(self.upper_boundary_conditions) == 3, 'Wrong number of upper boundary conditions specified'
+        assert len(self.lower_bound_particles) == 3, 'Wrong number of particle lower bounds specified'
+        assert len(self.upper_bound_particles) == 3, 'Wrong number of particle upper bounds specified'
+        assert len(self.lower_boundary_conditions_particles) == 3, 'Wrong number of particle lower boundary conditions specified'
+        assert len(self.upper_boundary_conditions_particles) == 3, 'Wrong number of particle upper boundary conditions specified'
 
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.lower_boundary_conditions = lower_boundary_conditions
-        self.upper_boundary_conditions = upper_boundary_conditions
-        self.lower_bound_particles = lower_bound_particles
-        self.upper_bound_particles = upper_bound_particles
-        self.lower_boundary_conditions_particles = lower_boundary_conditions_particles
-        self.upper_boundary_conditions_particles = upper_boundary_conditions_particles
-        self.guard_cells = guard_cells
-        self.pml_cells = pml_cells
-
-        self.moving_window_velocity = moving_window_velocity
-
-        self.refined_regions = refined_regions
         for region in self.refined_regions:
             if len(region) == 3:
                 region.append([2,2,2])
-            assert len(region[1]) == 3, Exception('The lo extent of the refined region must be a vector of length 3')
-            assert len(region[2]) == 3, Exception('The hi extent of the refined region must be a vector of length 3')
-            assert len(region[3]) == 3, Exception('The refinement factor of the refined region must be a vector of length 3')
+            assert len(region[1]) == 3, 'The lo extent of the refined region must be a vector of length 3'
+            assert len(region[2]) == 3, 'The hi extent of the refined region must be a vector of length 3'
+            assert len(region[3]) == 3, 'The refinement factor of the refined region must be a vector of length 3'
 
-        self.handle_init(kw)
+        return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2,2,2]):
         """Add a refined region.
@@ -973,7 +1011,7 @@ class PICMI_Cartesian3DGrid(_ClassWithInit):
 
 PICMI_AnyGrid = PICMI_CylindricalGrid | PICMI_Cartesian1DGrid | PICMI_Cartesian2DGrid | PICMI_Cartesian3DGrid
 
-class PICMI_ElectromagneticSolver(BaseModel):
+class PICMI_ElectromagneticSolver(_PICMIModel):
     """
     Electromagnetic field solver.
 
@@ -1041,9 +1079,6 @@ class PICMI_ElectromagneticSolver(BaseModel):
         default=None,
         description="Solver uses div(B) cleaning in the PML if True"
     )
-
-    class Config:
-        arbitrary_types_allowed=True
 
 
 class PICMI_ElectrostaticSolver(_ClassWithInit):

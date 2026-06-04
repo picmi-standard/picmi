@@ -38,9 +38,9 @@ class PICMI_Simulation(_PICMIModel):
         default=None,
         description="Verbosity flag. A larger integer results in more verbose output"
     )
-    particle_shape: str = Field(
+    particle_shape: str | int | None = Field(
         default="linear",
-        description="Default particle shape for species added to this simulation. One of 'NGP', 'linear', 'quadratic', 'cubic'."
+        description="Default particle shape for species added to this simulation. One of 'NGP', 'linear', 'quadratic', 'cubic', or the equivalent integer interpolation order."
     )
     gamma_boost: float | None = Field(
         default=None,

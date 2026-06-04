@@ -7,7 +7,7 @@ from typing import Self, Sequence
 
 from pydantic import BaseModel, Field, model_validator
 
-from .base import _ClassWithInit, _PICMIModel, _get_constants
+from .base import _ClassWithInit, _PICMIModel, _get_constants, resolve_once
 
 
 # ---------------
@@ -113,6 +113,7 @@ class PICMI_GaussianLaser(_PICMIModel):
     k0: float = Field(default=0.0, exclude=True, init_var=False)
 
     @model_validator(mode='after')
+    @resolve_once
     def _compute_k0_a0_e0(self) -> Self:
         """Compute a0 and E0 from each other if needed"""
         self.k0, self.E0, self.a0 = _compute_k0_E0_a0(self.wavelength, self.E0, self.a0)

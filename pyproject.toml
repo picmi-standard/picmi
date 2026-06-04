@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "picmistandard"
 dynamic = ["version"]
 dependencies = ["numpy>=1.15",
-                "scipy~=1.5"]
+                "scipy~=1.5",
+                "pydantic>=2"]
 description = "Python base classes for PICMI standard"
 readme = "README.md"
 license = {file = "License.txt"}

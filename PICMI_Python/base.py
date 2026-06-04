@@ -1,10 +1,49 @@
 """base code for the PICMI standard
 """
+import functools
 import inspect
+import threading
 from itertools import repeat
 import warnings
 from typing import Self
 from pydantic import model_validator, BaseModel, SerializeAsAny, ConfigDict
+
+
+# Tracks which (instance, validator) pairs are currently executing, per thread, so that a
+# mode="after" validator that assigns to ``self`` does not re-enter itself when
+# ``validate_assignment=True`` re-validates each of those assignments.
+_validators_in_progress = threading.local()
+
+
+def resolve_once(validator):
+    """Make a ``mode="after"`` model validator safe under ``validate_assignment=True``.
+
+    With assignment validation enabled, every ``self.x = ...`` performed inside an
+    after-validator triggers a re-validation, which re-runs the very same validator and
+    would recurse without bound. This wrapper turns a re-entrant call *on the same
+    instance* into a no-op (it returns ``self`` unchanged), so the validator's own
+    derived-field assignments do not re-execute its body. The outermost call still runs in
+    full, so derived fields are computed/resolved exactly once per validation.
+
+    Apply it *under* ``@model_validator(mode="after")``::
+
+        @model_validator(mode="after")
+        @resolve_once
+        def _resolve(self) -> Self:
+            ...
+    """
+    @functools.wraps(validator)
+    def wrapper(self):
+        active = _validators_in_progress.__dict__.setdefault("markers", set())
+        marker = (id(self), validator)
+        if marker in active:
+            return self
+        active.add(marker)
+        try:
+            return validator(self)
+        finally:
+            active.discard(marker)
+    return wrapper
 
 codename = None
 
@@ -45,13 +84,9 @@ class _DocumentedMetaClass(type):
         if bases and bases[0].__doc__ is not None:
             implementation_doc = attrs.get('__doc__', '')
             if implementation_doc:
-                # The format of the added string is intentional.
-                # The double return "\n\n" is needed to start a new section in the documentation.
-                # Then the four spaces matches the standard level of indentation for doc strings
-                # (assuming PEP8 formatting).
-                # The final return "\n" assumes that the implementation doc string begins with a return,
-                # i.e. a line with only three quotes, """.
-                attrs['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+                # The double return "\n\n" separates the picmistandard docstring from the
+                # implementation-specific one, starting a new paragraph in the documentation.
+                attrs['__doc__'] = bases[0].__doc__ + "\n\n" + implementation_doc
             else:
                 attrs['__doc__'] = bases[0].__doc__
         return super(_DocumentedMetaClass, cls).__new__(cls, name, bases, attrs)
@@ -73,7 +108,7 @@ class _DocumentedModelMetaClass(type(BaseModel)):
             implementation_doc = namespace.get('__doc__', '')
             if implementation_doc:
                 # See _DocumentedMetaClass for the rationale of this exact format.
-                namespace['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+                namespace['__doc__'] = bases[0].__doc__ + "\n\n" + implementation_doc
             else:
                 namespace['__doc__'] = bases[0].__doc__
         return super().__new__(mcs, name, bases, namespace, **kwargs)
@@ -91,6 +126,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
         arbitrary_types_allowed=True,
         populate_by_name=True,
         extra="forbid",
+        validate_assignment=True,
     )
 
     @model_validator(mode="before")

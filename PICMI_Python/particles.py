@@ -228,7 +228,9 @@ class PICMI_AnalyticDistribution(_PICMIModel):
 
     Parameters can be used in the expressions, with their values given as keyword arguments.
     For example, this creates a distribution where the density is ``n0`` below ``rmax`` and
-    zero elsewhere::
+    zero elsewhere:
+
+    .. code-block:: python
 
         dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
                                     rmax = 1.,
@@ -534,13 +536,13 @@ class PICMI_Species(_PICMIModel):
     mass: float | None = Field(
         default=None, description="Particle mass, if not specified, it will be determined from type [kg]"
     )
-    initial_distribution: PICMI_AnyDistribution | None = Field(
-        default=None, description="The initial distribution loaded at t=0."
+    initial_distribution: PICMI_AnyDistribution | list[PICMI_AnyDistribution] | None = Field(
+        default=None, description="The initial distribution loaded at t=0. A list of distributions may be given to superimpose several distributions on the same species."
     )
     density_scale: float | None = Field(
         default=None, description="A scale factor on the density given by the initial_distribution."
     )
-    particle_shape: Literal["NGP", "linear", "quadratic", "cubic"] | None = Field(
+    particle_shape: Literal["NGP", "linear", "quadratic", "cubic"] | int | None = Field(
         default=None,
         description="Particle shape used for deposition and gather. If not specified, the value from the Simulation object will be used. Other values maybe specified that are code dependent.",
     )

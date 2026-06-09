@@ -1,4 +1,6 @@
 import picmistandard
+from pydantic import Field
+
 codename = 'plasmacode'
 picmistandard.register_codename(codename)
 
@@ -16,7 +18,8 @@ class constants:
 picmistandard.register_constants(constants)
 
 picmi_classes = [ cls for cls in picmistandard.__dir__() \
-                      if cls.startswith('PICMI_') ]
+                      if cls.startswith('PICMI_') \
+                      and isinstance(getattr(picmistandard, cls), type) ]
 
 for cls in picmi_classes:
     # --- Skip classes that need special handling
@@ -33,8 +36,14 @@ class %s(picmistandard.%s):
 picmistandard.PICMI_MultiSpecies.Species_class = Species
 
 class CylindricalGrid(picmistandard.PICMI_CylindricalGrid):
-    def init(self, kw):
-        self.mode_phase = kw.pop('plasmacode_mode_phase', 0.)
+    # Example of a downstream code adding a typed, documented extension input as a native
+    # pydantic field. The user-facing keyword is exposed under the code-name alias while the
+    # internal attribute keeps its short name.
+    mode_phase: float = Field(
+        default=0.,
+        alias="plasmacode_mode_phase",
+        description="Azimuthal mode phase offset [rad]",
+    )
 
 class Simulation(picmistandard.PICMI_Simulation):
     def init(self, kw):

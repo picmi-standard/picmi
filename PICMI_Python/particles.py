@@ -2,202 +2,21 @@
 These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all particle related
 """
-import math
-import sys
-import re
-import numpy as np
 
-from .base import _ClassWithInit
+import re
+from functools import partial
+from typing import Annotated, Literal
+
+import numpy as np
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from .base import _ClassWithInit, _PICMIModel, broadcast_validation, with_mutually_exclusive, PICMI_Extension
+from .fields import PICMI_AnyGrid
+from .interactions import PICMI_AnyInteraction
 
 # ---------------
 # Physics objects
 # ---------------
-
-
-class PICMI_Species(_ClassWithInit):
-    """
-    Sets up the species to be simulated.
-    The species charge and mass can be specified by setting the particle type or by setting them directly.
-    If the particle type is specified, the charge or mass can be set to override the value from the type.
-
-    Parameters
-    ----------
-    particle_type: string, optional
-        A string specifying an elementary particle, atom, or other, as defined in
-        the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
-
-    name: string, optional
-        Name of the species
-
-    method: {'Boris', 'Vay', 'Higuera-Cary', 'Li' , 'free-streaming', 'LLRK4'}
-        The particle advance method to use. Code-specific method can be specified using 'other:<method>'. The default is code
-        dependent.
-
-        - 'Boris': Standard "leap-frog" Boris advance
-        - 'Vay':
-        - 'Higuera-Cary':
-        - 'Li' :
-        - 'free-streaming': Advance with no fields
-        - 'LLRK4': Landau-Lifschitz radiation reaction formula with RK-4)
-
-    charge_state: float, optional
-        Charge state of the species (applies only to atoms) [1]
-
-    charge: float, optional
-        Particle charge, required when type is not specified, otherwise determined from type [C]
-
-    mass: float, optional
-        Particle mass, required when type is not specified, otherwise determined from type [kg]
-
-    initial_distribution: distribution instance
-        The initial distribution loaded at t=0. Must be one of the standard distributions implemented.
-
-    density_scale: float, optional
-        A scale factor on the density given by the initial_distribution
-
-    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
-        Particle shape used for deposition and gather.
-        If not specified, the value from the `Simulation` object will be used.
-        Other values maybe specified that are code dependent.
-    """
-
-    methods_list = ['Boris' , 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4']
-
-    def __init__(self, particle_type=None, name=None, charge_state=None, charge=None, mass=None,
-                 initial_distribution=None, particle_shape=None, density_scale=None, method=None, **kw):
-
-
-        assert method is None or method in PICMI_Species.methods_list or method.startswith('other:'), \
-            Exception('method must starts with either "other:", or be one of the following '+', '.join(PICMI_Species.methods_list))
-
-        self.method = method
-        self.particle_type = particle_type
-        self.name = name
-        self.charge = charge
-        self.charge_state = charge_state
-        self.mass = mass
-        self.initial_distribution = initial_distribution
-        self.particle_shape = particle_shape
-        self.density_scale = density_scale
-
-        self.interactions = []
-
-        self.handle_init(kw)
-
-
-class PICMI_MultiSpecies(_ClassWithInit):
-    """
-    INCOMPLETE: proportions argument is not implemented
-    Multiple species that are initialized with the same distribution.
-    Each parameter can be list, giving a value for each species, or a single value which is given to all species.
-    The species charge and mass can be specified by setting the particle type or by setting them directly.
-    If the particle type is specified, the charge or mass can be set to override the value from the type.
-
-    Parameters
-    ----------
-    particle_types: list of strings, optional
-        A string specifying an elementary particle, atom, or other, as defined in
-        the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
-
-    names: list of strings, optional
-        Names of the species
-
-    charge_states: list of floats, optional
-        Charge states of the species (applies only to atoms)
-
-    charges: list of floats, optional
-        Particle charges, required when type is not specified, otherwise determined from type [C]
-
-    masses: list of floats, optional
-        Particle masses, required when type is not specified, otherwise determined from type [kg]
-
-    proportions: list of floats, optional
-        Proportions of the initial distribution made up by each species
-
-    initial_distribution: distribution instance
-        Initial particle distribution, applied to all species
-
-    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
-        Particle shape used for deposition and gather.
-        If not specified, the value from the `Simulation` object will be used.
-        Other values maybe specified that are code dependent.
-    """
-    # --- Note to developer: This class attribute needs to be set to the Species class
-    # --- defined in the codes PICMI implementation.
-    Species_class = None
-
-    def __init__(self, particle_types=None, names=None, charge_states=None, charges=None, masses=None,
-                 proportions=None, initial_distribution=None, particle_shape=None,
-                 **kw):
-
-        self.particle_types = particle_types
-        self.names = names
-        self.charges = charges
-        self.charge_states = charge_states
-        self.masses = masses
-        self.proportions = proportions
-        self.initial_distribution = initial_distribution
-        self.particle_shape = particle_shape
-
-        self.nspecies = None
-        self.check_nspecies(particle_types)
-        self.check_nspecies(names)
-        self.check_nspecies(charges)
-        self.check_nspecies(charge_states)
-        self.check_nspecies(masses)
-        self.check_nspecies(proportions)
-
-        # --- Create the instances of each species
-        self.species_instances_list = []
-        self.species_instances_dict = {}
-        for i in range(self.nspecies):
-            particle_type = self.get_input_item(particle_types, i)
-            name = self.get_input_item(names, i)
-            charge = self.get_input_item(charges, i)
-            charge_state = self.get_input_item(charge_states, i)
-            mass = self.get_input_item(masses, i)
-            proportion = self.get_input_item(proportions, i)
-            specie = PICMI_MultiSpecies.Species_class(particle_type = particle_type,
-                                                      name = name,
-                                                      charge = charge,
-                                                      charge_state = charge_state,
-                                                      mass = mass,
-                                                      initial_distribution = initial_distribution,
-                                                      density_scale = proportion)
-            self.species_instances_list.append(specie)
-            if name is not None:
-                self.species_instances_dict[name] = specie
-
-        self.handle_init(kw)
-
-    def check_nspecies(self, var):
-        if var is not None:
-            try:
-                nvars = len(var)
-            except TypeError:
-                nvars = 1
-            assert self.nspecies is None or self.nspecies == nvars, Exception('All inputs must have the same length')
-            self.nspecies = nvars
-
-    def get_input_item(self, var, i):
-        if var is None:
-            return None
-        else:
-            try:
-                len(var)
-            except TypeError:
-                return var
-            else:
-                return var[i]
-
-    def __len__(self):
-        return self.nspecies
-
-    def __getitem__(self, key):
-        if isinstance(key, str):
-            return self.species_instances_dict[key]
-        else:
-            return self.species_instances_list[key]
 
 
 class PICMI_GaussianBunchDistribution(_ClassWithInit):
@@ -240,121 +59,92 @@ class PICMI_GaussianBunchDistribution(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_UniformDistribution(_ClassWithInit):
+class PICMI_UniformDistribution(_PICMIModel):
     """
     Describes a uniform density distribution of particles
-
-    Parameters
-    ----------
-    density: float
-        Physical number density [m^-3]
-
-    lower_bound: vector of length 3 of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of length 3 of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    fill_in: bool, optional
-        Flags whether to fill in the empty spaced opened up when the grid moves
     """
+    density: float = Field(ge=0.,
+        description="Physical number density [m^-3]"
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the distribution [m]"
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the distribution [m]"
+    )
+    rms_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Thermal velocity spread [m/s]"
+    )
+    directed_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Directed, average, proper velocity [m/s]"
+    )
+    fill_in: bool | None = Field(
+        default=None,
+        description="Flags whether to fill in the empty spaced opened up when the grid moves"
+    )
 
-    def __init__(self, density,
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
-        self.density = density
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.fill_in = fill_in
 
-        self.handle_init(kw)
-
-
-class PICMI_FoilDistribution(_ClassWithInit):
+class PICMI_FoilDistribution(_PICMIModel):
     """
     Describes a foil with optional exponential pre- and post-plasma ramps along the propagation direction.
-
-    Parameters
-    ----------
-    density: float
-        Physical number density [m^-3]
-
-    front : float
-        postion of front surface of foil [m]
-
-    thickness: float >= 0
-        thickness of the foil [m]
-
-    exponential_pre_plasma_length: float > 0, optional
-        length scale of expoential decay of pre-foil plasma density [m]
-
-    exponential_pre_plasma_cutoff : float >= 0, optional
-        cutoff length for exponential decay of pre-foil density [m]
-
-    exponential_post_plasma_length: float > 0, optional
-        length scale of expoential decay of post-foil plasma density [m]
-
-    exponential_post_plasma_cutoff : float >= 0, optional
-        cutoff length for exponential decay of post-foil density [m]
-
-    lower_bound: vector of length 3 of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of length 3 of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of length 3 of floats, default=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    fill_in: bool, optional
-        Flags whether to fill in the empty spaced opened up when the grid moves
     """
-
-    def __init__(self,
-                 density,
-                 front,
-                 thickness,
-                 rms_velocity = [0., 0., 0.],
-                 directed_velocity = [0., 0., 0.],
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 exponential_pre_plasma_length = None,
-                 exponential_pre_plasma_cutoff = None,
-                 exponential_post_plasma_length = None,
-                 exponential_post_plasma_cutoff = None,
-                 fill_in = None,
-                 **kw) :
-        self.density = density
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.fill_in = fill_in
-
-        self.front = front
-        self.thickness = thickness
-        self.exponential_pre_plasma_length = exponential_pre_plasma_length
-        self.exponential_pre_plasma_cutoff = exponential_pre_plasma_cutoff
-        self.exponential_post_plasma_length = exponential_post_plasma_length
-        self.exponential_post_plasma_cutoff = exponential_post_plasma_cutoff
-
-        self.handle_init(kw)
-
+    density: float = Field(ge=0.,
+        description="Physical number density [m^-3]"
+    )
+    front: float = Field(
+        description="Position of front surface of foil [m]"
+    )
+    thickness: float = Field(ge=0.,
+        description="Thickness of the foil [m]"
+    )
+    exponential_pre_plasma_length: float | None = Field(gt=0.,
+        default=None,
+        description="Length scale of exponential decay of pre-foil plasma density [m]"
+    )
+    exponential_pre_plasma_cutoff: float | None = Field(ge=0.,
+        default=None,
+        description="Cutoff length for exponential decay of pre-foil density [m]"
+    )
+    exponential_post_plasma_length: float | None = Field(gt=0.,
+        default=None,
+        description="Length scale of exponential decay of post-foil plasma density [m]"
+    )
+    exponential_post_plasma_cutoff: float | None = Field(ge=0.,
+        default=None,
+        description="Cutoff length for exponential decay of post-foil density [m]"
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        min_length=3,
+        max_length=3,
+        description="Lower bound of the distribution [m]"
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        min_length=3,
+        max_length=3,
+        description="Upper bound of the distribution [m]"
+    )
+    rms_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        min_length=3,
+        max_length=3,
+        description="Thermal velocity spread [m/s]"
+    )
+    directed_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        min_length=3,
+        max_length=3,
+        description="Directed, average, proper velocity [m/s]"
+    )
+    fill_in: bool | None = Field(
+        default=None,
+        description="Flags whether to fill in the empty spaced opened up when the grid moves"
+    )
 
 class PICMI_AnalyticFluxDistribution(_ClassWithInit):
     """
@@ -432,101 +222,98 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
 
 PICMI_UniformFluxDistribution = PICMI_AnalyticFluxDistribution
 
-class PICMI_AnalyticDistribution(_ClassWithInit):
+class PICMI_AnalyticDistribution(_PICMIModel):
     """
     Describes a plasma with density following a provided analytic expression
 
-    Parameters
-    ----------
-    density_expression: string
-        Analytic expression describing physical number density (string) [m^-3].
-        Expression should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
-
-    momentum_expressions: list of strings
-        Analytic expressions describing the gamma*velocity for each axis [m/s].
-        Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
-        For any axis not supplied (set to None), directed_velocity will be used.
-
-    momentum_spread_expressions: list of strings
-        Analytic expressions describing the gamma*velocity Gaussian thermal spread sigma for each axis [m/s].
-        Expressions should be in terms of the position, written as 'x', 'y', and 'z'.
-        Parameters can be used in the expression with the values given as keyword arguments.
-        For any axis not supplied (set to None), zero will be used.
-
-    lower_bound: vector of length 3 of floats, optional
-        Lower bound of the distribution [m]
-
-    upper_bound: vector of length 3 of floats, optional
-        Upper bound of the distribution [m]
-
-    rms_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
-        Thermal velocity spread [m/s]
-
-    directed_velocity: vector of length 3 of floats, detault=[0.,0.,0.]
-        Directed, average, proper velocity [m/s]
-
-    fill_in: bool, optional
-        Flags whether to fill in the empty spaced opened up when the grid moves
-
-
-    This example will create a distribution where the density is n0 below rmax and zero elsewhere.::
+    Parameters can be used in the expressions, with their values given as keyword arguments.
+    For example, this creates a distribution where the density is ``n0`` below ``rmax`` and
+    zero elsewhere:
 
     .. code-block:: python
 
-      dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
-                                  rmax = 1.,
-                                  n0 = 1.e20,
-                                  ...)
-
+        dist = AnalyticDistribution(density_expression='((x**2+y**2)<rmax**2)*n0',
+                                    rmax = 1.,
+                                    n0 = 1.e20,
+                                    ...)
     """
+    density_expression: str = Field(
+        description="Analytic expression describing physical number density [m^-3]. Expression should be in terms of the position, written as 'x', 'y', and 'z'. Parameters can be used in the expression with the values given as keyword arguments."
+    )
+    momentum_expressions: list[str | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Analytic expressions describing the gamma*velocity for each axis [m/s]. Expressions should be in terms of the position, written as 'x', 'y', and 'z'. For any axis not supplied (set to None), directed_velocity will be used."
+    )
+    momentum_spread_expressions: list[str | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Analytic expressions describing the gamma*velocity Gaussian thermal spread sigma for each axis [m/s]. For any axis not supplied (set to None), zero will be used."
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the distribution [m]"
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the distribution [m]"
+    )
+    rms_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Thermal velocity spread [m/s]"
+    )
+    directed_velocity: list[float] = Field(
+        default_factory=lambda: [0., 0., 0.],
+        description="Directed, average, proper velocity [m/s]"
+    )
+    fill_in: bool | None = Field(
+        default=None,
+        description="Flags whether to fill in the empty spaced opened up when the grid moves"
+    )
+    user_defined_kw: dict = Field(
+        default_factory=dict,
+        description="Constants referenced in the analytic expressions, collected from otherwise-unrecognized keyword arguments."
+    )
 
-    def __init__(self, density_expression,
-                 momentum_expressions = [None, None, None],
-                 momentum_spread_expressions = [None, None, None],
-                 lower_bound = [None,None,None],
-                 upper_bound = [None,None,None],
-                 rms_velocity = [0.,0.,0.],
-                 directed_velocity = [0.,0.,0.],
-                 fill_in = None,
-                 **kw):
-        self.density_expression = f'{density_expression}'.replace('\n', '')
-        self.momentum_expressions = momentum_expressions
-        self.momentum_spread_expressions = momentum_spread_expressions
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.rms_velocity = rms_velocity
-        self.directed_velocity = directed_velocity
-        self.fill_in = fill_in
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_expressions_and_collect_kw(cls, data):
+        # Stringify expressions (so e.g. a numeric density may be passed) and collect any
+        # keyword arguments that are referenced in the expressions into user_defined_kw.
+        # It is up to the implementing code to make sure all parameters used in the
+        # expressions are defined.
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
 
-        # --- Convert momentum expressions to string if needed.
-        for idir in range(3):
-            if self.momentum_expressions[idir] is not None:
-                self.momentum_expressions[idir] = f'{self.momentum_expressions[idir]}'.replace('\n', '')
-            if self.momentum_spread_expressions[idir] is not None:
-                self.momentum_spread_expressions[idir] = f'{self.momentum_spread_expressions[idir]}'.replace('\n', '')
+        if data.get("density_expression") is not None:
+            data["density_expression"] = f'{data["density_expression"]}'.replace('\n', '')
+        for key in ("momentum_expressions", "momentum_spread_expressions"):
+            exprs = data.get(key)
+            if exprs is not None:
+                data[key] = [None if e is None else f'{e}'.replace('\n', '') for e in exprs]
 
-        # --- Find any user defined keywords in the kw dictionary.
-        # --- Save them and delete them from kw.
-        # --- It's up to the code to make sure that all parameters
-        # --- used in the expression are defined.
-        self.user_defined_kw = {}
-        for k in list(kw.keys()):
-            if re.search(r'\b%s\b'%k, self.density_expression):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[0] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[0]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[1] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[1]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-            elif self.momentum_expressions[2] is not None and re.search(r'\b%s\b'%k, self.momentum_expressions[2]):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
+        density_expression = data.get("density_expression") or ""
+        momentum_expressions = data.get("momentum_expressions") or [None, None, None]
 
-        self.handle_init(kw)
+        known = set()
+        for fname, finfo in cls.model_fields.items():
+            known.add(fname)
+            if finfo.alias:
+                known.add(finfo.alias)
+
+        user_defined_kw = dict(data.get("user_defined_kw", {}))
+        for k in list(data.keys()):
+            if k in known:
+                continue
+            referenced = bool(re.search(r'\b%s\b' % re.escape(k), density_expression))
+            if not referenced:
+                for me in momentum_expressions:
+                    if me is not None and re.search(r'\b%s\b' % re.escape(k), me):
+                        referenced = True
+                        break
+            if referenced:
+                user_defined_kw[k] = data.pop(k)
+        data["user_defined_kw"] = user_defined_kw
+        return data
 
 
 class PICMI_ParticleListDistribution(_ClassWithInit):
@@ -607,9 +394,24 @@ class PICMI_FromFileDistribution(_ClassWithInit):
 
     The openPMD file must contain the attributes `position`, `momentum`, `weighting`.
     """
+
     def __init__(self, file_path, **kw):
         self.file_path = file_path
         self.handle_init(kw)
+
+
+PICMI_AnyDistribution = (
+    PICMI_GaussianBunchDistribution
+    | PICMI_UniformDistribution
+    | PICMI_FoilDistribution
+    | PICMI_AnalyticFluxDistribution
+    | PICMI_UniformFluxDistribution
+    | PICMI_AnalyticDistribution
+    | PICMI_ParticleListDistribution
+    | PICMI_FromFileDistribution
+    | PICMI_Extension
+)
+
 
 # ------------------
 # Numeric Objects
@@ -642,46 +444,27 @@ class PICMI_ParticleDistributionPlanarInjector(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_GriddedLayout(_ClassWithInit):
+class PICMI_GriddedLayout(_PICMIModel):
     """
     Specifies a gridded layout of particles
-
-    Parameters
-    ----------
-    n_macroparticle_per_cell: vector of integers
-        Number of particles per cell along each axis
-
-    grid: grid instance, optional
-        Grid object specifying the grid to follow.
-        If not specified, the underlying grid of the code is used.
     """
-    def __init__(self, n_macroparticles_per_cell=None, grid=None, **kw):
-        self.n_macroparticles_per_cell = n_macroparticles_per_cell
-        self.grid = grid
+    n_macroparticles_per_cell: Annotated[list[int], AfterValidator(partial(broadcast_validation, condition=lambda v: v>=0, message="All n_macroparticle_per_cell must be greater than or equal to 0."))] = Field(
+        min_length=1, max_length=3,
+        description="Number of particles per cell along each axis (one entry per grid dimension)"
+    )
+    grid: PICMI_AnyGrid | None = Field(
+        default=None,
+        description="Grid object specifying the grid to follow. If not specified, the underlying grid of the code is used."
+    )
 
-        self._handle_n_macroparticle_per_cell(kw.pop('n_macroparticle_per_cell', None))
-        self.handle_init(kw)
-
-    def _handle_n_macroparticle_per_cell(self, n_macroparticle_per_cell):
-        """
-        Handle the deprecation of n_macroparticle_per_cell gracefully after being renamed in >v0.34.0.
-        """
-        self._check_deprecated_argument(
-            "n_macroparticle_per_cell",
-            message="n_macroparticle_per_cell was renamed. It is deprecated in favor of n_macroparticles_per_cell and will be removed in a future version.",
-            raise_error=False,
-        )
-        if n_macroparticle_per_cell is not None:
-            if self.n_macroparticles_per_cell is None:
-                self.n_macroparticles_per_cell = n_macroparticle_per_cell
-            else:
-                raise ValueError(
-                    f"PICMI_GriddedLayout: You have specified {self.n_macroparticles_per_cell=} as well as the deprecated {n_macroparticle_per_cell=}."
-                )
-        if self.n_macroparticles_per_cell is None:
+    def __init__(self, *args, **kwargs):
+        if "n_macroparticle_per_cell" in kwargs and "n_macroparticles_per_cell" in kwargs:
             raise ValueError(
-                "PICMI_GriddedLayout: You have not specified n_macroparticles_per_cell."
+                f"You have given {kwargs['n_macroparticles_per_cell']=} and {kwargs['n_macroparticle_per_cell']=}. "
+                    "Please only provide the former."
             )
+        kwargs.setdefault("n_macroparticles_per_cell", kwargs.pop("n_macroparticle_per_cell", None))
+        return super().__init__(*args, **kwargs)
 
     @property
     def n_macroparticle_per_cell(self):
@@ -692,35 +475,213 @@ class PICMI_GriddedLayout(_ClassWithInit):
         self.n_macroparticles_per_cell = value
 
 
-class PICMI_PseudoRandomLayout(_ClassWithInit):
+@with_mutually_exclusive("n_macroparticles_per_cell", "n_macroparticles")
+class PICMI_PseudoRandomLayout(_PICMIModel):
     """
     Specifies a pseudo-random layout of the particles
+    """
+    n_macroparticles: int | None = Field(ge=0,
+        default=None,
+        description="Total number of macroparticles to load. Either this argument or n_macroparticles_per_cell should be supplied (not both)."
+    )
+    n_macroparticles_per_cell: int | None = Field(ge=0,
+        default=None,
+        description="Number of macroparticles to load per cell. Either this argument or n_macroparticles should be supplied (not both)."
+    )
+    seed: int | None = Field(
+        default=None,
+        description="Pseudo-random number generator seed"
+    )
+    grid: PICMI_AnyGrid | None = Field(
+        default=None,
+        description="Grid object specifying the grid to follow for n_macroparticles_per_cell. If not specified, the underlying grid of the code is used."
+    )
+
+
+class PICMI_Species(_PICMIModel):
+    """
+    Sets up the species to be simulated.
+    The species charge and mass can be specified by setting the particle type or by setting them directly.
+    If the particle type is specified, the charge or mass can be set to override the value from the type.
+
+    The particle advance method options:
+
+    - 'Boris': Standard "leap-frog" Boris advance
+    - 'Vay':
+    - 'Higuera-Cary':
+    - 'Li':
+    - 'free-streaming': Advance with no fields
+    - 'LLRK4': Landau-Lifschitz radiation reaction formula with RK-4)
+    """
+
+    methods_list: list[str] = ["Boris", "Vay", "Higuera-Cary", "Li", "free-streaming", "LLRK4"]
+
+    particle_type: str | None = Field(
+        default=None,
+        description="A string specifying an elementary particle, atom, or other, as defined in the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md",
+    )
+    name: str | None = Field(
+        default=None, description="Name of the species. If not specified, it will be determined from the particle type."
+    )
+    method: str | None = Field(
+        default=None,
+        description="The particle advance method to use. Code-specific method can be specified using 'other:<method>'. The default is code dependent. Must be one of 'Boris', 'Vay', 'Higuera-Cary', 'Li', 'free-streaming', 'LLRK4', or start with 'other:'",
+    )
+    charge_state: float | None = Field(
+        default=None, description="Charge state of the species (applies only to atoms) [1]"
+    )
+    charge: float | None = Field(
+        default=None, description="Particle charge, if not specified, it will be determined from type [C]"
+    )
+    mass: float | None = Field(
+        default=None, description="Particle mass, if not specified, it will be determined from type [kg]"
+    )
+    initial_distribution: PICMI_AnyDistribution | list[PICMI_AnyDistribution] | None = Field(
+        default=None, description="The initial distribution loaded at t=0. A list of distributions may be given to superimpose several distributions on the same species."
+    )
+    density_scale: float | None = Field(
+        default=None, description="A scale factor on the density given by the initial_distribution."
+    )
+    particle_shape: Literal["NGP", "linear", "quadratic", "cubic"] | int | None = Field(
+        default=None,
+        description="Particle shape used for deposition and gather. If not specified, the value from the Simulation object will be used. Other values maybe specified that are code dependent.",
+    )
+    interactions: list[PICMI_AnyInteraction] = Field(
+        default_factory=list, description="List of interactions for this species"
+    )
+
+    @field_validator("method")
+    @classmethod
+    def _validate_method(cls, v):
+        if v is not None and v not in PICMI_Species.methods_list and not v.startswith("other:"):
+            raise ValueError(
+                f'method must start with either "other:", or be one of the following: {", ".join(PICMI_Species.methods_list)}'
+            )
+        return v
+
+
+class PICMI_MultiSpecies(_ClassWithInit):
+    """
+    INCOMPLETE: proportions argument is not implemented
+    Multiple species that are initialized with the same distribution.
+    Each parameter can be list, giving a value for each species, or a single value which is given to all species.
+    The species charge and mass can be specified by setting the particle type or by setting them directly.
+    If the particle type is specified, the charge or mass can be set to override the value from the type.
 
     Parameters
     ----------
-    n_macroparticles: integer
-        Total number of macroparticles to load.
-        Either this argument or n_macroparticles_per_cell should be supplied.
+    particle_types: list of strings, optional
+        A string specifying an elementary particle, atom, or other, as defined in
+        the openPMD 2 species type extension, openPMD-standard/EXT_SpeciesType.md
 
-    n_macroparticles_per_cell: integer
-        Number of macroparticles to load per cell.
-        Either this argument or n_macroparticles should be supplied.
+    names: list of strings, optional
+        Names of the species
 
-    seed: integer, optional
-        Pseudo-random number generator seed
+    charge_states: list of floats, optional
+        Charge states of the species (applies only to atoms)
 
-    grid: grid instance, optional
-        Grid object specifying the grid to follow for n_macroparticles_per_cell.
-        If not specified, the underlying grid of the code is used.
+    charges: list of floats, optional
+        Particle charges, required when type is not specified, otherwise determined from type [C]
+
+    masses: list of floats, optional
+        Particle masses, required when type is not specified, otherwise determined from type [kg]
+
+    proportions: list of floats, optional
+        Proportions of the initial distribution made up by each species
+
+    initial_distribution: distribution instance
+        Initial particle distribution, applied to all species
+
+    particle_shape: {'NGP', 'linear', 'quadratic', 'cubic'}
+        Particle shape used for deposition and gather.
+        If not specified, the value from the `Simulation` object will be used.
+        Other values maybe specified that are code dependent.
     """
-    def __init__(self, n_macroparticles=None, n_macroparticles_per_cell=None, seed=None, grid=None, **kw):
 
-        assert (n_macroparticles is not None)^(n_macroparticles_per_cell is not None), \
-               Exception('Only one of n_macroparticles and n_macroparticles_per_cell must be specified')
+    # --- Note to developer: This class attribute needs to be set to the Species class
+    # --- defined in the codes PICMI implementation.
+    Species_class = None
 
-        self.n_macroparticles = n_macroparticles
-        self.n_macroparticles_per_cell = n_macroparticles_per_cell
-        self.seed = seed
-        self.grid = grid
+    def __init__(
+        self,
+        particle_types=None,
+        names=None,
+        charge_states=None,
+        charges=None,
+        masses=None,
+        proportions=None,
+        initial_distribution=None,
+        particle_shape=None,
+        **kw,
+    ):
+
+        self.particle_types = particle_types
+        self.names = names
+        self.charges = charges
+        self.charge_states = charge_states
+        self.masses = masses
+        self.proportions = proportions
+        self.initial_distribution = initial_distribution
+        self.particle_shape = particle_shape
+
+        self.nspecies = None
+        self.check_nspecies(particle_types)
+        self.check_nspecies(names)
+        self.check_nspecies(charges)
+        self.check_nspecies(charge_states)
+        self.check_nspecies(masses)
+        self.check_nspecies(proportions)
+
+        # --- Create the instances of each species
+        self.species_instances_list = []
+        self.species_instances_dict = {}
+        for i in range(self.nspecies):
+            particle_type = self.get_input_item(particle_types, i)
+            name = self.get_input_item(names, i)
+            charge = self.get_input_item(charges, i)
+            charge_state = self.get_input_item(charge_states, i)
+            mass = self.get_input_item(masses, i)
+            proportion = self.get_input_item(proportions, i)
+            specie = PICMI_MultiSpecies.Species_class(
+                particle_type=particle_type,
+                name=name,
+                charge=charge,
+                charge_state=charge_state,
+                mass=mass,
+                initial_distribution=initial_distribution,
+                density_scale=proportion,
+            )
+            self.species_instances_list.append(specie)
+            if name is not None:
+                self.species_instances_dict[name] = specie
 
         self.handle_init(kw)
+
+    def check_nspecies(self, var):
+        if var is not None:
+            try:
+                nvars = len(var)
+            except TypeError:
+                nvars = 1
+            assert self.nspecies is None or self.nspecies == nvars, Exception("All inputs must have the same length")
+            self.nspecies = nvars
+
+    def get_input_item(self, var, i):
+        if var is None:
+            return None
+        else:
+            try:
+                len(var)
+            except TypeError:
+                return var
+            else:
+                return var[i]
+
+    def __len__(self):
+        return self.nspecies
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.species_instances_dict[key]
+        else:
+            return self.species_instances_list[key]

@@ -1,7 +1,49 @@
 """base code for the PICMI standard
 """
+import functools
 import inspect
+import threading
+from itertools import repeat
 import warnings
+from typing import Self
+from pydantic import model_validator, BaseModel, SerializeAsAny, ConfigDict
+
+
+# Tracks which (instance, validator) pairs are currently executing, per thread, so that a
+# mode="after" validator that assigns to ``self`` does not re-enter itself when
+# ``validate_assignment=True`` re-validates each of those assignments.
+_validators_in_progress = threading.local()
+
+
+def resolve_once(validator):
+    """Make a ``mode="after"`` model validator safe under ``validate_assignment=True``.
+
+    With assignment validation enabled, every ``self.x = ...`` performed inside an
+    after-validator triggers a re-validation, which re-runs the very same validator and
+    would recurse without bound. This wrapper turns a re-entrant call *on the same
+    instance* into a no-op (it returns ``self`` unchanged), so the validator's own
+    derived-field assignments do not re-execute its body. The outermost call still runs in
+    full, so derived fields are computed/resolved exactly once per validation.
+
+    Apply it *under* ``@model_validator(mode="after")``::
+
+        @model_validator(mode="after")
+        @resolve_once
+        def _resolve(self) -> Self:
+            ...
+    """
+    @functools.wraps(validator)
+    def wrapper(self):
+        active = _validators_in_progress.__dict__.setdefault("markers", set())
+        marker = (id(self), validator)
+        if marker in active:
+            return self
+        active.add(marker)
+        try:
+            return validator(self)
+        finally:
+            active.discard(marker)
+    return wrapper
 
 codename = None
 
@@ -42,16 +84,66 @@ class _DocumentedMetaClass(type):
         if bases and bases[0].__doc__ is not None:
             implementation_doc = attrs.get('__doc__', '')
             if implementation_doc:
-                # The format of the added string is intentional.
-                # The double return "\n\n" is needed to start a new section in the documentation.
-                # Then the four spaces matches the standard level of indentation for doc strings
-                # (assuming PEP8 formatting).
-                # The final return "\n" assumes that the implementation doc string begins with a return,
-                # i.e. a line with only three quotes, """.
-                attrs['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+                # The double return "\n\n" separates the picmistandard docstring from the
+                # implementation-specific one, starting a new paragraph in the documentation.
+                attrs['__doc__'] = bases[0].__doc__ + "\n\n" + implementation_doc
             else:
                 attrs['__doc__'] = bases[0].__doc__
         return super(_DocumentedMetaClass, cls).__new__(cls, name, bases, attrs)
+
+
+class _DocumentedModelMetaClass(type(BaseModel)):
+    """Pydantic-compatible variant of _DocumentedMetaClass.
+
+    It combines the __doc__ of the picmistandard base and of the implementation, so that
+    downstream codes (e.g. WarpX) can extend the documentation of a pydantic PICMI class
+    simply by adding a docstring to their subclass. It derives from pydantic's metaclass
+    (``type(BaseModel)`` is ``ModelMetaclass``) so that it composes with ``BaseModel``.
+    """
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        # Skip the infrastructure base itself (its only base is BaseModel) and any class
+        # whose first base carries no docstring (e.g. _PICMIModel), mirroring the guard in
+        # _DocumentedMetaClass.
+        if bases and bases[0] is not BaseModel and bases[0].__doc__ is not None:
+            implementation_doc = namespace.get('__doc__', '')
+            if implementation_doc:
+                # See _DocumentedMetaClass for the rationale of this exact format.
+                namespace['__doc__'] = bases[0].__doc__ + "\n\n" + implementation_doc
+            else:
+                namespace['__doc__'] = bases[0].__doc__
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
+
+
+class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
+    # Shared configuration for all pydantic-based PICMI classes.
+    # - ``extra="forbid"`` restores the old behaviour of raising on unexpected keyword
+    #   arguments (pydantic's default silently ignores them).
+    # - ``populate_by_name`` lets downstream codes expose extension inputs under a
+    #   ``<code>_`` alias while keeping their internal attribute name.
+    # - ``arbitrary_types_allowed`` is needed while some referenced objects (grids,
+    #   solvers, code-specific helper objects) are not yet pydantic models.
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        extra="forbid",
+        validate_assignment=True,
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ignore_other_codes_arguments(cls, data):
+        # Mirror the old handle_init() behaviour: keyword arguments prefixed with the name
+        # of *another* supported code are silently ignored, so that a single PICMI input
+        # script can carry code-specific arguments for several codes at once. Arguments
+        # prefixed with the active codename (or otherwise unknown arguments) are left in
+        # place and validated normally, so that genuine typos are still reported thanks to
+        # ``extra="forbid"``.
+        if not isinstance(data, dict):
+            return data
+        return {
+            k: v for k, v in data.items()
+            if not ((prefix := k.split('_')[0]) in supported_codes and prefix != codename)
+        }
 
 
 class _ClassWithInit(metaclass=_DocumentedMetaClass):
@@ -190,3 +282,30 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
                 raise Exception(full_message)
             else:
                 warnings.warn(full_message)
+
+def broadcast_validation(values, condition, message="Condition not met."):
+    if not all(condition(value) for value in values):
+        raise ValueError(f"{message} You gave: {values}.")
+    return values
+
+
+def with_mutually_exclusive(*args, defaults=None):
+    def decorator(cls):
+        class Decorated(cls):
+            @model_validator(mode='after')
+            def _mutually_exclusive(self) -> Self:
+                # make sure we don't override previously implemented behaviour:
+                try:
+                    super()._mutually_exclusive()
+                except AttributeError:
+                    pass
+                if len(non_default := {arg: value for arg, default in zip(args, repeat(None) if defaults is None else defaults) if (value:=getattr(self, arg)) != default}) > 1:
+                    raise ValueError(f"The arguments {args} are mutually exclusive. You gave: {non_default=}.")
+                return self
+        return Decorated
+    return decorator
+
+class _PICMI_Extension(BaseModel):
+    pass
+
+PICMI_Extension = SerializeAsAny[_PICMI_Extension]

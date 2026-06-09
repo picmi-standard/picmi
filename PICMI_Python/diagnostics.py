@@ -3,83 +3,64 @@ These should be the base classes for Python implementation of the PICMI standard
 The classes in the file are all diagnostics related
 """
 
-from .base import _ClassWithInit
+from typing import Sequence
+
+from pydantic import Field
+
+from .base import _ClassWithInit, _PICMIModel
+from .fields import PICMI_AnyGrid
 
 # ----------------------------
 # Simulation frame diagnostics
 # ----------------------------
 
 
-class PICMI_FieldDiagnostic(_ClassWithInit):
+class PICMI_FieldDiagnostic(_PICMIModel):
     """
     Defines the electromagnetic field diagnostics in the simulation frame
-
-    Parameters
-    ----------
-    grid: grid instance
-        Grid object for the diagnostic
-
-    period: integer
-        Period of time steps that the diagnostic is performed
-
-    data_list: list of strings, optional
-        List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc.
-        Defaults to the output list of the implementing code.
-
-    write_dir: string, optional
-        Directory where data is to be written
-
-    step_min: integer, default=0
-        Minimum step at which diagnostics could be written
-
-    step_max: integer, default=unbounded
-        Maximum step at which diagnostics could be written
-
-    number_of_cells: vector of integers, optional
-        Number of cells in each dimension.
-        If not given, will be obtained from grid.
-
-    lower_bound: vector of floats, optional
-        Lower corner of diagnostics box in each direction.
-        If not given, will be obtained from grid.
-
-    upper_bound: vector of floats, optional
-        Higher corner of diagnostics box in each direction.
-        If not given, will be obtained from grid.
-
-    parallelio: bool, optional
-        If set to True, field diagnostics are dumped in parallel
-
-    name: string, optional
-        Sets the base name for the diagnostic output files
     """
-    def __init__(self, grid, period, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 number_of_cells = None,
-                 lower_bound = None,
-                 upper_bound = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
-
-        if data_list is not None:
-            assert isinstance(data_list, list), 'FieldDiagnostic: data_list must be a list'
-
-        self.grid = grid
-        self.period = period
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
-        self.number_of_cells = number_of_cells
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.parallelio = parallelio
-        self.name = name
-
-        self.handle_init(kw)
+    grid: PICMI_AnyGrid = Field(
+        description="Grid object for the diagnostic"
+    )
+    period: int = Field(
+        description="Period of time steps that the diagnostic is performed"
+    )
+    data_list: list[str] | None = Field(
+        default=None,
+        description="List of quantities to write out. Possible values 'rho', 'E', 'B', 'J', 'Ex' etc. Defaults to the output list of the implementing code."
+    )
+    write_dir: str | None = Field(
+        default=None,
+        description="Directory where data is to be written"
+    )
+    step_min: int | None = Field(
+        default=None,
+        description="Minimum step at which diagnostics could be written (default 0)"
+    )
+    step_max: int | None = Field(
+        default=None,
+        description="Maximum step at which diagnostics could be written (default unbounded)"
+    )
+    number_of_cells: Sequence[int] | None = Field(
+        default=None,
+        description="Number of cells in each dimension. If not given, will be obtained from grid."
+    )
+    lower_bound: Sequence[float] | None = Field(
+        default=None,
+        description="Lower corner of diagnostics box in each direction. If not given, will be obtained from grid."
+    )
+    upper_bound: Sequence[float] | None = Field(
+        default=None,
+        description="Higher corner of diagnostics box in each direction. If not given, will be obtained from grid."
+    )
+    parallelio: bool | None = Field(
+        default=None,
+        description="If set to True, field diagnostics are dumped in parallel"
+    )
+    name: str | None = Field(
+        default=None,
+        description="Sets the base name for the diagnostic output files"
+    )
 
 
 class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
@@ -154,60 +135,41 @@ class PICMI_ElectrostaticFieldDiagnostic(_ClassWithInit):
         self.handle_init(kw)
 
 
-class PICMI_ParticleDiagnostic(_ClassWithInit) :
+class PICMI_ParticleDiagnostic(_PICMIModel):
     """
     Defines the particle diagnostics in the simulation frame
-
-    Parameters
-    ----------
-    period: integer
-        Period of time steps that the diagnostic is performed
-
-    species: species instance or list of species instances, optional
-        Species to write out. If not specified, all species are written.
-        Note that the name attribute must be defined for the species.
-
-    data_list: list of strings, optional
-        The data to be written out. Possible values 'position', 'momentum', 'weighting'.
-        Defaults to the output list of the implementing code.
-
-    write_dir: string, optional
-        Directory where data is to be written
-
-    step_min: integer, default=0
-        Minimum step at which diagnostics could be written
-
-    step_max: integer, default=unbounded
-        Maximum step at which diagnostics could be written
-
-    parallelio: bool, optional
-        If set to True, particle diagnostics are dumped in parallel
-
-    name: string, optional
-        Sets the base name for the diagnostic output files
     """
-
-    def __init__(self, period, species=None, data_list=None,
-                 write_dir = None,
-                 step_min = None,
-                 step_max = None,
-                 parallelio = None,
-                 name = None,
-                 **kw):
-
-        if data_list is not None:
-            assert isinstance(data_list, list), 'ParticleDiagnostic: data_list must be a list'
-
-        self.period = period
-        self.species = species
-        self.data_list = data_list
-        self.write_dir = write_dir
-        self.step_min = step_min
-        self.step_max = step_max
-        self.parallelio = parallelio
-        self.name = name
-
-        self.handle_init(kw)
+    period: int = Field(
+        description="Period of time steps that the diagnostic is performed"
+    )
+    species: object | None = Field(
+        default=None,
+        description="Species instance or list of species instances to write out. If not specified, all species are written. Note that the name attribute must be defined for the species."
+    )
+    data_list: list[str] | None = Field(
+        default=None,
+        description="The data to be written out. Possible values 'position', 'momentum', 'weighting'. Defaults to the output list of the implementing code."
+    )
+    write_dir: str | None = Field(
+        default=None,
+        description="Directory where data is to be written"
+    )
+    step_min: int | None = Field(
+        default=None,
+        description="Minimum step at which diagnostics could be written (default 0)"
+    )
+    step_max: int | None = Field(
+        default=None,
+        description="Maximum step at which diagnostics could be written (default unbounded)"
+    )
+    parallelio: bool | None = Field(
+        default=None,
+        description="If set to True, particle diagnostics are dumped in parallel"
+    )
+    name: str | None = Field(
+        default=None,
+        description="Sets the base name for the diagnostic output files"
+    )
 
 
 class PICMI_ParticleBoundaryScrapingDiagnostic(_ClassWithInit) :

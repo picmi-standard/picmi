@@ -31,3 +31,4 @@ For more details on the standard and how to use it, see the links below.
 
    how_to_use/how_to_use.rst
    standard/standard.rst
+   developer/developer.rst

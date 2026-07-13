@@ -394,6 +394,9 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
     flux_tmax: float, optional
         Time at which the flux injection will be turned off.
 
+    inject_from_embedded_boundary: bool, default=False
+        Flags whether to inject from the embedded boundary
+
     gaussian_flux_momentum_distribution: bool, optional
         If True, the momentum distribution is v*Gaussian,
         in the direction normal to the plane. Otherwise,
@@ -408,6 +411,7 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
                  directed_velocity = [0.,0.,0.],
                  flux_tmin = None,
                  flux_tmax = None,
+                 inject_from_embedded_boundary = False,
                  gaussian_flux_momentum_distribution = None,
                  **kw):
         self.flux = f'{flux}'.replace('\n', '')
@@ -420,6 +424,7 @@ class PICMI_AnalyticFluxDistribution(_ClassWithInit):
         self.directed_velocity = directed_velocity
         self.flux_tmin = flux_tmin
         self.flux_tmax = flux_tmax
+        self.inject_from_embedded_boundary = inject_from_embedded_boundary
         self.gaussian_flux_momentum_distribution = gaussian_flux_momentum_distribution
 
         self.user_defined_kw = {}

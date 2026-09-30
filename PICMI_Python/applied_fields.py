@@ -5,14 +5,14 @@ from typing import ClassVar, Self
 
 from pydantic import Field, model_validator
 
-from .base import Expression, PICMI_AppliedFieldExtension, _PICMIModel, PICMI_ExpressionParameters
+from .base import Expression, PICMI_AppliedField, _PICMIModel, PICMI_ExpressionParameters
 
 # ---------------
 # Applied fields
 # ---------------
 
 
-class PICMI_ConstantAppliedField(_PICMIModel):
+class PICMI_ConstantAppliedField(PICMI_AppliedField):
     """
     Describes a constant applied field
     """
@@ -50,7 +50,7 @@ class PICMI_ConstantAppliedField(_PICMIModel):
     )
 
 
-class PICMI_AnalyticAppliedField(PICMI_ExpressionParameters):
+class PICMI_AnalyticAppliedField(PICMI_AppliedField, PICMI_ExpressionParameters):
     """
     Describes an analytic applied field
 
@@ -101,7 +101,7 @@ class PICMI_AnalyticAppliedField(PICMI_ExpressionParameters):
     )
 
 
-class PICMI_Mirror(_PICMIModel):
+class PICMI_Mirror(PICMI_AppliedField):
     """
     Describes a perfectly reflecting mirror, where the E and B fields are zeroed
     out in a plane of finite thickness.
@@ -140,7 +140,7 @@ class PICMI_Mirror(_PICMIModel):
         return self
 
 
-class PICMI_LoadAppliedField(_PICMIModel):
+class PICMI_LoadAppliedField(PICMI_AppliedField):
     """
     The E and B fields read from file are applied to the particles directly. (They are not affected by the field solver.)
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
@@ -158,7 +158,7 @@ class PICMI_LoadAppliedField(_PICMIModel):
     )
 
 
-class PICMI_LoadGriddedField(_PICMIModel):
+class PICMI_LoadGriddedField(PICMI_AppliedField):
     """
     The data read in is used to initialize the E and B fields on the grid at the start of the simulation.
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
@@ -182,5 +182,5 @@ PICMI_AnyAppliedField = (
     | PICMI_Mirror
     | PICMI_LoadAppliedField
     | PICMI_LoadGriddedField
-    | PICMI_AppliedFieldExtension
+    | PICMI_AppliedField
 )

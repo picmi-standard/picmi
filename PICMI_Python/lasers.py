@@ -8,8 +8,8 @@ from pydantic import Field, PrivateAttr, model_validator
 
 from .base import (
     Expression,
-    PICMI_LaserExtension,
-    PICMI_LaserInjectionExtension,
+    PICMI_Laser,
+    PICMI_LaserInjection,
     _PICMIModel,
     PICMI_ExpressionParameters,
     _get_constants,
@@ -45,7 +45,7 @@ def _compute_E0_a0(wavelength, original_E0, original_a0, names=("E0", "a0")):
 
 
 
-class _PICMILaser(_PICMIModel):
+class _PICMILaser(PICMI_Laser):
     # Base of the lasers that are specified by either a normalized vector potential or a field
     # amplitude, which are computed from each other (without docstring, so that it is not
     # prepended to the ones of the derived classes).
@@ -233,7 +233,7 @@ class PICMI_AnalyticLaser(_PICMILaser, PICMI_ExpressionParameters):
     )
 
 
-PICMI_AnyLaser = PICMI_GaussianLaser | PICMI_AnalyticLaser | PICMI_LaserExtension
+PICMI_AnyLaser = PICMI_GaussianLaser | PICMI_AnalyticLaser | PICMI_Laser
 
 
 # ------------------
@@ -241,7 +241,7 @@ PICMI_AnyLaser = PICMI_GaussianLaser | PICMI_AnalyticLaser | PICMI_LaserExtensio
 # ------------------
 
 
-class PICMI_LaserAntenna(_PICMIModel):
+class PICMI_LaserAntenna(PICMI_LaserInjection):
     """
     Specifies the laser antenna injection method
     """
@@ -254,4 +254,4 @@ class PICMI_LaserAntenna(_PICMIModel):
     )
 
 
-PICMI_AnyLaserInjection = PICMI_LaserAntenna | PICMI_LaserInjectionExtension
+PICMI_AnyLaserInjection = PICMI_LaserAntenna | PICMI_LaserInjection

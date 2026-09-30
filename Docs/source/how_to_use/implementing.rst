@@ -83,7 +83,7 @@ the following steps:
   which ``MultiSpecies`` creates its species with.
 
 - Derive classes that have no counterpart in the standard, e.g., additional field solvers or diagnostics,
-  from the extension class of their kind (see :doc:`../standard/extensions`).
+  from the base class of their kind, e.g., ``PICMI_Solver`` (see :doc:`../standard/extensions`).
 
 .. note::
 

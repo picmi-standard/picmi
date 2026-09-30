@@ -618,13 +618,13 @@ def test_dumps_of_the_given_parameters_only():
 
 # --- Extensions: code-specific classes without a counterpart in the standard
 
-class CodeSolver(picmistandard.PICMI_SolverExtension):
+class CodeSolver(picmistandard.PICMI_Solver):
     """A code-specific field solver"""
     grid: picmistandard.PICMI_AnyGrid
     electron_temperature: float = Field(description="Electron temperature [eV]")
 
 
-class CodeDiagnostic(picmistandard.PICMI_DiagnosticExtension):
+class CodeDiagnostic(picmistandard.PICMI_Diagnostic):
     """A code-specific diagnostic"""
     period: int
 
@@ -686,7 +686,7 @@ def test_expression_parameters_are_collected():
 
 
 def test_expression_parameters_in_nested_expressions():
-    class CodeExternalFields(picmistandard.PICMI_AppliedFieldExtension, picmistandard.PICMI_ExpressionParameters):
+    class CodeExternalFields(picmistandard.PICMI_AppliedField, picmistandard.PICMI_ExpressionParameters):
         _expression_fields = ("fields",)
         fields: dict
         user_defined_kw: dict = Field(default_factory=dict)

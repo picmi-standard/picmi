@@ -5,7 +5,7 @@ The classes in the file are all diagnostics related
 
 from pydantic import Field
 
-from .base import PICMI_DiagnosticExtension, _PICMIModel
+from .base import PICMI_Diagnostic, _PICMIModel
 from .fields import PICMI_AnyGrid
 from .particles import PICMI_AnySpecies
 
@@ -14,7 +14,7 @@ from .particles import PICMI_AnySpecies
 # ----------------------------
 
 
-class PICMI_FieldDiagnostic(_PICMIModel):
+class PICMI_FieldDiagnostic(PICMI_Diagnostic):
     """
     Defines the electromagnetic field diagnostics in the simulation frame
     """
@@ -62,7 +62,7 @@ class PICMI_FieldDiagnostic(_PICMIModel):
     )
 
 
-class PICMI_ElectrostaticFieldDiagnostic(_PICMIModel):
+class PICMI_ElectrostaticFieldDiagnostic(PICMI_Diagnostic):
     """
     Defines the electrostatic field diagnostics in the simulation frame
     """
@@ -110,7 +110,7 @@ class PICMI_ElectrostaticFieldDiagnostic(_PICMIModel):
     )
 
 
-class PICMI_ParticleDiagnostic(_PICMIModel):
+class PICMI_ParticleDiagnostic(PICMI_Diagnostic):
     """
     Defines the particle diagnostics in the simulation frame
     """
@@ -147,7 +147,7 @@ class PICMI_ParticleDiagnostic(_PICMIModel):
     )
 
 
-class PICMI_ParticleBoundaryScrapingDiagnostic(_PICMIModel):
+class PICMI_ParticleBoundaryScrapingDiagnostic(PICMI_Diagnostic):
     """
     Defines the particle diagnostics that are used to collect the particles that are absorbed at the boundaries, throughout the simulation.
     """
@@ -181,7 +181,7 @@ class PICMI_ParticleBoundaryScrapingDiagnostic(_PICMIModel):
 # ----------------------------
 
 
-class PICMI_LabFrameFieldDiagnostic(_PICMIModel):
+class PICMI_LabFrameFieldDiagnostic(PICMI_Diagnostic):
     """
     Defines the electromagnetic field diagnostics in the lab frame
     """
@@ -220,7 +220,7 @@ class PICMI_LabFrameFieldDiagnostic(_PICMIModel):
     )
 
 
-class PICMI_LabFrameParticleDiagnostic(_PICMIModel):
+class PICMI_LabFrameParticleDiagnostic(PICMI_Diagnostic):
     """
     Defines the particle diagnostics in the lab frame
     """
@@ -266,5 +266,5 @@ PICMI_AnyDiagnostic = (
     | PICMI_ParticleBoundaryScrapingDiagnostic
     | PICMI_LabFrameFieldDiagnostic
     | PICMI_LabFrameParticleDiagnostic
-    | PICMI_DiagnosticExtension
+    | PICMI_Diagnostic
 )

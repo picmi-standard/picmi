@@ -5,7 +5,7 @@ These should be the base classes for Python implementation of the PICMI standard
 from typing import ClassVar, Literal, NamedTuple, Self, get_args
 from pydantic import Field, PrivateAttr, model_validator
 
-from .base import _PICMIModel, PICMI_SolverExtension, resolve_once
+from .base import _PICMIModel, PICMI_Grid, PICMI_Solver, resolve_once
 
 
 class _AxisGroup(NamedTuple):
@@ -25,7 +25,7 @@ class _AxisGroupState(NamedTuple):
     defaulted_axes: frozenset
 
 
-class _PICMIGrid(_PICMIModel):
+class _PICMIGrid(PICMI_Grid):
     # Base of the grids (without docstring, so that it is not prepended to the grids' ones).
     #
     # Grid parameters can be specified as vectors (e.g., number_of_cells) or per axis (e.g.,
@@ -1059,6 +1059,7 @@ PICMI_AnyGrid = (
     | PICMI_Cartesian1DGrid
     | PICMI_Cartesian2DGrid
     | PICMI_Cartesian3DGrid
+    | PICMI_Grid
 )
 
 _ElectromagneticSolverMethod = Literal[
@@ -1066,7 +1067,7 @@ _ElectromagneticSolverMethod = Literal[
 ]
 
 
-class PICMI_ElectromagneticSolver(_PICMIModel):
+class PICMI_ElectromagneticSolver(PICMI_Solver):
     """
     Electromagnetic field solver.
 
@@ -1127,7 +1128,7 @@ class PICMI_ElectromagneticSolver(_PICMIModel):
 _ElectrostaticSolverMethod = Literal["FFT", "Multigrid"]
 
 
-class PICMI_ElectrostaticSolver(_PICMIModel):
+class PICMI_ElectrostaticSolver(PICMI_Solver):
     """
     Electrostatic field solver
     """
@@ -1151,7 +1152,7 @@ class PICMI_ElectrostaticSolver(_PICMIModel):
 _MagnetostaticSolverMethod = Literal["FFT", "Multigrid"]
 
 
-class PICMI_MagnetostaticSolver(_PICMIModel):
+class PICMI_MagnetostaticSolver(PICMI_Solver):
     """
     Magnetostatic field solver
     """
@@ -1170,5 +1171,5 @@ PICMI_AnySolver = (
     PICMI_ElectromagneticSolver
     | PICMI_ElectrostaticSolver
     | PICMI_MagnetostaticSolver
-    | PICMI_SolverExtension
+    | PICMI_Solver
 )

@@ -491,12 +491,12 @@ class PICMI_Extension(_PICMIModel):
     Base class of code-specific classes that have no counterpart in the PICMI standard.
 
     Implementing codes derive their own classes, e.g., additional field solvers or diagnostics,
-    from one of the kind-specific extension classes below, so that these objects are accepted
-    by the fields of the PICMI classes of that kind, e.g., a ``PICMI_SolverExtension`` as
+    from the base class of the kind that they belong to (see below), so that these objects are
+    accepted by the fields of the PICMI classes of that kind, e.g., a ``PICMI_Solver`` as
     ``Simulation.solver``. Classes that are only used by fields of the implementing code itself
     derive from this class directly.
 
-    Like all PICMI classes, extensions validate their parameters (unknown keyword arguments are
+    Like all PICMI classes, they validate their parameters (unknown keyword arguments are
     rejected, assignments are validated) and are restored as their own class when loaded from
     a serialized simulation.
 
@@ -504,7 +504,7 @@ class PICMI_Extension(_PICMIModel):
 
     .. code-block:: python
 
-        class HybridSolver(picmistandard.PICMI_SolverExtension):
+        class HybridSolver(picmistandard.PICMI_Solver):
             \"\"\"A code-specific field solver\"\"\"
 
             grid: picmistandard.PICMI_AnyGrid
@@ -516,65 +516,73 @@ class PICMI_Extension(_PICMIModel):
     __picmi_doc_not_inherited__ = True
 
 
-class PICMI_SolverExtension(PICMI_Extension):
+class PICMI_Grid(_PICMIModel):
     """
-    Base class of code-specific field solvers, accepted as ``Simulation.solver``.
-    """
-
-    __picmi_doc_not_inherited__ = True
-
-
-class PICMI_DistributionExtension(PICMI_Extension):
-    """
-    Base class of code-specific particle distributions, accepted as ``Species.initial_distribution``.
+    Base class of the grids of the standard and of the implementing codes, accepted as ``Simulation.solver``'s grid and other fields that take a grid.
     """
 
     __picmi_doc_not_inherited__ = True
 
 
-class PICMI_LayoutExtension(PICMI_Extension):
+class PICMI_Solver(_PICMIModel):
     """
-    Base class of code-specific particle layouts, accepted as layout in ``Simulation.add_species``.
-    """
-
-    __picmi_doc_not_inherited__ = True
-
-
-class PICMI_LaserExtension(PICMI_Extension):
-    """
-    Base class of code-specific laser profiles, accepted as laser in ``Simulation.add_laser``.
+    Base class of the field solvers of the standard and of the implementing codes, accepted as ``Simulation.solver``.
     """
 
     __picmi_doc_not_inherited__ = True
 
 
-class PICMI_LaserInjectionExtension(PICMI_Extension):
+class PICMI_Distribution(_PICMIModel):
     """
-    Base class of code-specific laser injection methods, accepted as injection method in ``Simulation.add_laser``.
-    """
-
-    __picmi_doc_not_inherited__ = True
-
-
-class PICMI_AppliedFieldExtension(PICMI_Extension):
-    """
-    Base class of code-specific applied fields, accepted by ``Simulation.add_applied_field``.
+    Base class of the particle distributions of the standard and of the implementing codes, accepted as ``Species.initial_distribution``.
     """
 
     __picmi_doc_not_inherited__ = True
 
 
-class PICMI_DiagnosticExtension(PICMI_Extension):
+class PICMI_Layout(_PICMIModel):
     """
-    Base class of code-specific diagnostics, accepted by ``Simulation.add_diagnostic``.
+    Base class of the particle layouts of the standard and of the implementing codes, accepted as the layout in ``Simulation.add_species``.
     """
 
     __picmi_doc_not_inherited__ = True
 
 
-class PICMI_InteractionExtension(PICMI_Extension):
+class PICMI_Laser(_PICMIModel):
     """
-    Base class of code-specific interactions, accepted by ``Simulation.add_interaction`` and as ``Species.interactions``.
+    Base class of the laser profiles of the standard and of the implementing codes, accepted as the laser in ``Simulation.add_laser``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_LaserInjection(_PICMIModel):
+    """
+    Base class of the laser injection methods of the standard and of the implementing codes, accepted as the injection method in ``Simulation.add_laser``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_AppliedField(_PICMIModel):
+    """
+    Base class of the applied fields of the standard and of the implementing codes, accepted as ``Simulation.add_applied_field``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Diagnostic(_PICMIModel):
+    """
+    Base class of the diagnostics of the standard and of the implementing codes, accepted as ``Simulation.add_diagnostic``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Interaction(_PICMIModel):
+    """
+    Base class of the interactions of the standard and of the implementing codes, accepted as ``Simulation.add_interaction`` and ``Species.interactions``.
     """
 
     __picmi_doc_not_inherited__ = True

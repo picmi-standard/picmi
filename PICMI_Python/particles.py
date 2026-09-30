@@ -11,8 +11,8 @@ from pydantic import Field, PrivateAttr, field_validator, model_validator
 
 from .base import (
     Expression,
-    PICMI_DistributionExtension,
-    PICMI_LayoutExtension,
+    PICMI_Distribution,
+    PICMI_Layout,
     _PICMIModel,
     PICMI_ExpressionParameters,
     broadcast_validation,
@@ -27,7 +27,7 @@ from .interactions import PICMI_AnyInteraction, PICMI_FieldIonization
 # ---------------
 
 
-class PICMI_GaussianBunchDistribution(_PICMIModel):
+class PICMI_GaussianBunchDistribution(PICMI_Distribution):
     """
     Describes a Gaussian distribution of particles
     """
@@ -65,7 +65,7 @@ class PICMI_GaussianBunchDistribution(_PICMIModel):
     )
 
 
-class PICMI_UniformDistribution(_PICMIModel):
+class PICMI_UniformDistribution(PICMI_Distribution):
     """
     Describes a uniform density distribution of particles
     """
@@ -94,7 +94,7 @@ class PICMI_UniformDistribution(_PICMIModel):
     )
 
 
-class PICMI_FoilDistribution(_PICMIModel):
+class PICMI_FoilDistribution(PICMI_Distribution):
     """
     Describes a foil with optional exponential pre- and post-plasma ramps along the propagation direction.
     """
@@ -152,7 +152,7 @@ class PICMI_FoilDistribution(_PICMIModel):
         description="Flags whether to fill in the empty spaced opened up when the grid moves"
     )
 
-class PICMI_AnalyticFluxDistribution(PICMI_ExpressionParameters):
+class PICMI_AnalyticFluxDistribution(PICMI_Distribution, PICMI_ExpressionParameters):
     """
     Describes a flux of particles emitted from a plane
 
@@ -215,7 +215,7 @@ class PICMI_AnalyticFluxDistribution(PICMI_ExpressionParameters):
 
 PICMI_UniformFluxDistribution = PICMI_AnalyticFluxDistribution
 
-class PICMI_AnalyticDistribution(PICMI_ExpressionParameters):
+class PICMI_AnalyticDistribution(PICMI_Distribution, PICMI_ExpressionParameters):
     """
     Describes a plasma with density following a provided analytic expression
 
@@ -271,7 +271,7 @@ class PICMI_AnalyticDistribution(PICMI_ExpressionParameters):
     )
 
 
-class PICMI_ParticleListDistribution(_PICMIModel):
+class PICMI_ParticleListDistribution(PICMI_Distribution):
     """
     Load particles at the specified positions and velocities
 
@@ -335,7 +335,7 @@ class PICMI_ParticleListDistribution(_PICMIModel):
         return self
 
 
-class PICMI_FromFileDistribution(_PICMIModel):
+class PICMI_FromFileDistribution(PICMI_Distribution):
     """
     Load particles from an openPMD file.
 
@@ -354,7 +354,7 @@ PICMI_AnyDistribution = (
     | PICMI_AnalyticDistribution
     | PICMI_ParticleListDistribution
     | PICMI_FromFileDistribution
-    | PICMI_DistributionExtension
+    | PICMI_Distribution
 )
 
 
@@ -389,7 +389,7 @@ class PICMI_ParticleDistributionPlanarInjector(_PICMIModel):
     )
 
 
-class PICMI_GriddedLayout(_PICMIModel):
+class PICMI_GriddedLayout(PICMI_Layout):
     """
     Specifies a gridded layout of particles
     """
@@ -442,7 +442,7 @@ class PICMI_GriddedLayout(_PICMIModel):
 
 
 @with_mutually_exclusive("n_macroparticles_per_cell", "n_macroparticles", required=True)
-class PICMI_PseudoRandomLayout(_PICMIModel):
+class PICMI_PseudoRandomLayout(PICMI_Layout):
     """
     Specifies a pseudo-random layout of the particles
     """
@@ -464,7 +464,7 @@ class PICMI_PseudoRandomLayout(_PICMIModel):
     )
 
 
-PICMI_AnyLayout = PICMI_GriddedLayout | PICMI_PseudoRandomLayout | PICMI_LayoutExtension
+PICMI_AnyLayout = PICMI_GriddedLayout | PICMI_PseudoRandomLayout | PICMI_Layout
 
 
 class PICMI_Species(_PICMIModel):

@@ -5,10 +5,10 @@ The classes in this file are related to interactions (e.g. field ionization, col
 
 from pydantic import Field
 
-from .base import PICMI_InteractionExtension, _PICMIModel
+from .base import PICMI_Interaction, _PICMIModel
 
 
-class PICMI_FieldIonization(_PICMIModel):
+class PICMI_FieldIonization(PICMI_Interaction):
     """
     Field ionization on an ion species
     """
@@ -24,4 +24,4 @@ class PICMI_FieldIonization(_PICMIModel):
     )
 
 
-PICMI_AnyInteraction = PICMI_FieldIonization | PICMI_InteractionExtension
+PICMI_AnyInteraction = PICMI_FieldIonization | PICMI_Interaction

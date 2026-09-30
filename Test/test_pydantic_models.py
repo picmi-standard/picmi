@@ -242,6 +242,44 @@ def test_failed_assignment_leaves_object_unchanged():
     assert "n_macroparticles_per_cell" not in layout.model_fields_set
 
 
+def test_aliases_are_also_attributes():
+    grid = ExtendedCartesian3DGrid(
+        number_of_cells=[8, 8, 8], lower_bound=[0., 0., 0.], upper_bound=[1., 1., 1.],
+        lower_boundary_conditions=["open"] * 3, upper_boundary_conditions=["open"] * 3,
+        plasmacode_max_grid_size=16,
+    )
+    # the alias of a code-specific parameter reads and writes the field
+    assert grid.plasmacode_max_grid_size == grid.max_grid_size == 16
+    grid.plasmacode_max_grid_size = 32
+    assert grid.max_grid_size == 32
+    grid.max_grid_size = 8
+    assert grid.plasmacode_max_grid_size == 8
+
+    # assignments are validated and leave the object unchanged if they fail
+    with pytest.raises(ValidationError):
+        grid.plasmacode_max_grid_size = "large"
+    assert grid.max_grid_size == 8
+
+    # unknown names are still errors
+    with pytest.raises(ValidationError, match="has no attribute"):
+        grid.plasmacode_max_grid_siz = 4
+    with pytest.raises(AttributeError):
+        grid.plasmacode_unknown
+
+    assert "plasmacode_max_grid_size" in dir(grid)
+
+
+def test_alias_of_a_field_does_not_shadow_another_field():
+    class Shadowing(picmi.Simulation):
+        """A code that gives one of its parameters the name of a standard parameter"""
+        shadow: int | None = Field(default=None, alias="max_steps")
+
+    assert "max_steps" not in Shadowing._field_of_alias
+    simulation = Shadowing(shadow=1, time_step_size=1e-9)
+    assert simulation.shadow == 1
+    assert simulation.max_steps is None
+
+
 def test_cartesian3d_grid_field_descriptions():
     fields = picmistandard.PICMI_Cartesian3DGrid.model_fields
     assert fields["ymax_particles"].description == "Position of max particle boundary along Y [m]"

@@ -34,6 +34,8 @@ the following steps:
 
     - Code-specific parameters are fields of the derived class.
       Users give them with the name of the code as a prefix (``<codename>_``), which is the alias of the field.
+      They can read and assign them under that name, too, e.g., ``simulation.mycode_load_balance_interval``,
+      while the code itself uses the name of the field, e.g., ``self.load_balance_interval``.
     - A different default of a standard parameter is given by declaring the field again with this default.
     - Code-specific initialization goes into ``model_post_init``, which is called after the parameters are validated.
     - The state of an object that is not a parameter is kept in private attributes, whose names start with ``_``.

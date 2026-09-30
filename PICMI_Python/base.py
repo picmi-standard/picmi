@@ -185,16 +185,39 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
         polymorphic_serialization=True,
     )
 
+    # The field of each alias, e.g., the field "break_signals" of "warpx_break_signals",
+    # so that the parameters of implementing codes can also be read and assigned under the
+    # name that they are given with (pydantic aliases are keyword arguments only).
+    _field_of_alias: ClassVar[dict[str, str]] = {}
+
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs):
         super().__pydantic_init_subclass__(**kwargs)
         _picmi_classes[_picmi_class_name(cls)] = cls
+        fields = cls.model_fields
+        cls._field_of_alias = {
+            field.alias: name
+            for name, field in fields.items()
+            # a name that is a field itself always refers to that field
+            if field.alias and field.alias != name and field.alias not in fields
+        }
+
+    def __getattr__(self, name):
+        field = type(self)._field_of_alias.get(name)
+        if field is not None:
+            return getattr(self, field)
+        return super().__getattr__(name)
+
+    def __dir__(self):
+        # so that the aliases are offered by interactive completion, too
+        return [*super().__dir__(), *type(self)._field_of_alias]
 
     def __setattr__(self, name, value):
         # Pydantic applies an assignment before running the model validators, and keeps it
         # if they reject it. Restore the previous state in that case, so that a failed
         # assignment (including the assignments that validators make to derived fields)
         # leaves the object unchanged and valid.
+        name = type(self)._field_of_alias.get(name, name)
         if name not in type(self).model_fields:
             return super().__setattr__(name, value)
         with self._atomic_update():

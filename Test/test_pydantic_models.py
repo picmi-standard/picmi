@@ -228,7 +228,7 @@ def test_cylindrical_grid_axis_boundary_condition_assignment():
 
 def test_failed_assignment_leaves_object_unchanged():
     grid = cartesian3d_grid_vectors()
-    with pytest.raises(ValidationError, match="Wrong number of cells"):
+    with pytest.raises(ValidationError, match="Wrong number of values in number_of_cells"):
         grid.number_of_cells = [4, 4]
     assert grid.number_of_cells == [8, 8, 8]
     assert grid.nx == 8

@@ -102,6 +102,52 @@ class _PICMIGrid(PICMI_Grid):
             )
         self._axis_state = new_state
 
+    def _resolve_cartesian_grid(self):
+        """Check and resolve the parameters of a Cartesian grid
+
+        The Cartesian grids differ only in their axes, so they share these checks. The
+        cylindrical grid checks its parameters itself, since its radial axis is special.
+        """
+        for group in self._axis_groups:
+            if group.default is not None or getattr(self, group.vector) is not None:
+                # given as a vector, or it follows another parameter if it is not given
+                continue
+            axes = group.per_axis
+            listed = (
+                " and ".join(axes)
+                if len(axes) < 3
+                else f"{', '.join(axes[:-1])}, and {axes[-1]}"
+            )
+            assert all(getattr(self, axis) is not None for axis in axes), (
+                f"Either {group.vector} or {listed} must be specified"
+            )
+
+        # Resolve and synchronize the vector and per-axis forms, see above.
+        # By default, if not specified, the particle boundary values and conditions are the
+        # same as the field boundary values and conditions.
+        self._resolve_axis_groups()
+
+        # Sanity check on dimensionality of vector quantities
+        for group in self._axis_groups:
+            values = getattr(self, group.vector)
+            assert len(values) == self.number_of_dimensions, (
+                f"Wrong number of values in {group.vector}: {len(values)} "
+                f"instead of {self.number_of_dimensions}"
+            )
+
+        for region in self.refined_regions:
+            if len(region) == 3:
+                region.append([2] * self.number_of_dimensions)
+            for index, name in (
+                (1, "lo extent"),
+                (2, "hi extent"),
+                (3, "refinement factor"),
+            ):
+                assert len(region[index]) == self.number_of_dimensions, (
+                    f"The {name} of the refined region must be a vector of length "
+                    f"{self.number_of_dimensions}"
+                )
+
 
 def _grid_axis_groups(axes, lower_boundary_condition_can_be_none=False):
     """The axis groups of a grid with the given axis names, e.g., ("x", "y", "z")"""
@@ -269,64 +315,7 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
     @model_validator(mode="after")
     @resolve_once
     def _resolve_grid(self) -> Self:
-        # Sanity check and init of input arguments related to grid parameters
-        assert (self.number_of_cells is not None) or (
-            self.nx is not None
-        ), "Either number_of_cells or nx must be specified"
-        assert (self.lower_bound is not None) or (
-            self.xmin is not None
-        ), "Either lower_bound or xmin must be specified"
-        assert (self.upper_bound is not None) or (
-            self.xmax is not None
-        ), "Either upper_bound or xmax must be specified"
-        assert (self.lower_boundary_conditions is not None) or (
-            self.bc_xmin is not None
-        ), "Either lower_boundary_conditions or bc_xmin"
-        assert (self.upper_boundary_conditions is not None) or (
-            self.bc_xmax is not None
-        ), "Either upper_boundary_conditions or bc_xmax must be specified"
-
-        # Resolve and synchronize the vector and per-axis forms, see _PICMIGrid
-        # By default, if not specified, particle boundary values are the same as field boundary values
-        # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        self._resolve_axis_groups()
-
-        # Sanity check on dimensionality of vector quantities
-        assert len(self.number_of_cells) == 1, "Wrong number of cells specified"
-        assert len(self.lower_bound) == 1, "Wrong number of lower bounds specified"
-        assert len(self.upper_bound) == 1, "Wrong number of upper bounds specified"
-        assert len(self.lower_boundary_conditions) == 1, (
-            "Wrong number of lower boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions) == 1, (
-            "Wrong number of upper boundary conditions specified"
-        )
-        assert len(self.lower_bound_particles) == 1, (
-            "Wrong number of particle lower bounds specified"
-        )
-        assert len(self.upper_bound_particles) == 1, (
-            "Wrong number of particle upper bounds specified"
-        )
-        assert len(self.lower_boundary_conditions_particles) == 1, (
-            "Wrong number of lower particle boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions_particles) == 1, (
-            "Wrong number of upper particle boundary conditions specified"
-        )
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2])
-            assert len(region[1]) == 1, (
-                "The lo extent of the refined region must be a vector of length 1"
-            )
-            assert len(region[2]) == 1, (
-                "The hi extent of the refined region must be a vector of length 1"
-            )
-            assert len(region[3]) == 1, (
-                "The refinement factor of the refined region must be a vector of length 1"
-            )
-
+        self._resolve_cartesian_grid()
         return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2]):
@@ -714,64 +703,7 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
     @model_validator(mode="after")
     @resolve_once
     def _resolve_grid(self) -> Self:
-        # Sanity check and init of input arguments related to grid parameters
-        assert (self.number_of_cells is not None) or (
-            self.nx is not None and self.ny is not None
-        ), "Either number_of_cells or nx and ny must be specified"
-        assert (self.lower_bound is not None) or (
-            self.xmin is not None and self.ymin is not None
-        ), "Either lower_bound or xmin and ymin must be specified"
-        assert (self.upper_bound is not None) or (
-            self.xmax is not None and self.ymax is not None
-        ), "Either upper_bound or xmax and ymax must be specified"
-        assert (self.lower_boundary_conditions is not None) or (
-            self.bc_xmin is not None and self.bc_ymin is not None
-        ), "Either lower_boundary_conditions or bc_xmin and bc_ymin must be specified"
-        assert (self.upper_boundary_conditions is not None) or (
-            self.bc_xmax is not None and self.bc_ymax is not None
-        ), "Either upper_boundary_conditions or bc_xmax and bc_ymax must be specified"
-
-        # Resolve and synchronize the vector and per-axis forms, see _PICMIGrid
-        # By default, if not specified, particle boundary values are the same as field boundary values
-        # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        self._resolve_axis_groups()
-
-        # Sanity check on dimensionality of vector quantities
-        assert len(self.number_of_cells) == 2, "Wrong number of cells specified"
-        assert len(self.lower_bound) == 2, "Wrong number of lower bounds specified"
-        assert len(self.upper_bound) == 2, "Wrong number of upper bounds specified"
-        assert len(self.lower_boundary_conditions) == 2, (
-            "Wrong number of lower boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions) == 2, (
-            "Wrong number of upper boundary conditions specified"
-        )
-        assert len(self.lower_bound_particles) == 2, (
-            "Wrong number of particle lower bounds specified"
-        )
-        assert len(self.upper_bound_particles) == 2, (
-            "Wrong number of particle upper bounds specified"
-        )
-        assert len(self.lower_boundary_conditions_particles) == 2, (
-            "Wrong number of lower particle boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions_particles) == 2, (
-            "Wrong number of upper particle boundary conditions specified"
-        )
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2, 2])
-            assert len(region[1]) == 2, (
-                "The lo extent of the refined region must be a vector of length 2"
-            )
-            assert len(region[2]) == 2, (
-                "The hi extent of the refined region must be a vector of length 2"
-            )
-            assert len(region[3]) == 2, (
-                "The refinement factor of the refined region must be a vector of length 2"
-            )
-
+        self._resolve_cartesian_grid()
         return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2]):
@@ -965,75 +897,7 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
     @model_validator(mode="after")
     @resolve_once
     def _resolve_grid(self) -> Self:
-        # Sanity check and init of input arguments related to grid parameters
-        assert (self.number_of_cells is not None) or (
-            self.nx is not None and self.ny is not None and self.nz is not None
-        ), "Either number_of_cells or nx, ny, and nz must be specified"
-        assert (self.lower_bound is not None) or (
-            self.xmin is not None
-                and self.ymin is not None
-                and self.zmin is not None
-        ), "Either lower_bound or xmin, ymin, and zmin must be specified"
-        assert (self.upper_bound is not None) or (
-            self.xmax is not None
-                and self.ymax is not None
-                and self.zmax is not None
-        ), "Either upper_bound or xmax, ymax, and zmax must be specified"
-        # Note: like for the other grids, both forms may be given (the vector is used). This
-        # validation re-runs on later assignments and when the grid is passed to another
-        # PICMI object, at which point both forms are always set.
-        assert (self.lower_boundary_conditions is not None) or (
-            self.bc_xmin is not None
-                and self.bc_ymin is not None
-                and self.bc_zmin is not None
-        ), "Either lower_boundary_conditions or bc_xmin, bc_ymin, and bc_zmin must be specified"
-        assert (self.upper_boundary_conditions is not None) or (
-            self.bc_xmax is not None
-                and self.bc_ymax is not None
-                and self.bc_zmax is not None
-        ), "Either upper_boundary_conditions or bc_xmax, bc_ymax, and bc_zmax must be specified"
-
-        # Resolve and synchronize the vector and per-axis forms, see _PICMIGrid
-        # By default, if not specified, particle boundary values are the same as field boundary values
-        # By default, if not specified, particle boundary conditions are the same as field boundary conditions
-        self._resolve_axis_groups()
-
-        # Sanity check on number of arguments of vector quantities
-        assert len(self.number_of_cells) == 3, "Wrong number of cells specified"
-        assert len(self.lower_bound) == 3, "Wrong number of lower bounds specified"
-        assert len(self.upper_bound) == 3, "Wrong number of upper bounds specified"
-        assert len(self.lower_boundary_conditions) == 3, (
-            "Wrong number of lower boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions) == 3, (
-            "Wrong number of upper boundary conditions specified"
-        )
-        assert len(self.lower_bound_particles) == 3, (
-            "Wrong number of particle lower bounds specified"
-        )
-        assert len(self.upper_bound_particles) == 3, (
-            "Wrong number of particle upper bounds specified"
-        )
-        assert len(self.lower_boundary_conditions_particles) == 3, (
-            "Wrong number of particle lower boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions_particles) == 3, (
-            "Wrong number of particle upper boundary conditions specified"
-        )
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2, 2, 2])
-            assert len(region[1]) == 3, (
-                "The lo extent of the refined region must be a vector of length 3"
-            )
-            assert len(region[2]) == 3, (
-                "The hi extent of the refined region must be a vector of length 3"
-            )
-            assert len(region[3]) == 3, (
-                "The refinement factor of the refined region must be a vector of length 3"
-            )
-
+        self._resolve_cartesian_grid()
         return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2, 2]):

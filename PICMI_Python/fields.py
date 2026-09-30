@@ -3,7 +3,7 @@ These should be the base classes for Python implementation of the PICMI standard
 """
 
 from typing import ClassVar, Literal, NamedTuple, Self, get_args
-from pydantic import Field, PrivateAttr, model_validator
+from pydantic import Field, PrivateAttr, field_validator, model_validator
 
 from .base import _PICMIModel, PICMI_Grid, PICMI_Solver, resolve_once
 
@@ -90,7 +90,7 @@ class _PICMIGrid(PICMI_Grid):
 
             if vector != values:
                 setattr(self, group.vector, values)
-            # a vector of the wrong length is reported by the dimensionality checks of the grid
+            # the fields of the vectors constrain their lengths, so this only guards the sync
             if len(values) == len(group.per_axis):
                 for name, value in zip(group.per_axis, values):
                     if getattr(self, name) != value:
@@ -101,6 +101,23 @@ class _PICMIGrid(PICMI_Grid):
                 frozenset(defaulted_axes),
             )
         self._axis_state = new_state
+
+    @field_validator("refined_regions", check_fields=False)
+    @classmethod
+    def _check_refined_regions(cls, regions):
+        """Refined regions with one value per dimension, and the default refinement factor"""
+        n = cls.number_of_dimensions
+        checked = []
+        for region in regions:
+            if len(region) == 3:
+                region = [*region, [2] * n]
+            for index, name in ((1, "lo extent"), (2, "hi extent"), (3, "refinement factor")):
+                if len(region[index]) != n:
+                    raise ValueError(
+                        f"The {name} of the refined region must be a vector of length {n}"
+                    )
+            checked.append(region)
+        return checked
 
     def _resolve_cartesian_grid(self):
         """Check and resolve the parameters of a Cartesian grid
@@ -126,27 +143,6 @@ class _PICMIGrid(PICMI_Grid):
         # By default, if not specified, the particle boundary values and conditions are the
         # same as the field boundary values and conditions.
         self._resolve_axis_groups()
-
-        # Sanity check on dimensionality of vector quantities
-        for group in self._axis_groups:
-            values = getattr(self, group.vector)
-            assert len(values) == self.number_of_dimensions, (
-                f"Wrong number of values in {group.vector}: {len(values)} "
-                f"instead of {self.number_of_dimensions}"
-            )
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2] * self.number_of_dimensions)
-            for index, name in (
-                (1, "lo extent"),
-                (2, "hi extent"),
-                (3, "refinement factor"),
-            ):
-                assert len(region[index]) == self.number_of_dimensions, (
-                    f"The {name} of the refined region must be a vector of length "
-                    f"{self.number_of_dimensions}"
-                )
 
 
 def _grid_axis_groups(axes, lower_boundary_condition_can_be_none=False):
@@ -235,20 +231,32 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
     # Vector forms (the internally-used representation)
     number_of_cells: list[int] | None = Field(
         default=None,
+        min_length=1,
+        max_length=1,
         description="Number of cells along each axis (number of nodes is number_of_cells+1)",
     )
     lower_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the lower bound [m]"
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Position of the node at the lower bound [m]",
     )
     upper_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the upper bound [m]"
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Position of the node at the upper bound [m]",
     )
     lower_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=1,
+        max_length=1,
         description="Conditions at lower boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     upper_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=1,
+        max_length=1,
         description="Conditions at upper boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     # Per-axis scalar forms (resolved into the vector forms during validation)
@@ -277,10 +285,16 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
         description="List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor], with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc, lo and hi being vectors of length 1 specifying the extent of the region, and refinement_factor defaulting to [2] (relative to next lower level)",
     )
     lower_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle lower bound [m]"
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Position of particle lower bound [m]",
     )
     upper_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle upper bound [m]"
+        default=None,
+        min_length=1,
+        max_length=1,
+        description="Position of particle upper bound [m]",
     )
     xmin_particles: float | None = Field(
         default=None, description="Position of min particle boundary along X [m]"
@@ -290,10 +304,14 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
     )
     lower_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=1,
+        max_length=1,
         description="Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     upper_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=1,
+        max_length=1,
         description="Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     bc_xmin_particles: str | None = Field(
@@ -367,20 +385,32 @@ class PICMI_CylindricalGrid(_PICMIGrid):
     # Vector forms (the internally-used representation)
     number_of_cells: list[int] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Number of cells along each axis (number of nodes is number_of_cells+1)",
     )
     lower_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the lower bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of the node at the lower bound [m]",
     )
     upper_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the upper bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of the node at the upper bound [m]",
     )
     lower_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at lower boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     upper_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at upper boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     # Per-axis scalar forms (resolved into the vector forms during validation)
@@ -429,10 +459,16 @@ class PICMI_CylindricalGrid(_PICMIGrid):
         description="List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor], with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc, lo and hi being vectors of length 2 specifying the extent of the region, and refinement_factor defaulting to [2,2] (relative to next lower level)",
     )
     lower_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle lower bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of particle lower bound [m]",
     )
     upper_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle upper bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of particle upper bound [m]",
     )
     rmin_particles: float | None = Field(
         default=None, description="Position of min particle boundary along R [m]"
@@ -449,10 +485,14 @@ class PICMI_CylindricalGrid(_PICMIGrid):
     # --Like bc_rmin, the radial entry may be None since the lower radial boundary will usually be the axis.
     lower_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     upper_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     bc_rmin_particles: str | None = Field(
@@ -505,42 +545,6 @@ class PICMI_CylindricalGrid(_PICMIGrid):
         # By default, if not specified, particle boundary conditions are the same as field boundary conditions
         self._resolve_axis_groups()
 
-        # Sanity check on dimensionality of vector quantities
-        assert len(self.number_of_cells) == 2, "Wrong number of cells specified"
-        assert len(self.lower_bound) == 2, "Wrong number of lower bounds specified"
-        assert len(self.upper_bound) == 2, "Wrong number of upper bounds specified"
-        assert len(self.lower_boundary_conditions) == 2, (
-            "Wrong number of lower boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions) == 2, (
-            "Wrong number of upper boundary conditions specified"
-        )
-        assert len(self.lower_bound_particles) == 2, (
-            "Wrong number of particle lower bounds specified"
-        )
-        assert len(self.upper_bound_particles) == 2, (
-            "Wrong number of particle upper bounds specified"
-        )
-        assert len(self.lower_boundary_conditions_particles) == 2, (
-            "Wrong number of lower particle boundary conditions specified"
-        )
-        assert len(self.upper_boundary_conditions_particles) == 2, (
-            "Wrong number of upper particle boundary conditions specified"
-        )
-
-        for region in self.refined_regions:
-            if len(region) == 3:
-                region.append([2, 2])
-            assert len(region[1]) == 2, (
-                "The lo extent of the refined region must be a vector of length 2"
-            )
-            assert len(region[2]) == 2, (
-                "The hi extent of the refined region must be a vector of length 2"
-            )
-            assert len(region[3]) == 2, (
-                "The refinement factor of the refined region must be a vector of length 2"
-            )
-
         return self
 
     def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2]):
@@ -592,20 +596,32 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
     # Vector forms (the internally-used representation)
     number_of_cells: list[int] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Number of cells along each axis (number of nodes is number_of_cells+1)",
     )
     lower_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the lower bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of the node at the lower bound [m]",
     )
     upper_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the upper bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of the node at the upper bound [m]",
     )
     lower_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at lower boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     upper_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at upper boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     # Per-axis scalar forms (resolved into the vector forms during validation)
@@ -651,10 +667,16 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
         description="List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor], with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc, lo and hi being vectors of length 2 specifying the extent of the region, and refinement_factor defaulting to [2,2] (relative to next lower level)",
     )
     lower_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle lower bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of particle lower bound [m]",
     )
     upper_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle upper bound [m]"
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="Position of particle upper bound [m]",
     )
     xmin_particles: float | None = Field(
         default=None, description="Position of min particle boundary along X [m]"
@@ -670,10 +692,14 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
     )
     lower_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     upper_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=2,
+        max_length=2,
         description="Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     bc_xmin_particles: str | None = Field(
@@ -755,20 +781,32 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
     # Vector forms (the internally-used representation)
     number_of_cells: list[int] | None = Field(
         default=None,
+        min_length=3,
+        max_length=3,
         description="Number of cells along each axis (number of nodes is number_of_cells+1)",
     )
     lower_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the lower bound [m]"
+        default=None,
+        min_length=3,
+        max_length=3,
+        description="Position of the node at the lower bound [m]",
     )
     upper_bound: list[float] | None = Field(
-        default=None, description="Position of the node at the upper bound [m]"
+        default=None,
+        min_length=3,
+        max_length=3,
+        description="Position of the node at the upper bound [m]",
     )
     lower_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=3,
+        max_length=3,
         description="Conditions at lower boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     upper_boundary_conditions: list[str | None] | None = Field(
         default=None,
+        min_length=3,
+        max_length=3,
         description="Conditions at upper boundaries, periodic, open, dirichlet, absorbing_silver_mueller, or neumann",
     )
     # Per-axis scalar forms (resolved into the vector forms during validation)
@@ -831,10 +869,16 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
         description="List of refined regions, each element being a list of the format [level, lo, hi, refinement_factor], with level being the refinement level, with 1 being the first level of refinement, 2 being the second etc, lo and hi being vectors of length 3 specifying the extent of the region, and refinement_factor defaulting to [2,2,2] (relative to next lower level)",
     )
     lower_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle lower bound [m]"
+        default=None,
+        min_length=3,
+        max_length=3,
+        description="Position of particle lower bound [m]",
     )
     upper_bound_particles: list[float] | None = Field(
-        default=None, description="Position of particle upper bound [m]"
+        default=None,
+        min_length=3,
+        max_length=3,
+        description="Position of particle upper bound [m]",
     )
     xmin_particles: float | None = Field(
         default=None, description="Position of min particle boundary along X [m]"
@@ -856,10 +900,14 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
     )
     lower_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=3,
+        max_length=3,
         description="Conditions at lower boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     upper_boundary_conditions_particles: list[str | None] | None = Field(
         default=None,
+        min_length=3,
+        max_length=3,
         description="Conditions at upper boundaries for particles, periodic, absorbing, reflect or thermal",
     )
     bc_xmin_particles: str | None = Field(

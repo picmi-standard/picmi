@@ -135,9 +135,8 @@ class _PICMIGrid(PICMI_Grid):
                 if len(axes) < 3
                 else f"{', '.join(axes[:-1])}, and {axes[-1]}"
             )
-            assert all(getattr(self, axis) is not None for axis in axes), (
-                f"Either {group.vector} or {listed} must be specified"
-            )
+            if not all(getattr(self, axis) is not None for axis in axes):
+                raise ValueError(f"Either {group.vector} or {listed} must be specified")
 
         # Resolve and synchronize the vector and per-axis forms, see above.
         # By default, if not specified, the particle boundary values and conditions are the
@@ -424,7 +423,7 @@ class PICMI_CylindricalGrid(_PICMIGrid):
         default=None, description="Number of azimuthal modes"
     )
     rmin: float | None = Field(
-        default=None, description="Position of first node along R [m]"
+        default=None, ge=0.0, description="Position of first node along R [m]"
     )
     rmax: float | None = Field(
         default=None, description="Position of last node along R [m]"
@@ -519,26 +518,40 @@ class PICMI_CylindricalGrid(_PICMIGrid):
         description="Number of Perfectly Matched Layer (PML) cells along each direction",
     )
 
+    @field_validator("lower_bound")
+    @classmethod
+    def _radius_is_not_negative(cls, lower_bound):
+        if lower_bound is not None and lower_bound[0] < 0.0:
+            raise ValueError(f"The lower radial bound must be >= 0, not {lower_bound[0]}")
+        return lower_bound
+
+    @field_validator("lower_boundary_conditions", "upper_boundary_conditions", "bc_rmin", "bc_rmax")
+    @classmethod
+    def _radial_boundaries_are_not_periodic(cls, conditions):
+        radial = conditions[0] if isinstance(conditions, list) else conditions
+        if isinstance(radial, str) and radial.lower() == "periodic":
+            raise ValueError("The radial boundaries cannot be periodic")
+        return conditions
+
     @model_validator(mode="after")
     @resolve_once
     def _resolve_grid(self) -> Self:
         # Sanity check and init of input arguments related to grid parameters
-        assert (self.number_of_cells is not None) or (
-            self.nr is not None and self.nz is not None
-        ), "Either number_of_cells or nr and nz must be specified"
-        assert (self.lower_bound is not None) or (
-            self.rmin is not None and self.zmin is not None
-        ), "Either lower_bound or rmin and zmin must be specified"
-        assert (self.upper_bound is not None) or (
-            self.rmax is not None and self.zmax is not None
-        ), "Either upper_bound or rmax and zmax must be specified"
+        if self.number_of_cells is None and (self.nr is None or self.nz is None):
+            raise ValueError("Either number_of_cells or nr and nz must be specified")
+        if self.lower_bound is None and (self.rmin is None or self.zmin is None):
+            raise ValueError("Either lower_bound or rmin and zmin must be specified")
+        if self.upper_bound is None and (self.rmax is None or self.zmax is None):
+            raise ValueError("Either upper_bound or rmax and zmax must be specified")
         # --Allow bc_rmin to be None since it will usually be the axis.
-        assert (self.lower_boundary_conditions is not None) or (
-            self.bc_zmin is not None
-        ), "Either lower_boundary_conditions or bc_rmin and bc_zmin must be specified"
-        assert (self.upper_boundary_conditions is not None) or (
-            self.bc_rmax is not None and self.bc_zmax is not None
-        ), "Either upper_boundary_conditions or bc_rmax and bc_zmax must be specified"
+        if self.lower_boundary_conditions is None and self.bc_zmin is None:
+            raise ValueError(
+                "Either lower_boundary_conditions or bc_rmin and bc_zmin must be specified"
+            )
+        if self.upper_boundary_conditions is None and (self.bc_rmax is None or self.bc_zmax is None):
+            raise ValueError(
+                "Either upper_boundary_conditions or bc_rmax and bc_zmax must be specified"
+            )
 
         # Resolve and synchronize the vector and per-axis forms, see _PICMIGrid
         # By default, if not specified, particle boundary values are the same as field boundary values

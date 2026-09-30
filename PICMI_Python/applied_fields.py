@@ -1,11 +1,17 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
-from typing import ClassVar, Self
+from typing import ClassVar
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
-from .base import Expression, PICMI_AppliedField, _PICMIModel, PICMI_ExpressionParameters
+from .base import (
+    Expression,
+    PICMI_AppliedField,
+    _PICMIModel,
+    PICMI_ExpressionParameters,
+    with_mutually_exclusive,
+)
 
 # ---------------
 # Applied fields
@@ -101,6 +107,7 @@ class PICMI_AnalyticAppliedField(PICMI_AppliedField, PICMI_ExpressionParameters)
     )
 
 
+@with_mutually_exclusive("x_front_location", "y_front_location", "z_front_location", required=True)
 class PICMI_Mirror(PICMI_AppliedField):
     """
     Describes a perfectly reflecting mirror, where the E and B fields are zeroed
@@ -132,13 +139,6 @@ class PICMI_Mirror(PICMI_AppliedField):
         description="Minimum number of cells zeroed out"
     )
 
-    @model_validator(mode="after")
-    def _one_front_location(self) -> Self:
-        assert [self.x_front_location, self.y_front_location, self.z_front_location].count(None) == 2, (
-            "At least one and only one of [x,y,z]_front_location should be specified."
-        )
-        return self
-
 
 class PICMI_LoadAppliedField(PICMI_AppliedField):
     """
@@ -146,6 +146,7 @@ class PICMI_LoadAppliedField(PICMI_AppliedField):
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
     """
     read_fields_from_path: str = Field(
+        min_length=1,
         description="Path to file with field data"
     )
     load_B: bool = Field(
@@ -164,6 +165,7 @@ class PICMI_LoadGriddedField(PICMI_AppliedField):
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
     """
     read_fields_from_path: str = Field(
+        min_length=1,
         description="Path to file with field data"
     )
     load_B: bool = Field(

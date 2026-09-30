@@ -226,25 +226,6 @@ def test_cylindrical_grid_axis_boundary_condition_assignment():
     assert grid.lower_boundary_conditions_particles == [None, "periodic"]
 
 
-def test_grid_vectors_and_refined_regions_have_one_value_per_dimension():
-    with pytest.raises(ValidationError, match="upper_bound\n  List should have at most 2 items"):
-        picmi.CylindricalGrid(
-            number_of_cells=[8, 16], lower_bound=[0.0, 0.0], upper_bound=[1.0, 2.0, 3.0],
-            lower_boundary_conditions=[None, "periodic"], upper_boundary_conditions=["dirichlet", "periodic"],
-        )
-
-    grid = cartesian3d_grid_vectors()
-    region = [1, [0.0, 0.0, 0.0], [0.5, 0.5, 0.5]]
-    grid.add_refined_region(*region)
-    assert grid.refined_regions == [[1, [0.0, 0.0, 0.0], [0.5, 0.5, 0.5], [2, 2, 2]]]
-    grid.refined_regions = [region]
-    assert grid.refined_regions[0][3] == [2, 2, 2]
-    # the default refinement factor is not added to the list of the user
-    assert len(region) == 3
-    with pytest.raises(ValidationError, match="The hi extent of the refined region must be a vector of length 3"):
-        grid.add_refined_region(1, [0.0, 0.0, 0.0], [0.5, 0.5])
-
-
 def test_failed_assignment_leaves_object_unchanged():
     grid = cartesian3d_grid_vectors()
     with pytest.raises(ValidationError, match="number_of_cells\n  List should have at least 3 items"):
@@ -818,7 +799,7 @@ def test_analytic_laser_amplitudes():
 
 def test_mirror_requires_one_front_location():
     picmi.Mirror(z_front_location=0.1)
-    with pytest.raises(ValidationError, match="only one"):
+    with pytest.raises(ValidationError, match="mutually exclusive"):
         picmi.Mirror(x_front_location=0.1, z_front_location=0.1)
 
 

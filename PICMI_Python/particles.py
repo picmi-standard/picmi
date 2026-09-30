@@ -328,7 +328,8 @@ class PICMI_ParticleListDistribution(PICMI_Distribution):
         lengths["weight"] = np.size(self.weight)
         number_of_particles = max(lengths.values())
         for name, length in lengths.items():
-            assert length in (number_of_particles, 1), f"Length of {name} doesn't match len of others"
+            if length not in (number_of_particles, 1):
+                raise ValueError(f"Length of {name} doesn't match len of others")
         for name in self._per_particle_fields:
             if lengths[name] == 1 and number_of_particles > 1:
                 setattr(self, name, getattr(self, name) * number_of_particles)

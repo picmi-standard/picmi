@@ -803,6 +803,29 @@ def test_mirror_requires_one_front_location():
         picmi.Mirror(x_front_location=0.1, z_front_location=0.1)
 
 
+def test_options_are_accepted_in_any_case_if_the_code_asks_for_it():
+    grid = cartesian3d_grid_vectors()
+    # the standard is strict about the spelling of the options
+    with pytest.raises(ValidationError, match="Input should be"):
+        picmi.ElectrostaticSolver(grid=grid, method="multigrid")
+
+    try:
+        # implementing codes whose inputs are case-insensitive accept any case
+        picmistandard.register_codename(picmistandard.base.codename, case_insensitive_options=True)
+        solver = picmi.ElectrostaticSolver(grid=grid, method="multigrid")
+        assert solver.method == "Multigrid"
+        solver.method = "fft"
+        assert solver.method == "FFT"
+        # an option that does not exist is still rejected
+        with pytest.raises(ValidationError, match="Input should be"):
+            picmi.ElectrostaticSolver(grid=grid, method="SuperLU")
+    finally:
+        picmistandard.register_codename(picmistandard.base.codename)
+
+    with pytest.raises(ValidationError, match="Input should be"):
+        picmi.ElectrostaticSolver(grid=grid, method="multigrid")
+
+
 def test_electrostatic_solver_method():
     assert picmistandard.PICMI_ElectrostaticSolver.methods_list == ["FFT", "Multigrid"]
     picmi.ElectrostaticSolver(grid=cartesian3d_grid_vectors(), method="Multigrid")

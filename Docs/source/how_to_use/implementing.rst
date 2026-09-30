@@ -22,6 +22,8 @@ the following steps:
   and register it with ``picmistandard.register_codename``.
   Keyword arguments that start with the name of another supported code (``picmistandard.base.supported_codes``) are then ignored,
   so that a script can carry the arguments of several codes.
+  Codes whose inputs are case-insensitive pass ``case_insensitive_options=True``, so that the options of a parameter
+  are accepted in any case, e.g., ``"multigrid"`` besides ``"Multigrid"``, and stored as the option of the standard.
 
 - Define a class ``constants`` with the constants described in :doc:`../standard/constants`,
   and register it with ``picmistandard.register_constants``.

@@ -8,7 +8,7 @@ import re
 import threading
 from itertools import repeat
 import warnings
-from typing import Annotated, ClassVar, Self
+from typing import Annotated, ClassVar, Literal, Self, get_args, get_origin
 from pydantic import BeforeValidator, model_serializer, model_validator, BaseModel, ConfigDict
 from typing_extensions import TypeAliasType
 
@@ -59,10 +59,36 @@ codename = None
 # --- The list of supported codes is needed to allow checking for bad arguments.
 supported_codes = ['warp', 'warpx', 'fbpic']
 
-def register_codename(_codename):
-    """This must be called by the implementing code, passing in the code name"""
-    global codename
+# --- Whether the options of parameters that accept a fixed set of strings are accepted in
+# --- any case, which implementing codes whose inputs are case-insensitive enable.
+_case_insensitive_options = False
+
+def register_codename(_codename, case_insensitive_options=False):
+    """This must be called by the implementing code, passing in the code name
+
+    Parameters
+    ----------
+    _codename: string
+        The name of the code, which is the prefix of its own parameters
+
+    case_insensitive_options: bool, default=False
+        Whether the options of a parameter are accepted in any case, e.g., "multigrid"
+        besides "Multigrid". Implementing codes whose inputs are case-insensitive set this;
+        the values are stored as the option of the standard.
+    """
+    global codename, _case_insensitive_options
     codename = _codename
+    _case_insensitive_options = case_insensitive_options
+
+
+def _options_of_annotation(annotation):
+    """The strings that a parameter accepts, if it is annotated with a Literal of strings"""
+    if get_origin(annotation) is Literal:
+        return [option for option in get_args(annotation) if isinstance(option, str)]
+    return [
+        option for argument in get_args(annotation)
+        for option in _options_of_annotation(argument)
+    ]
 
 # --- This needs to be set by the implementing package (by calling register_constants).
 # --- It allows constants to be used within the picmi interface, with the constants
@@ -190,6 +216,10 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
     # name that they are given with (pydantic aliases are keyword arguments only).
     _field_of_alias: ClassVar[dict[str, str]] = {}
 
+    # The options of each parameter that accepts a fixed set of strings, by their lower case,
+    # to accept them in any case (see register_codename).
+    _options_of_field: ClassVar[dict[str, dict[str, str]]] = {}
+
     @classmethod
     def __pydantic_init_subclass__(cls, **kwargs):
         super().__pydantic_init_subclass__(**kwargs)
@@ -200,6 +230,29 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             for name, field in fields.items()
             # a name that is a field itself always refers to that field
             if field.alias and field.alias != name and field.alias not in fields
+        }
+        cls._options_of_field = {
+            name: {option.lower(): option for option in options}
+            for name, field in fields.items()
+            if (options := _options_of_annotation(field.annotation))
+        }
+
+    @classmethod
+    def _as_option(cls, field, value):
+        """The option of the standard that the value names, if the case may differ"""
+        options = cls._options_of_field.get(field)
+        if _case_insensitive_options and options and isinstance(value, str):
+            return options.get(value.lower(), value)
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_options_in_any_case(cls, data):
+        if not _case_insensitive_options or not isinstance(data, dict):
+            return data
+        return {
+            key: cls._as_option(cls._field_of_alias.get(key, key), value)
+            for key, value in data.items()
         }
 
     def __getattr__(self, name):
@@ -218,6 +271,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
         # assignment (including the assignments that validators make to derived fields)
         # leaves the object unchanged and valid.
         name = type(self)._field_of_alias.get(name, name)
+        value = type(self)._as_option(name, value)
         if name not in type(self).model_fields:
             return super().__setattr__(name, value)
         with self._atomic_update():

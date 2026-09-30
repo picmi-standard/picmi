@@ -380,8 +380,15 @@ def setup(app):
             return
         attribute = name.rsplit(".", 1)[-1]
         if isinstance(obj, types.UnionType) and attribute.startswith("PICMI_Any"):
+            # the last class of a kind is its base class, which the classes of implementing codes
+            # derive from (see the extensions page)
+            base = obj.__args__[-1]
             lines[:] = ["Any of the classes:", ""] + [
                 f"- {class_reference(member)}" for member in obj.__args__
+            ] + [
+                "",
+                f"i.e., a class of the standard or a class of an implementing code that derives "
+                f"from {class_reference(base)}.",
             ]
         elif isinstance(obj, TypeAliasType):
             docs = ModuleAnalyzer.for_module(obj.__module__).find_attr_docs()

@@ -5,16 +5,29 @@ Particle distributions
 
    This section is currently in development.
 
-.. autoclass:: picmistandard.PICMI_GaussianBunchDistribution
+.. autopydantic_model:: picmistandard.PICMI_GaussianBunchDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_UniformDistribution
+.. autopydantic_model:: picmistandard.PICMI_UniformDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_UniformFluxDistribution
+.. autopydantic_model:: picmistandard.PICMI_FoilDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_AnalyticDistribution
+.. autopydantic_model:: picmistandard.PICMI_UniformFluxDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_AnalyticFluxDistribution
+.. autopydantic_model:: picmistandard.PICMI_AnalyticDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_ParticleListDistribution
+.. autopydantic_model:: picmistandard.PICMI_AnalyticFluxDistribution
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_FromFileDistribution
+.. autopydantic_model:: picmistandard.PICMI_ParticleListDistribution
+    :inherited-members: BaseModel
+
+.. autopydantic_model:: picmistandard.PICMI_FromFileDistribution
+    :inherited-members: BaseModel
+
+.. autopydantic_model:: picmistandard.PICMI_ParticleDistributionPlanarInjector
+    :inherited-members: BaseModel

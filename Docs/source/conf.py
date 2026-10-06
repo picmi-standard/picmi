@@ -40,12 +40,51 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinxcontrib.autodoc_pydantic',
 ]
 autodoc_member_order = 'bysource'
+# Link the types in the parameters of methods (numpydoc), e.g., "bool, optional"
+napoleon_preprocess_types = True
+# Document members (incl. pydantic fields) so the auto-generated parameter list
+# (from each Field(description=...)) is rendered for every documented class.
+# ``undoc-members`` is required because pydantic fields carry no __doc__ (their text
+# lives in Field(description=...)); without it autodoc skips them as "undocumented".
+# ``model_post_init`` is an internal initialization hook (pydantic generates it for models
+# with private attributes), not a user-facing method.
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'exclude-members': 'model_post_init',
+}
+
+# -- autodoc-pydantic ---------------------------------------------------------
+# Render the pydantic-based PICMI classes (and downstream extensions) as a clean
+# list of documented fields, taken from each Field(description=...).  The noisy
+# pydantic internals (JSON schema, config/validator summaries) are hidden.
+# Hide the (very long) full field list from the class signature; the parameters are
+# documented individually as the field list below instead.
+autodoc_pydantic_model_hide_paramlist = True
+autodoc_pydantic_model_show_json = False
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_validator_summary = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_model_show_field_summary = False
+# Group members by type so all parameters (pydantic fields) are listed first as one
+# block, followed by methods and properties (mirrors the old "Parameters first" layout).
+autodoc_pydantic_model_member_order = 'groupwise'
+autodoc_pydantic_field_list_validators = False
+autodoc_pydantic_field_show_constraints = False
+autodoc_pydantic_field_show_default = True
+# Render each field as "parameter <name>" instead of the default "field <name>".
+autodoc_pydantic_field_signature_prefix = 'parameter'
+# Show downstream extension inputs under their user-facing ``<code>_`` alias.
+autodoc_pydantic_field_show_alias = True
+autodoc_pydantic_field_swap_name_and_alias = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -64,7 +103,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -165,10 +204,221 @@ texinfo_documents = [
 
 # -- Options for intersphinx extension ---------------------------------------
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+# Link types of the Python standard library, e.g., int or list.
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+def setup(app):
+    """Post-process the reST that autodoc-pydantic generates for pydantic PICMI models
+    (we do not reimplement any autodoc internals). Two passes:
+
+    1. Insert ``Parameters`` / ``Methods`` / ``Attributes`` / ``Properties`` rubric
+       headers between the groupwise member groups, so the long field list is visually
+       separated from the methods and properties.
+    2. Strip the ``:type:`` / ``:value:`` of class attributes whose value is just an
+       object repr (e.g. the ``extension`` handle), so they render as a bare name instead
+       of ``extension: ClassVar[Any] = <... object>``.
+    3. Name the unions of the PICMI classes of a kind in the types, e.g.,
+       ``PICMI_AnySolver | None`` instead of listing all solver classes.
+
+    The unions and named type aliases (e.g., ``Expression``), which are documented with
+    ``autodata`` as targets of these types, have no docstrings of their own: document the
+    classes of a union, and the docstring that follows the definition of a type alias.
+
+    Parameters are shown with their user-facing name, i.e., their alias (e.g., a
+    code-specific ``<code>_<name>``) instead of their field name (``<name>``). Also use
+    that name to sort the parameters and in the table of contents.
+    """
+    import re
+    import types
+
+    import picmistandard
+    from sphinxcontrib.autodoc_pydantic.directives.autodocumenters import (
+        PydanticFieldDocumenter,
+        PydanticModelDocumenter,
+    )
+    from sphinxcontrib.autodoc_pydantic.directives.directives import PydanticField
+
+    # Directive emitted for each member type -> rubric label (groupwise order).
+    group_labels = [
+        (".. py:pydantic_field::", "Parameters"),
+        (".. py:method::", "Methods"),
+        (".. py:attribute::", "Attributes"),
+        (".. py:property::", "Properties"),
+    ]
+    object_repr = re.compile(r":value:\s*<.* object.*>")
+
+    def union_members(union):
+        # the classes of a union as written in a type, e.g., ``~module.Class | ~module.Other``
+        return re.compile(
+            r"(?<![\w.~])"
+            + r"\s*\|\s*".join(
+                rf"~?{re.escape(member.__module__)}\.{re.escape(member.__qualname__)}"
+                for member in union.__args__
+            )
+            + r"(?![\w.])"
+        )
+
+    # longest first, in case the classes of one union are part of another one
+    named_unions = sorted(
+        (
+            (union_members(value), name)
+            for name, value in vars(picmistandard).items()
+            if name.startswith("PICMI_Any") and isinstance(value, types.UnionType)
+        ),
+        key=lambda entry: len(entry[0].pattern),
+        reverse=True,
+    )
+
+    class GroupedPydanticModelDocumenter(PydanticModelDocumenter):
+        def sort_members(self, documenters, order):
+            documenters = super().sort_members(documenters, order)
+            if (
+                order == "groupwise"
+                and self.config.autodoc_pydantic_field_swap_name_and_alias
+            ):
+                fields = self.object.model_fields
+
+                def user_facing_name(documenter):
+                    name = documenter.name.rsplit(".", 1)[-1]
+                    field = fields.get(name)
+                    if isinstance(documenter, PydanticFieldDocumenter) and field:
+                        return field.alias or name
+                    return name
+
+                documenters.sort(
+                    key=lambda entry: (
+                        entry[0].member_order,
+                        user_facing_name(entry[0]),
+                    )
+                )
+            return documenters
+
+        def document_members(self, all_members: bool = False) -> None:
+            result = self.directive.result
+            start = len(result.data)
+            super().document_members(all_members)
+
+            # Pass 2: drop ``:type:``/``:value:`` for object-repr attributes.
+            to_delete = []
+            i = start
+            while i < len(result.data):
+                if result.data[i].lstrip().startswith(".. py:attribute::"):
+                    opts, j = {}, i + 1
+                    while j < len(result.data):
+                        m = re.match(r":(\w+):", result.data[j].strip())
+                        if not m:
+                            break
+                        opts[m.group(1)] = j
+                        j += 1
+                    if "value" in opts and object_repr.search(
+                        result.data[opts["value"]].strip()
+                    ):
+                        to_delete += [opts[k] for k in ("type", "value") if k in opts]
+                    i = j
+                else:
+                    i += 1
+            for idx in sorted(to_delete, reverse=True):
+                del result[idx]
+
+            # Pass 1: insert group rubrics before the first member of each type.
+            insertions = []
+            seen = set()
+            for i in range(start, len(result.data)):
+                stripped = result.data[i].lstrip()
+                for prefix, label in group_labels:
+                    if stripped.startswith(prefix) and label not in seen:
+                        seen.add(label)
+                        line = result.data[i]
+                        indent = line[: len(line) - len(stripped)]
+                        insertions.append((i, indent, label))
+            for i, indent, label in reversed(insertions):
+                src, offset = result.info(i)
+                result.insert(i, "", src, offset)
+                result.insert(i, f"{indent}.. rubric:: {label}", src, offset)
+                result.insert(i, "", src, offset)
+
+            # Pass 3: name the unions of PICMI classes in the types.
+            for i in range(start, len(result.data)):
+                if result.data[i].lstrip().startswith(":type:"):
+                    for members, name in named_unions:
+                        result.data[i] = members.sub(name, result.data[i])
+
+    class UserFacingNamePydanticField(PydanticField):
+        def _toc_entry_name(self, sig_node):
+            # autodoc-pydantic swaps the field name with the alias only in the signature
+            entry = super()._toc_entry_name(sig_node)
+            alias = self.options.get("alias")
+            if (
+                entry
+                and alias
+                and self.pyautodoc.get_value("field-swap-name-and-alias")
+            ):
+                name = sig_node["_toc_parts"][-1]
+                if entry.endswith(name):
+                    entry = entry[: -len(name)] + alias
+            return entry
+
+    from sphinx.pycode import ModuleAnalyzer
+    from typing_extensions import TypeAliasType
+
+    def class_reference(cls):
+        name = cls.__name__
+        if getattr(picmistandard, name, None) is not cls:
+            name = f"{cls.__module__}.{cls.__qualname__}"
+        else:
+            name = f"picmistandard.{name}"
+        return f":class:`~{name}`"
+
+    def document_named_types(app, what, name, obj, options, lines):
+        if what != "data":
+            return
+        attribute = name.rsplit(".", 1)[-1]
+        if isinstance(obj, types.UnionType) and attribute.startswith("PICMI_Any"):
+            # the last class of a kind is its base class, which the classes of implementing codes
+            # derive from (see the extensions page)
+            base = obj.__args__[-1]
+            lines[:] = ["Any of the classes:", ""] + [
+                f"- {class_reference(member)}" for member in obj.__args__
+            ] + [
+                "",
+                f"i.e., a class of the standard or a class of an implementing code that derives "
+                f"from {class_reference(base)}.",
+            ]
+        elif isinstance(obj, TypeAliasType):
+            docs = ModuleAnalyzer.for_module(obj.__module__).find_attr_docs()
+            lines[:] = list(docs.get(("", attribute), []))
+
+    # Types refer to classes, which the documented unions and type aliases are not: resolve these
+    # references to them, too.
+    named_types = {
+        name
+        for name, value in vars(picmistandard).items()
+        if (name.startswith("PICMI_Any") and isinstance(value, types.UnionType))
+        or isinstance(value, TypeAliasType)
+    }
+
+    def resolve_named_types(app, env, node, contnode):
+        target = node.get("reftarget", "")
+        if (
+            node.get("refdomain") == "py"
+            and node.get("reftype") == "class"
+            and target.rsplit(".", 1)[-1] in named_types
+        ):
+            return env.get_domain("py").resolve_xref(
+                env, node["refdoc"], app.builder, "obj", target, node, contnode
+            )
+        return None
+
+    app.setup_extension("sphinxcontrib.autodoc_pydantic")
+    app.connect("autodoc-process-docstring", document_named_types)
+    app.connect("missing-reference", resolve_named_types)
+    app.add_autodocumenter(GroupedPydanticModelDocumenter, override=True)
+    app.add_directive_to_domain(
+        "py", "pydantic_field", UserFacingNamePydanticField, override=True
+    )

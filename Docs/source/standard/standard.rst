@@ -40,3 +40,20 @@ Lasers
 
    laser_profiles
    laser_injectors
+
+
+Extensions
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   extensions
+
+Type Aliases
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   types

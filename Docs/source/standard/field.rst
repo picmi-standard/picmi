@@ -8,14 +8,23 @@ Field solvers
 Electromagnetic
 ---------------
 
-.. autoclass:: picmistandard.PICMI_ElectromagneticSolver
+.. autopydantic_model:: picmistandard.PICMI_ElectromagneticSolver
+    :inherited-members: BaseModel
 
 Electrostatic
 -------------
 
-.. autoclass:: picmistandard.PICMI_ElectrostaticSolver
+.. autopydantic_model:: picmistandard.PICMI_ElectrostaticSolver
+    :inherited-members: BaseModel
+
+Magnetostatic
+-------------
+
+.. autopydantic_model:: picmistandard.PICMI_MagnetostaticSolver
+    :inherited-members: BaseModel
 
 Smoothing
 ---------
 
-.. autoclass:: picmistandard.PICMI_BinomialSmoother
+.. autopydantic_model:: picmistandard.PICMI_BinomialSmoother
+    :inherited-members: BaseModel

@@ -1,17 +1,94 @@
 """base code for the PICMI standard
 """
-import inspect
+import contextlib
+import functools
+import json
+import numbers
+import re
+import threading
+from itertools import repeat
 import warnings
+from typing import Annotated, ClassVar, Literal, Self, get_args, get_origin
+from pydantic import BeforeValidator, model_serializer, model_validator, BaseModel, ConfigDict
+from typing_extensions import TypeAliasType
+
+
+# Tracks which (instance, validator) pairs are currently executing, per thread, so that a
+# mode="after" validator that assigns to ``self`` does not re-enter itself when
+# ``validate_assignment=True`` re-validates each of those assignments.
+_validators_in_progress = threading.local()
+
+
+def resolve_once(validator):
+    """Make a ``mode="after"`` model validator safe under ``validate_assignment=True``.
+
+    With assignment validation enabled, every ``self.x = ...`` performed inside an
+    after-validator triggers a re-validation, which re-runs the very same validator and
+    would recurse without bound. This wrapper turns a re-entrant call *on the same
+    instance* into a no-op (it returns ``self`` unchanged), so the validator's own
+    derived-field assignments do not re-execute its body. The outermost call still runs in
+    full, so derived fields are computed/resolved exactly once per validation.
+
+    The fields that the validator derives are not marked as set (``model_fields_set``), so
+    that dumps with ``exclude_unset=True`` contain only the parameters that were given.
+
+    Apply it *under* ``@model_validator(mode="after")``::
+
+        @model_validator(mode="after")
+        @resolve_once
+        def _resolve(self) -> Self:
+            ...
+    """
+    @functools.wraps(validator)
+    def wrapper(self):
+        active = _validators_in_progress.__dict__.setdefault("markers", set())
+        marker = (id(self), validator)
+        if marker in active:
+            return self
+        active.add(marker)
+        fields_set = set(self.__pydantic_fields_set__)
+        try:
+            return validator(self)
+        finally:
+            active.discard(marker)
+            object.__setattr__(self, "__pydantic_fields_set__", fields_set)
+    return wrapper
 
 codename = None
 
 # --- The list of supported codes is needed to allow checking for bad arguments.
 supported_codes = ['warp', 'warpx', 'fbpic']
 
-def register_codename(_codename):
-    """This must be called by the implementing code, passing in the code name"""
-    global codename
+# --- Whether the options of parameters that accept a fixed set of strings are accepted in
+# --- any case, which implementing codes whose inputs are case-insensitive enable.
+_case_insensitive_options = False
+
+def register_codename(_codename, case_insensitive_options=False):
+    """This must be called by the implementing code, passing in the code name
+
+    Parameters
+    ----------
+    _codename: string
+        The name of the code, which is the prefix of its own parameters
+
+    case_insensitive_options: bool, default=False
+        Whether the options of a parameter are accepted in any case, e.g., "multigrid"
+        besides "Multigrid". Implementing codes whose inputs are case-insensitive set this;
+        the values are stored as the option of the standard.
+    """
+    global codename, _case_insensitive_options
     codename = _codename
+    _case_insensitive_options = case_insensitive_options
+
+
+def _options_of_annotation(annotation):
+    """The strings that a parameter accepts, if it is annotated with a Literal of strings"""
+    if get_origin(annotation) is Literal:
+        return [option for option in get_args(annotation) if isinstance(option, str)]
+    return [
+        option for argument in get_args(annotation)
+        for option in _options_of_annotation(argument)
+    ]
 
 # --- This needs to be set by the implementing package (by calling register_constants).
 # --- It allows constants to be used within the picmi interface, with the constants
@@ -33,54 +110,239 @@ def _get_constants():
     return _implementation_constants
 
 
-class _DocumentedMetaClass(type):
-    """This is used as a metaclass that combines the __doc__ of the picmistandard base and of the implementation"""
-    def __new__(cls, name, bases, attrs):
-        # "if bases" skips this for the _ClassWithInit (which has no bases)
-        # "if bases[0].__doc__ is not None" skips this for the picmistandard classes since their bases[0] (i.e. _ClassWithInit)
-        # has no __doc__.
-        if bases and bases[0].__doc__ is not None:
-            implementation_doc = attrs.get('__doc__', '')
+class _DocumentedModelMetaClass(type(BaseModel)):
+    """Metaclass that combines the __doc__ of the picmistandard base and of the implementation.
+
+    Downstream codes (e.g. WarpX) can extend the documentation of a PICMI class simply by
+    adding a docstring to their subclass. It derives from pydantic's metaclass
+    (``type(BaseModel)`` is ``ModelMetaclass``) so that it composes with ``BaseModel``.
+    """
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        # Skip the infrastructure base itself (its only base is BaseModel), any class whose
+        # first base carries no docstring (e.g. _PICMIModel), and the base classes whose
+        # docstrings describe a mechanism (e.g. the extensions) rather than the derived class.
+        if (
+            bases
+            and bases[0] is not BaseModel
+            and bases[0].__doc__ is not None
+            and not bases[0].__dict__.get("__picmi_doc_not_inherited__", False)
+        ):
+            implementation_doc = namespace.get('__doc__', '')
             if implementation_doc:
-                # The format of the added string is intentional.
-                # The double return "\n\n" is needed to start a new section in the documentation.
-                # Then the four spaces matches the standard level of indentation for doc strings
-                # (assuming PEP8 formatting).
-                # The final return "\n" assumes that the implementation doc string begins with a return,
-                # i.e. a line with only three quotes, """.
-                attrs['__doc__'] = bases[0].__doc__ + """\n\n    Implementation specific documentation\n""" + implementation_doc
+                # The double return "\n\n" separates the picmistandard docstring from the
+                # implementation-specific one, starting a new paragraph in the documentation.
+                namespace['__doc__'] = bases[0].__doc__ + "\n\n" + implementation_doc
             else:
-                attrs['__doc__'] = bases[0].__doc__
-        return super(_DocumentedMetaClass, cls).__new__(cls, name, bases, attrs)
+                namespace['__doc__'] = bases[0].__doc__
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
 
 
-class _ClassWithInit(metaclass=_DocumentedMetaClass):
-    def handle_init(self, kw):
-        # --- Grab all keywords for the current code.
-        # --- Arguments for other supported codes are ignored.
-        # --- If there is anything left over, it is an error.
-        codekw = {}
-        for k,v in kw.copy().items():
-            code = k.split('_')[0]
-            if code == codename:
-                codekw[k] = v
-                kw.pop(k)
-            elif code in supported_codes:
-                kw.pop(k)
+# --- Serialized PICMI objects carry the class they were dumped from under this key, so
+# --- that loading them restores the same (e.g. code-specific) class, also when nested in
+# --- another PICMI object or in a field that is not typed with a specific class.
+PICMI_CLASS_KEY = "picmi_class"
 
-        if kw:
-            raise TypeError('Unexpected keyword argument: "%s"'%list(kw))
+# --- All pydantic-based PICMI classes (of the standard and of the implementing codes),
+# --- by their _picmi_class_name. Only these classes are instantiated when loading data.
+_picmi_classes = {}
 
-        # --- It is expected that init strips accepted keywords from codekw.
-        self.init(codekw)
 
-        if codekw:
-            raise TypeError("Unexpected keyword argument for %s: '%s'"%(codename, list(codekw)))
+def _picmi_class_name(cls):
+    return f"{cls.__module__}.{cls.__qualname__}"
 
-    def init(self, kw):
-        # --- The implementation of this routine should use kw.pop() to retrieve input arguments from kw.
-        # --- This allows testing for any unused arguments and raising an error if found.
-        pass
+
+def _registered_picmi_class(name):
+    try:
+        return _picmi_classes[name]
+    except KeyError:
+        raise ValueError(
+            f"Unknown {PICMI_CLASS_KEY} '{name}'. Import the module that defines this class before loading the data."
+        ) from None
+
+
+def load(data):
+    """Load a PICMI object as the class that it was dumped from
+
+    Parameters
+    ----------
+    data: str, bytes or dict
+        The JSON of the object (from ``model_dump_json``) or its dictionary (from ``model_dump``).
+
+    The module that defines the class, e.g., of the implementing code, must be imported before.
+    """
+    parsed = json.loads(data) if isinstance(data, (str, bytes, bytearray)) else data
+    if not isinstance(parsed, dict) or PICMI_CLASS_KEY not in parsed:
+        raise ValueError(f"The data does not record the class of a PICMI object ({PICMI_CLASS_KEY}).")
+    picmi_class = _registered_picmi_class(parsed[PICMI_CLASS_KEY])
+    if parsed is data:
+        return picmi_class.model_validate(data)
+    return picmi_class.model_validate_json(data)
+
+
+def _instantiate_picmi_objects(value):
+    """Turn (possibly nested in lists or tuples) dictionaries written by ``model_dump`` into
+    instances of the PICMI class recorded in them."""
+    if isinstance(value, dict) and PICMI_CLASS_KEY in value:
+        data = dict(value)
+        # Remove the class marker already here: pydantic passes the data of nested objects to
+        # a custom __init__ of their class before the model validators run.
+        picmi_class = _registered_picmi_class(data.pop(PICMI_CLASS_KEY))
+        return picmi_class.model_validate(data)
+    if isinstance(value, list):
+        return [_instantiate_picmi_objects(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_instantiate_picmi_objects(item) for item in value)
+    return value
+
+
+class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
+    # Shared configuration for all pydantic-based PICMI classes.
+    # - ``extra="forbid"`` restores the old behaviour of raising on unexpected keyword
+    #   arguments (pydantic's default silently ignores them).
+    # - ``populate_by_name`` lets downstream codes expose extension inputs under a
+    #   ``<code>_`` alias while keeping their internal attribute name.
+    # - ``polymorphic_serialization`` serializes an object with the fields of its actual
+    #   class, e.g., a downstream grid passed to a solver keeps its code-specific fields
+    #   (by default, pydantic uses the fields of the annotated standard class).
+    model_config = ConfigDict(
+        populate_by_name=True,
+        extra="forbid",
+        validate_assignment=True,
+        polymorphic_serialization=True,
+    )
+
+    # The field of each alias, e.g., the field "break_signals" of "warpx_break_signals",
+    # so that the parameters of implementing codes can also be read and assigned under the
+    # name that they are given with (pydantic aliases are keyword arguments only).
+    _field_of_alias: ClassVar[dict[str, str]] = {}
+
+    # The options of each parameter that accepts a fixed set of strings, by their lower case,
+    # to accept them in any case (see register_codename).
+    _options_of_field: ClassVar[dict[str, dict[str, str]]] = {}
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs):
+        super().__pydantic_init_subclass__(**kwargs)
+        _picmi_classes[_picmi_class_name(cls)] = cls
+        fields = cls.model_fields
+        cls._field_of_alias = {
+            field.alias: name
+            for name, field in fields.items()
+            # a name that is a field itself always refers to that field
+            if field.alias and field.alias != name and field.alias not in fields
+        }
+        cls._options_of_field = {
+            name: {option.lower(): option for option in options}
+            for name, field in fields.items()
+            if (options := _options_of_annotation(field.annotation))
+        }
+
+    @classmethod
+    def _as_option(cls, field, value):
+        """The option of the standard that the value names, if the case may differ"""
+        options = cls._options_of_field.get(field)
+        if _case_insensitive_options and options and isinstance(value, str):
+            return options.get(value.lower(), value)
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_options_in_any_case(cls, data):
+        if not _case_insensitive_options or not isinstance(data, dict):
+            return data
+        return {
+            key: cls._as_option(cls._field_of_alias.get(key, key), value)
+            for key, value in data.items()
+        }
+
+    def __getattr__(self, name):
+        field = type(self)._field_of_alias.get(name)
+        if field is not None:
+            return getattr(self, field)
+        return super().__getattr__(name)
+
+    def __dir__(self):
+        # so that the aliases are offered by interactive completion, too
+        return [*super().__dir__(), *type(self)._field_of_alias]
+
+    def __setattr__(self, name, value):
+        # Pydantic applies an assignment before running the model validators, and keeps it
+        # if they reject it. Restore the previous state in that case, so that a failed
+        # assignment (including the assignments that validators make to derived fields)
+        # leaves the object unchanged and valid.
+        name = type(self)._field_of_alias.get(name, name)
+        value = type(self)._as_option(name, value)
+        if name not in type(self).model_fields:
+            return super().__setattr__(name, value)
+        with self._atomic_update():
+            super().__setattr__(name, value)
+
+    @contextlib.contextmanager
+    def _atomic_update(self):
+        """Context in which several assignments either all succeed or leave the object unchanged"""
+        previous_fields = dict(self.__dict__)
+        previous_fields_set = set(self.__pydantic_fields_set__)
+        previous_private = None if self.__pydantic_private__ is None else dict(self.__pydantic_private__)
+        try:
+            yield
+        except Exception:
+            object.__setattr__(self, "__dict__", previous_fields)
+            object.__setattr__(self, "__pydantic_fields_set__", previous_fields_set)
+            object.__setattr__(self, "__pydantic_private__", previous_private)
+            raise
+
+    @model_serializer(mode="wrap")
+    def _serialize_with_picmi_class(self, handler):
+        data = handler(self)
+        if isinstance(data, dict):
+            data = {PICMI_CLASS_KEY: _picmi_class_name(type(self)), **data}
+        return data
+
+    @model_validator(mode="before")
+    @classmethod
+    def _load_picmi_classes(cls, data):
+        # Counterpart of _serialize_with_picmi_class: nested serialized PICMI objects are
+        # loaded as the class they were dumped from, instead of the (standard) class a field
+        # is annotated with, or a plain dictionary for fields that are not typed.
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+        if PICMI_CLASS_KEY in data:
+            dumped_class = _registered_picmi_class(data.pop(PICMI_CLASS_KEY))
+            if not issubclass(cls, dumped_class):
+                raise ValueError(
+                    f"The data was dumped from {_picmi_class_name(dumped_class)} and cannot be loaded as {_picmi_class_name(cls)}."
+                )
+        return {key: _instantiate_picmi_objects(value) for key, value in data.items()}
+
+    # PICMI objects are mutable handles to distinct entities of a simulation: two species
+    # with identical parameters are still two species. Keep the identity-based equality and
+    # hashing of the pre-pydantic classes (pydantic's default compares by value, which makes
+    # mutable models unhashable), so that instances can be used as dictionary keys, e.g., to
+    # give per-species diagnostic options. Compare ``model_dump()`` results to compare values.
+    __eq__ = object.__eq__
+    __hash__ = object.__hash__
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ignore_other_codes_arguments(cls, data):
+        # Mirror the old handle_init() behaviour: keyword arguments prefixed with the name
+        # of *another* supported code are silently ignored, so that a single PICMI input
+        # script can carry code-specific arguments for several codes at once. Arguments
+        # prefixed with the active codename (or otherwise unknown arguments) are left in
+        # place and validated normally, so that genuine typos are still reported thanks to
+        # ``extra="forbid"``.
+        if not isinstance(data, dict):
+            return data
+        return {
+            k: v for k, v in data.items()
+            if not ((prefix := k.split('_')[0]) in supported_codes and prefix != codename)
+        }
+
+    def _is_given(self, arg_name):
+        """Whether the argument has a value other than its default"""
+        field = type(self).model_fields[arg_name]
+        return getattr(self, arg_name) != field.get_default(call_default_factory=True)
 
     def _check_unsupported_argument(self, arg_name, message=None, raise_error=False):
         """Raise a warning or exception if an unsupported argument was specified by the user
@@ -97,8 +359,8 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
             If False (the default), raise a warning. If true, raise an exception
             (which interrupts the code).
 
-        Implementation note: This should be called in the "init" method of the
-        implementing class for each unsupported argument. For example, for the
+        Implementation note: This should be called by the implementing class, e.g., in its
+        ``model_post_init``, for each unsupported argument. For example, for the
         'density_scale' argument of Species:
 
             self._check_unsupported_argument(
@@ -106,13 +368,9 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
                 message='My code can not handle a density_scale')
 
         """
-
-        # This compares the value of the parameter with the dault value in the __init__ method.
-        # If they differ, this means that the user supplied a value, so a warning or error is raised.
-        signature = inspect.signature(self.__init__)
-        default_value = signature.parameters[arg_name].default
-        if not (getattr(self, arg_name) == default_value):
-            full_message = f'{self.__name__}: For argument {arg_name} is not supported.'
+        # A value that differs from the default means that the user supplied a value.
+        if self._is_given(arg_name):
+            full_message = f'{type(self).__name__}: The argument {arg_name} is not supported.'
             if message is not None:
                 full_message += f' {message}'
             if raise_error:
@@ -120,7 +378,7 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
             else:
                 warnings.warn(full_message)
 
-    def _unsupported_value(self, arg_name, message='', raise_error=True):
+    def _unsupported_value(self, arg_name, message=None, raise_error=True):
         """Raise a warning or exception for argument with an unsupported value.
 
         Parameters
@@ -132,8 +390,8 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
             Information to include in the warning/error message
 
         raise_error: bool
-            If False (the default), raise a warning. If true, raise an exception
-            (which interrupts the code).
+            If True (the default), raise an exception (which interrupts the code).
+            If False, raise a warning.
 
         Implementation note: This should be called when the implementing code handles
         the input arguments. For example, for 'method' in Species:
@@ -144,7 +402,7 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
                     message='My code only supports Boris and Li')
 
         """
-        full_message = f'{self.__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
+        full_message = f'{type(self).__name__}: For argument {arg_name}, the value {getattr(self, arg_name)} is not supported.'
         if message is not None:
             full_message += f' {message}'
         if raise_error:
@@ -167,9 +425,9 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
             If False (the default), raise a warning. If true, raise an exception
             (which interrupts the code).
 
-        Implementation note: This should be called within PICMI in the "__init__" method of classes
-        for each deprecated argument. This assumes that the argument is still included in the
-        argument list of __init__ as a transition until it is removed.
+        Implementation note: This should be called within PICMI, e.g., in a model validator
+        of the class, for each deprecated argument. This assumes that the argument is still a
+        field of the class as a transition until it is removed.
         For example, if the 'density_scale' argument of Species was to be deprecated:
 
             self._check_deprecated_argument(
@@ -177,16 +435,248 @@ class _ClassWithInit(metaclass=_DocumentedMetaClass):
                 message='This argument is no longer needed')
 
         """
-
-        # This compares the value of the parameter with the dault value in the __init__ method.
-        # If they differ, this means that the user supplied a value, so a warning or error is raised.
-        signature = inspect.signature(self.__init__)
-        default_value = signature.parameters[arg_name].default
-        if not (getattr(self, arg_name) == default_value):
-            full_message = f'{self.__name__}: For argument {arg_name} is not supported.'
+        # A value that differs from the default means that the user supplied a value.
+        if self._is_given(arg_name):
+            full_message = f'{type(self).__name__}: The argument {arg_name} is deprecated.'
             if message is not None:
                 full_message += f' {message}'
             if raise_error:
                 raise Exception(full_message)
             else:
                 warnings.warn(full_message)
+
+
+def _as_expression(value):
+    """Expressions are stored as strings without line breaks; numbers are accepted, too."""
+    # numbers.Real includes NumPy scalars, e.g., numpy.float32, which are no Python floats
+    if isinstance(value, numbers.Real) and not isinstance(value, bool):
+        value = f'{value}'
+    if isinstance(value, str):
+        value = value.replace('\n', '')
+    return value
+
+
+# A named alias, so that the documentation shows "Expression" instead of the annotation.
+Expression = TypeAliasType("Expression", Annotated[str, BeforeValidator(_as_expression)])
+"""An analytic expression, given as a string (or a number)"""
+
+
+def _expression_strings(value):
+    """All strings in a value that is possibly nested in lists, tuples or dictionaries"""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from _expression_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _expression_strings(item)
+
+
+class PICMI_ExpressionParameters(_PICMIModel):
+    """
+    Base class of classes with analytic expressions, whose parameters are given as keyword arguments.
+
+    Parameters used in the expressions can be given as additional keyword arguments. Those
+    referenced in an expression are collected into the ``user_defined_kw`` field, which each
+    derived class declares. Other unknown keyword arguments are still rejected. It is up to
+    the implementing code to make sure that all parameters used in the expressions are
+    defined.
+
+    Derived classes list the names of their fields that hold expressions (strings, possibly
+    nested in lists or dictionaries) in ``_expression_fields``. Keyword arguments named like a
+    field are not collected, unless a derived class excludes that field in ``_parameter_names``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+    _expression_fields: ClassVar[tuple[str, ...]] = ()
+
+    @classmethod
+    def _parameter_names(cls, data):
+        """The names (and aliases) of the fields that the given input data sets as parameters
+
+        Keyword arguments with these names are never collected into ``user_defined_kw``. These
+        are all fields, unless a derived class excludes fields that the input does not use, e.g.,
+        fields that only apply to other types of an object.
+        """
+        fields = cls.model_fields
+        return set(fields) | {field.alias for field in fields.values() if field.alias}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _collect_expression_parameters(cls, data):
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+
+        fields = cls.model_fields
+        known = cls._parameter_names(data)
+        expressions = [
+            expression
+            for name in cls._expression_fields
+            for key in {name, fields[name].alias or name}
+            if key in data
+            for expression in _expression_strings(data[key])
+        ]
+
+        user_defined_kw_key = fields["user_defined_kw"].alias or "user_defined_kw"
+        if user_defined_kw_key not in data:
+            user_defined_kw_key = "user_defined_kw"
+        user_defined_kw = dict(data.get(user_defined_kw_key) or {})
+        for key in list(data):
+            if key in known:
+                continue
+            if any(re.search(r'\b%s\b' % re.escape(key), expression) for expression in expressions):
+                user_defined_kw[key] = data.pop(key)
+        # only set it if given or collected, so that the field is not marked as set otherwise
+        if user_defined_kw or user_defined_kw_key in data:
+            data[user_defined_kw_key] = user_defined_kw
+        return data
+
+
+# --------------------------------------------
+# Base classes of code-specific extensions
+# --------------------------------------------
+
+
+class PICMI_Extension(_PICMIModel):
+    """
+    Base class of code-specific classes that have no counterpart in the PICMI standard.
+
+    Implementing codes derive their own classes, e.g., additional field solvers or diagnostics,
+    from the base class of the kind that they belong to (see below), so that these objects are
+    accepted by the fields of the PICMI classes of that kind, e.g., a ``PICMI_Solver`` as
+    ``Simulation.solver``. Classes that are only used by fields of the implementing code itself
+    derive from this class directly.
+
+    Like all PICMI classes, they validate their parameters (unknown keyword arguments are
+    rejected, assignments are validated) and are restored as their own class when loaded from
+    a serialized simulation.
+
+    Example:
+
+    .. code-block:: python
+
+        class HybridSolver(picmistandard.PICMI_Solver):
+            \"\"\"A code-specific field solver\"\"\"
+
+            grid: picmistandard.PICMI_AnyGrid
+            electron_temperature: float = Field(description="Electron temperature [eV]")
+
+        simulation = Simulation(solver=HybridSolver(grid=grid, electron_temperature=10.0))
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Grid(_PICMIModel):
+    """
+    Base class of the grids of the standard and of the implementing codes, accepted as ``Simulation.solver``'s grid and other fields that take a grid.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Solver(_PICMIModel):
+    """
+    Base class of the field solvers of the standard and of the implementing codes, accepted as ``Simulation.solver``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Distribution(_PICMIModel):
+    """
+    Base class of the particle distributions of the standard and of the implementing codes, accepted as ``Species.initial_distribution``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Layout(_PICMIModel):
+    """
+    Base class of the particle layouts of the standard and of the implementing codes, accepted as the layout in ``Simulation.add_species``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Laser(_PICMIModel):
+    """
+    Base class of the laser profiles of the standard and of the implementing codes, accepted as the laser in ``Simulation.add_laser``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_LaserInjection(_PICMIModel):
+    """
+    Base class of the laser injection methods of the standard and of the implementing codes, accepted as the injection method in ``Simulation.add_laser``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_AppliedField(_PICMIModel):
+    """
+    Base class of the applied fields of the standard and of the implementing codes, accepted as ``Simulation.add_applied_field``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Diagnostic(_PICMIModel):
+    """
+    Base class of the diagnostics of the standard and of the implementing codes, accepted as ``Simulation.add_diagnostic``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+class PICMI_Interaction(_PICMIModel):
+    """
+    Base class of the interactions of the standard and of the implementing codes, accepted as ``Simulation.add_interaction`` and ``Species.interactions``.
+    """
+
+    __picmi_doc_not_inherited__ = True
+
+
+def broadcast_validation(values, condition, message="Condition not met."):
+    if not all(condition(value) for value in values):
+        raise ValueError(f"{message} You gave: {values}.")
+    return values
+
+
+def with_mutually_exclusive(*args, defaults=None, required=False):
+    """Class decorator: at most one of the arguments differs from its default (None by default)
+
+    With ``required=True``, exactly one of the arguments must be given.
+    """
+    def decorator(cls):
+        def _mutually_exclusive(self) -> Self:
+            # make sure we don't override previously implemented behaviour:
+            parent_check = getattr(super(decorated, self), "_mutually_exclusive", None)
+            if parent_check is not None:
+                parent_check()
+            if len(non_default := {arg: value for arg, default in zip(args, repeat(None) if defaults is None else defaults) if (value:=getattr(self, arg)) != default}) > 1:
+                raise ValueError(f"The arguments {args} are mutually exclusive. You gave: {non_default=}.")
+            if required and not non_default:
+                raise ValueError(f"One of the arguments {args} must be given.")
+            return self
+
+        # Create the subclass under the name of the decorated class. A class statement would
+        # name it after its local variable, which then leaks into the validation error titles,
+        # the JSON schema and the documentation. The docstring is inherited through
+        # _DocumentedModelMetaClass.
+        decorated = type(cls)(
+            cls.__name__,
+            (cls,),
+            {
+                "__module__": cls.__module__,
+                "__qualname__": cls.__qualname__,
+                "_mutually_exclusive": model_validator(mode="after")(_mutually_exclusive),
+            },
+        )
+        return decorated
+    return decorator

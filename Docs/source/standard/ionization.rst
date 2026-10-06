@@ -8,5 +8,5 @@ Ionization Physics
 Field ionization
 ----------------
 
-.. autoclass:: picmistandard.PICMI_FieldIonization
-    :members:
+.. autopydantic_model:: picmistandard.PICMI_FieldIonization
+    :inherited-members: BaseModel

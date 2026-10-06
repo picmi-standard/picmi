@@ -5,6 +5,8 @@ Species objects
 
    This section is currently in development.
 
-.. autoclass:: picmistandard.PICMI_Species
+.. autopydantic_model:: picmistandard.PICMI_Species
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_MultiSpecies
+.. autopydantic_model:: picmistandard.PICMI_MultiSpecies
+    :inherited-members: BaseModel

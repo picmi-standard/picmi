@@ -5,4 +5,5 @@ Laser injectors
 
    This section is currently in development.
 
-.. autoclass:: picmistandard.PICMI_LaserAntenna
+.. autopydantic_model:: picmistandard.PICMI_LaserAntenna
+    :inherited-members: BaseModel

@@ -1,2 +1,4 @@
-sphinx
+# Sphinx<9 because autodoc_pydantic (2.2.0) does not document the methods of models with Sphinx 9
+sphinx<9
 sphinx_rtd_theme
+autodoc_pydantic>=2

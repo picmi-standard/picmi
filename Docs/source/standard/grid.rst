@@ -8,19 +8,23 @@ Grids
 3D Cartesian geometry
 ---------------------
 
-.. autoclass:: picmistandard.PICMI_Cartesian3DGrid
+.. autopydantic_model:: picmistandard.PICMI_Cartesian3DGrid
+    :inherited-members: BaseModel
 
 2D Cartesian geometry
 ---------------------
 
-.. autoclass:: picmistandard.PICMI_Cartesian2DGrid
+.. autopydantic_model:: picmistandard.PICMI_Cartesian2DGrid
+    :inherited-members: BaseModel
 
 1D Cartesian geometry
 ---------------------
 
-.. autoclass:: picmistandard.PICMI_Cartesian1DGrid
+.. autopydantic_model:: picmistandard.PICMI_Cartesian1DGrid
+    :inherited-members: BaseModel
 
 Cylindrical geometry
 --------------------
 
-.. autoclass:: picmistandard.PICMI_CylindricalGrid
+.. autopydantic_model:: picmistandard.PICMI_CylindricalGrid
+    :inherited-members: BaseModel

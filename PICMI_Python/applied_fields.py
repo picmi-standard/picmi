@@ -1,215 +1,188 @@
 """Classes following the PICMI standard
 These should be the base classes for Python implementation of the PICMI standard
 """
-import re
+from typing import ClassVar
 
-from .base import _ClassWithInit
+from pydantic import Field
+
+from .base import (
+    Expression,
+    PICMI_AppliedField,
+    _PICMIModel,
+    PICMI_ExpressionParameters,
+    with_mutually_exclusive,
+)
 
 # ---------------
 # Applied fields
 # ---------------
 
 
-class PICMI_ConstantAppliedField(_ClassWithInit):
+class PICMI_ConstantAppliedField(PICMI_AppliedField):
     """
     Describes a constant applied field
-
-    Parameters
-    ----------
-    Ex: float, default=0.
-        Constant Ex field [V/m]
-
-    Ey: float, default=0.
-        Constant Ey field [V/m]
-
-    Ez: float, default=0.
-        Constant Ez field [V/m]
-
-    Bx: float, default=0.
-        Constant Bx field [T]
-
-    By: float, default=0.
-        Constant By field [T]
-
-    Bz: float, default=0.
-        Constant Bz field [T]
-
-    lower_bound: vector, optional
-        Lower bound of the region where the field is applied [m].
-
-    upper_bound: vector, optional
-        Upper bound of the region where the field is applied [m]
     """
-    def __init__(self, Ex=None, Ey=None, Ez=None, Bx=None, By=None, Bz=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
+    Ex: float | None = Field(
+        default=None,
+        description="Constant Ex field [V/m]"
+    )
+    Ey: float | None = Field(
+        default=None,
+        description="Constant Ey field [V/m]"
+    )
+    Ez: float | None = Field(
+        default=None,
+        description="Constant Ez field [V/m]"
+    )
+    Bx: float | None = Field(
+        default=None,
+        description="Constant Bx field [T]"
+    )
+    By: float | None = Field(
+        default=None,
+        description="Constant By field [T]"
+    )
+    Bz: float | None = Field(
+        default=None,
+        description="Constant Bz field [T]"
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the region where the field is applied [m]."
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the region where the field is applied [m]"
+    )
 
-        self.Ex = Ex
-        self.Ey = Ey
-        self.Ez = Ez
-        self.Bx = Bx
-        self.By = By
-        self.Bz = Bz
 
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-
-        self.handle_init(kw)
-
-
-class PICMI_AnalyticAppliedField(_ClassWithInit):
+class PICMI_AnalyticAppliedField(PICMI_AppliedField, PICMI_ExpressionParameters):
     """
     Describes an analytic applied field
 
     The expressions should be in terms of the position and time, written as 'x', 'y', 'z', 't'.
     Parameters can be used in the expression with the values given as additional keyword arguments.
     Expressions should be relative to the lab frame.
-
-    Parameters
-    ----------
-    Ex_expression: string, optional
-        Analytic expression describing Ex field [V/m]
-
-    Ey_expression: string, optional
-        Analytic expression describing Ey field [V/m]
-
-    Ez_expression: string, optional
-        Analytic expression describing Ez field [V/m]
-
-    Bx_expression: string, optional
-        Analytic expression describing Bx field [T]
-
-    By_expression: string, optional
-        Analytic expression describing By field [T]
-
-    Bz_expression: string, optional
-        Analytic expression describing Bz field [T]
-
-    lower_bound: vector, optional
-        Lower bound of the region where the field is applied [m].
-
-    upper_bound: vector, optional
-        Upper bound of the region where the field is applied [m]
     """
-    def __init__(self, Ex_expression=None, Ey_expression=None, Ez_expression=None,
-                       Bx_expression=None, By_expression=None, Bz_expression=None,
-                 lower_bound=[None,None,None], upper_bound=[None,None,None],
-                 **kw):
+    _expression_fields: ClassVar[tuple[str, ...]] = (
+        "Ex_expression", "Ey_expression", "Ez_expression",
+        "Bx_expression", "By_expression", "Bz_expression",
+    )
 
-        self.Ex_expression = Ex_expression
-        self.Ey_expression = Ey_expression
-        self.Ez_expression = Ez_expression
-        self.Bx_expression = Bx_expression
-        self.By_expression = By_expression
-        self.Bz_expression = Bz_expression
+    Ex_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing Ex field [V/m]"
+    )
+    Ey_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing Ey field [V/m]"
+    )
+    Ez_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing Ez field [V/m]"
+    )
+    Bx_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing Bx field [T]"
+    )
+    By_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing By field [T]"
+    )
+    Bz_expression: Expression | None = Field(
+        default=None,
+        description="Analytic expression describing Bz field [T]"
+    )
+    lower_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Lower bound of the region where the field is applied [m]."
+    )
+    upper_bound: list[float | None] = Field(
+        default_factory=lambda: [None, None, None],
+        description="Upper bound of the region where the field is applied [m]"
+    )
+    user_defined_kw: dict = Field(
+        default_factory=dict,
+        description="Constants referenced in the expressions, collected from otherwise-unrecognized keyword arguments."
+    )
 
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
 
-        # --- Find any user defined keywords in the kw dictionary.
-        # --- Save them and delete them from kw.
-        # --- It's up to the code to make sure that all parameters
-        # --- used in the expression are defined.
-        self.user_defined_kw = {}
-        for k in list(kw.keys()):
-            if ((self.Ex_expression is not None and re.search(r'\b%s\b'%k, self.Ex_expression)) or
-                (self.Ey_expression is not None and re.search(r'\b%s\b'%k, self.Ey_expression)) or
-                (self.Ez_expression is not None and re.search(r'\b%s\b'%k, self.Ez_expression)) or
-                (self.Bx_expression is not None and re.search(r'\b%s\b'%k, self.Bx_expression)) or
-                (self.By_expression is not None and re.search(r'\b%s\b'%k, self.By_expression)) or
-                (self.Bz_expression is not None and re.search(r'\b%s\b'%k, self.Bz_expression))):
-                self.user_defined_kw[k] = kw[k]
-                del kw[k]
-
-        self.handle_init(kw)
-
-
-class PICMI_Mirror(_ClassWithInit):
+@with_mutually_exclusive("x_front_location", "y_front_location", "z_front_location", required=True)
+class PICMI_Mirror(PICMI_AppliedField):
     """
     Describes a perfectly reflecting mirror, where the E and B fields are zeroed
     out in a plane of finite thickness.
-
-    Parameters
-    ----------
-    x_front_location: float, optional (see comment below)
-        Location in x of the front of the nirror [m]
-
-    y_front_location: float, optional (see comment below)
-        Location in y of the front of the nirror [m]
-
-    z_front_location: float, optional (see comment below)
-        Location in z of the front of the nirror [m]
-
-    depth: float, optional (see comment below)
-        Depth of the mirror [m]
-
-    number_of_cells: integer, optional (see comment below)
-        Minimum numer of cells zeroed out
-
 
     Only one of the [x,y,z]_front_location should be specified. The mirror will be set
     perpendicular to the respective direction and infinite in the others.
     The depth of the mirror will be the maximum of the specified depth and number_of_cells,
     or the code's default value if neither are specified.
     """
+    x_front_location: float | None = Field(
+        default=None,
+        description="Location in x of the front of the mirror [m]"
+    )
+    y_front_location: float | None = Field(
+        default=None,
+        description="Location in y of the front of the mirror [m]"
+    )
+    z_front_location: float | None = Field(
+        default=None,
+        description="Location in z of the front of the mirror [m]"
+    )
+    depth: float | None = Field(
+        default=None,
+        description="Depth of the mirror [m]"
+    )
+    number_of_cells: int | None = Field(
+        default=None,
+        description="Minimum number of cells zeroed out"
+    )
 
-    def __init__(self, x_front_location=None, y_front_location=None, z_front_location=None,
-                 depth=None, number_of_cells=None, **kw):
 
-        assert [x_front_location,y_front_location,z_front_location].count(None) == 2,\
-               Exception('At least one and only one of [x,y,z]_front_location should be specified.')
-
-        self.x_front_location = x_front_location
-        self.y_front_location = y_front_location
-        self.z_front_location = z_front_location
-        self.depth = depth
-        self.number_of_cells = number_of_cells
-
-        self.handle_init(kw)
-
-class PICMI_LoadAppliedField(_ClassWithInit):
+class PICMI_LoadAppliedField(PICMI_AppliedField):
     """
     The E and B fields read from file are applied to the particles directly. (They are not affected by the field solver.)
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
-
-    Parameters
-    ----------
-    read_fields_from_path: string
-        Path to file with field data
-
-    load_B: bool, default=True
-        If False, do not load magnetic field
-
-    load_E: bool, default=True
-        If False, do not load electric field
     """
-    def __init__(self, read_fields_from_path, load_B=True, load_E=True, **kw):
-        self.load_B = load_B
-        self.load_E = load_E
-        self.read_fields_from_path = read_fields_from_path
+    read_fields_from_path: str = Field(
+        min_length=1,
+        description="Path to file with field data"
+    )
+    load_B: bool = Field(
+        default=True,
+        description="If False, do not load magnetic field"
+    )
+    load_E: bool = Field(
+        default=True,
+        description="If False, do not load electric field"
+    )
 
-        self.handle_init(kw)
 
-
-class PICMI_LoadGriddedField(_ClassWithInit):
+class PICMI_LoadGriddedField(PICMI_AppliedField):
     """
     The data read in is used to initialize the E and B fields on the grid at the start of the simulation.
     The expected format is the file is OpenPMD with axes (x,y,z) in Cartesian, or (r,z) in Cylindrical geometry.
-
-    Parameters
-    ----------
-    read_fields_from_path: string
-        Path to file with field data
-
-    load_B: bool, default=True
-        If False, do not load magnetic field
-
-    load_E: bool, default=True
-        If False, do not load electric field
     """
-    def __init__(self, read_fields_from_path, load_B=True, load_E=True, **kw):
-        self.load_B = load_B
-        self.load_E = load_E
-        self.read_fields_from_path = read_fields_from_path
+    read_fields_from_path: str = Field(
+        min_length=1,
+        description="Path to file with field data"
+    )
+    load_B: bool = Field(
+        default=True,
+        description="If False, do not load magnetic field"
+    )
+    load_E: bool = Field(
+        default=True,
+        description="If False, do not load electric field"
+    )
 
-        self.handle_init(kw)
+
+PICMI_AnyAppliedField = (
+    PICMI_ConstantAppliedField
+    | PICMI_AnalyticAppliedField
+    | PICMI_Mirror
+    | PICMI_LoadAppliedField
+    | PICMI_LoadGriddedField
+    | PICMI_AppliedField
+)

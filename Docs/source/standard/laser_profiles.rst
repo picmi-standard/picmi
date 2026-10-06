@@ -5,6 +5,8 @@ Laser profiles
 
    This section is currently in development.
 
-.. autoclass:: picmistandard.PICMI_GaussianLaser
+.. autopydantic_model:: picmistandard.PICMI_GaussianLaser
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_AnalyticLaser
+.. autopydantic_model:: picmistandard.PICMI_AnalyticLaser
+    :inherited-members: BaseModel

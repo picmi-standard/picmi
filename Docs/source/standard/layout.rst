@@ -5,6 +5,8 @@ Particle layouts
 
    This section is currently in development.
 
-.. autoclass:: picmistandard.PICMI_GriddedLayout
+.. autopydantic_model:: picmistandard.PICMI_GriddedLayout
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_PseudoRandomLayout
+.. autopydantic_model:: picmistandard.PICMI_PseudoRandomLayout
+    :inherited-members: BaseModel

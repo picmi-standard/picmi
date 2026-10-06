@@ -8,17 +8,25 @@ Diagnostics
 Standard PIC diagnostics
 ------------------------
 
-.. autoclass:: picmistandard.PICMI_ParticleDiagnostic
+.. autopydantic_model:: picmistandard.PICMI_ParticleDiagnostic
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_FieldDiagnostic
+.. autopydantic_model:: picmistandard.PICMI_ParticleBoundaryScrapingDiagnostic
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_ElectrostaticFieldDiagnostic
+.. autopydantic_model:: picmistandard.PICMI_FieldDiagnostic
+    :inherited-members: BaseModel
+
+.. autopydantic_model:: picmistandard.PICMI_ElectrostaticFieldDiagnostic
+    :inherited-members: BaseModel
 
 Lab-frame diagnostics
 ---------------------
 
 These diagnostics are used when running boosted-frame simulations.
 
-.. autoclass:: picmistandard.PICMI_LabFrameParticleDiagnostic
+.. autopydantic_model:: picmistandard.PICMI_LabFrameParticleDiagnostic
+    :inherited-members: BaseModel
 
-.. autoclass:: picmistandard.PICMI_LabFrameFieldDiagnostic
+.. autopydantic_model:: picmistandard.PICMI_LabFrameFieldDiagnostic
+    :inherited-members: BaseModel

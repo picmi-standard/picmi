@@ -6,12 +6,18 @@ import json
 import numbers
 import re
 import threading
-from itertools import repeat
 import warnings
+from itertools import repeat
 from typing import Annotated, ClassVar, Literal, Self, get_args, get_origin
-from pydantic import BeforeValidator, model_serializer, model_validator, BaseModel, ConfigDict
-from typing_extensions import TypeAliasType
 
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    model_serializer,
+    model_validator,
+)
+from typing_extensions import TypeAliasType
 
 # Tracks which (instance, validator) pairs are currently executing, per thread, so that a
 # mode="after" validator that assigns to ``self`` does not re-enter itself when

@@ -5,11 +5,10 @@ Run from the repository root with: ``python -m pytest Test/``
 import math
 
 import numpy as np
-import pytest
-from pydantic import Field, ValidationError
-
 import picmistandard
+import pytest
 from plasmacode import picmi
+from pydantic import Field, ValidationError
 
 
 def cartesian3d_grid_per_axis(**kw):

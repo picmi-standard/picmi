@@ -3,9 +3,10 @@ These should be the base classes for Python implementation of the PICMI standard
 """
 
 from typing import ClassVar, Literal, NamedTuple, Self, get_args
+
 from pydantic import Field, PrivateAttr, field_validator, model_validator
 
-from .base import _PICMIModel, PICMI_Grid, PICMI_Solver, resolve_once
+from .base import PICMI_Grid, PICMI_Solver, _PICMIModel, resolve_once
 
 
 class _AxisGroup(NamedTuple):

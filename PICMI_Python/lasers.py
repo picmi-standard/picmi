@@ -7,13 +7,13 @@ from typing import ClassVar, Self
 from pydantic import Field, PrivateAttr, model_validator
 
 from .base import (
-    Expression,
-    PICMI_Laser,
-    PICMI_LaserInjection,
-    _PICMIModel,
-    PICMI_ExpressionParameters,
-    _get_constants,
-    resolve_once,
+        Expression,
+        PICMI_ExpressionParameters,
+        PICMI_Laser,
+        PICMI_LaserInjection,
+        _get_constants,
+        _PICMIModel,
+        resolve_once,
 )
 
 

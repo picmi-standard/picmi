@@ -12,9 +12,9 @@ from pydantic import Field, PrivateAttr, field_validator, model_validator
 from .base import (
     Expression,
     PICMI_Distribution,
+    PICMI_ExpressionParameters,
     PICMI_Layout,
     _PICMIModel,
-    PICMI_ExpressionParameters,
     broadcast_validation,
     resolve_once,
     with_mutually_exclusive,

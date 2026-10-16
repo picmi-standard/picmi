@@ -17,6 +17,7 @@ cst = picmi.constants
 
 # --- laser
 import math
+
 laser_polarization   = math.pi/2 # Polarization angle (in rad)
 laser_a0             = 4.        # Normalized potential vector
 laser_wavelength     = 8e-07     # Wavelength of the laser (in meters)

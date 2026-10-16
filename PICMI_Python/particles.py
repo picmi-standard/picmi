@@ -413,7 +413,7 @@ class PICMI_GriddedLayout(PICMI_Layout):
         # reports the missing required argument instead of an invalid ``None``.
         if "n_macroparticle_per_cell" in kwargs:
             kwargs["n_macroparticles_per_cell"] = kwargs.pop("n_macroparticle_per_cell")
-        return super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @field_validator("n_macroparticles_per_cell", mode="before")
     @classmethod

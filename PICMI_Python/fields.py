@@ -336,7 +336,7 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
         self._resolve_cartesian_grid()
         return self
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2]):
+    def add_refined_region(self, level, lo, hi, refinement_factor=None):
         """Add a refined region.
 
         Parameters
@@ -350,6 +350,8 @@ class PICMI_Cartesian1DGrid(_PICMIGrid):
         refinement_factor : list of int, optional
             The refinement factor relative to the next lower level (default: [2])
         """
+        if refinement_factor is None:
+            refinement_factor = [2]
         # assign (instead of appending in place), so that the region is validated and marked as set
         self.refined_regions = [*self.refined_regions, [level, lo, hi, refinement_factor]]
 
@@ -561,7 +563,7 @@ class PICMI_CylindricalGrid(_PICMIGrid):
 
         return self
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2]):
+    def add_refined_region(self, level, lo, hi, refinement_factor=None):
         """Add a refined region.
 
         Parameters
@@ -575,6 +577,8 @@ class PICMI_CylindricalGrid(_PICMIGrid):
         refinement_factor : list of int, optional
             The refinement factor relative to the next lower level (default: [2, 2])
         """
+        if refinement_factor is None:
+            refinement_factor = [2, 2]
         # assign (instead of appending in place), so that the region is validated and marked as set
         self.refined_regions = [*self.refined_regions, [level, lo, hi, refinement_factor]]
 
@@ -746,7 +750,7 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
         self._resolve_cartesian_grid()
         return self
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2]):
+    def add_refined_region(self, level, lo, hi, refinement_factor=None):
         """Add a refined region.
 
         Parameters
@@ -760,6 +764,8 @@ class PICMI_Cartesian2DGrid(_PICMIGrid):
         refinement_factor : list of int, optional
             The refinement factor relative to the next lower level (default: [2, 2])
         """
+        if refinement_factor is None:
+            refinement_factor = [2, 2]
         # assign (instead of appending in place), so that the region is validated and marked as set
         self.refined_regions = [*self.refined_regions, [level, lo, hi, refinement_factor]]
 
@@ -962,7 +968,7 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
         self._resolve_cartesian_grid()
         return self
 
-    def add_refined_region(self, level, lo, hi, refinement_factor=[2, 2, 2]):
+    def add_refined_region(self, level, lo, hi, refinement_factor=None):
         """Add a refined region.
 
         Parameters
@@ -976,6 +982,8 @@ class PICMI_Cartesian3DGrid(_PICMIGrid):
         refinement_factor : list of int, optional
             The refinement factor relative to the next lower level (default: [2, 2, 2])
         """
+        if refinement_factor is None:
+            refinement_factor = [2, 2, 2]
         # assign (instead of appending in place), so that the region is validated and marked as set
         self.refined_regions = [*self.refined_regions, [level, lo, hi, refinement_factor]]
 

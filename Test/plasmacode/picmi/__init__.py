@@ -26,12 +26,12 @@ for cls in picmi_classes:
     if cls in ['PICMI_CylindricalGrid', 'PICMI_Simulation']:
         continue
 
-    def_class_code = \
-"""
-class %s(picmistandard.%s):
+    def_class_code = f"""
+class {cls[len('PICMI_'):]}(picmistandard.{cls}):
     pass
-""" %(cls[len('PICMI_'):], cls)
-    exec( def_class_code, globals(), locals() )
+"""
+    # trusted code: defines a trivial implementation class for each PICMI class
+    exec( def_class_code, globals(), locals() )  # noqa: S102
 
 picmistandard.PICMI_MultiSpecies.Species_class = Species
 

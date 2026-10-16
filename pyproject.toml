@@ -36,3 +36,7 @@ Documentation = "https://picmi.readthedocs.io/en/latest"
 # These rules are currently not followed by some files.
 # Shortening this list should be a future PR.
 ignore = ["E402", "F401","F403","F821"]
+
+[tool.ruff.lint.per-file-ignores]
+# the source directory is named PICMI_Python, but installed as picmistandard
+"PICMI_Python/__init__.py" = ["N999"]

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -387,8 +386,10 @@ def setup(app):
                 f"- {class_reference(member)}" for member in obj.__args__
             ] + [
                 "",
-                f"i.e., a class of the standard or a class of an implementing code that derives "
-                f"from {class_reference(base)}.",
+                (
+                    f"i.e., a class of the standard or a class of an implementing code that derives "
+                    f"from {class_reference(base)}."
+                ),
             ]
         elif isinstance(obj, TypeAliasType):
             docs = ModuleAnalyzer.for_module(obj.__module__).find_attr_docs()

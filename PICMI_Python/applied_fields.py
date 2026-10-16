@@ -8,8 +8,8 @@ from pydantic import Field
 from .base import (
     Expression,
     PICMI_AppliedField,
-    _PICMIModel,
     PICMI_ExpressionParameters,
+    _PICMIModel,
     with_mutually_exclusive,
 )
 

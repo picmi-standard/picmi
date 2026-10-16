@@ -5,11 +5,10 @@ Run from the repository root with: ``python -m pytest Test/``
 import math
 
 import numpy as np
-import pytest
-from pydantic import Field, ValidationError
-
 import picmistandard
+import pytest
 from plasmacode import picmi
+from pydantic import Field, ValidationError
 
 
 def cartesian3d_grid_per_axis(**kw):
@@ -264,7 +263,7 @@ def test_aliases_are_also_attributes():
     with pytest.raises(ValidationError, match="has no attribute"):
         grid.plasmacode_max_grid_siz = 4
     with pytest.raises(AttributeError):
-        grid.plasmacode_unknown
+        grid.plasmacode_unknown  # noqa: B018 (the attribute access itself is tested)
 
     assert "plasmacode_max_grid_size" in dir(grid)
 
@@ -401,7 +400,7 @@ def test_species_methods_list_is_class_constant():
 def test_species_identity_semantics():
     electrons = picmi.Species(particle_type="electron", name="e")
     twin = picmi.Species(particle_type="electron", name="e")
-    assert electrons == electrons
+    assert electrons == electrons  # noqa: PLR0124 (reflexive equality is tested)
     assert electrons != twin
     # usable as dictionary keys, e.g., for per-species diagnostic options
     random_fraction = {electrons: 0.5, twin: 0.25}
@@ -851,13 +850,26 @@ def test_simulation_add_methods_validate_and_are_atomic():
     assert sim.lasers == [] and sim.laser_injection_methods == []
 
 
+def test_refined_region_default_factor_is_not_shared():
+    first = cartesian3d_grid_per_axis()
+    second = cartesian3d_grid_per_axis()
+    first.add_refined_region(1, [0.2, 0.2, 0.2], [0.8, 0.8, 0.8])
+    second.add_refined_region(1, [0.2, 0.2, 0.2], [0.8, 0.8, 0.8])
+    first.refined_regions[0][3][0] = 4
+    assert first.refined_regions[0][3] == [4, 2, 2]
+    assert second.refined_regions[0][3] == [2, 2, 2]
+    third = cartesian3d_grid_per_axis()
+    third.add_refined_region(1, [0.2, 0.2, 0.2], [0.8, 0.8, 0.8])
+    assert third.refined_regions[0][3] == [2, 2, 2]
+
+
 def test_unsupported_and_deprecated_argument_helpers():
     species = picmi.Species(particle_type="electron", density_scale=2.)
     with pytest.warns(UserWarning, match="Species: The argument density_scale is not supported"):
         species._check_unsupported_argument("density_scale")
-    with pytest.raises(Exception, match="is deprecated"):
+    with pytest.raises(picmistandard.UnsupportedArgumentError, match="is deprecated"):
         species._check_deprecated_argument("density_scale", raise_error=True)
     # arguments with their default value are not reported
     species._check_unsupported_argument("charge", raise_error=True)
-    with pytest.raises(Exception, match="the value Boris is not supported"):
+    with pytest.raises(picmistandard.UnsupportedArgumentError, match="the value Boris is not supported"):
         picmi.Species(particle_type="electron", method="Boris")._unsupported_value("method")

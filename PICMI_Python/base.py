@@ -6,12 +6,28 @@ import json
 import numbers
 import re
 import threading
-from itertools import repeat
 import warnings
+from itertools import repeat
 from typing import Annotated, ClassVar, Literal, Self, get_args, get_origin
-from pydantic import BeforeValidator, model_serializer, model_validator, BaseModel, ConfigDict
+
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    ConfigDict,
+    model_serializer,
+    model_validator,
+)
 from typing_extensions import TypeAliasType
 
+
+class UnsupportedArgumentError(Exception):
+    """An argument (or its value) given by the user is not supported by the implementing code
+
+    Raised by the ``_check_unsupported_argument``, ``_unsupported_value`` and
+    ``_check_deprecated_argument`` helpers if ``raise_error`` is true. This derives directly
+    from ``Exception`` (and not from ``ValueError``), so that pydantic does not wrap it into a
+    ``ValidationError`` when it is raised in a validator or in ``model_post_init``.
+    """
 
 # Tracks which (instance, validator) pairs are currently executing, per thread, so that a
 # mode="after" validator that assigns to ``self`` does not re-enter itself when
@@ -356,8 +372,8 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             Information to include in the warning/error message
 
         raise_error: bool
-            If False (the default), raise a warning. If true, raise an exception
-            (which interrupts the code).
+            If False (the default), raise a warning. If true, raise an
+            UnsupportedArgumentError (which interrupts the code).
 
         Implementation note: This should be called by the implementing class, e.g., in its
         ``model_post_init``, for each unsupported argument. For example, for the
@@ -374,7 +390,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             if message is not None:
                 full_message += f' {message}'
             if raise_error:
-                raise Exception(full_message)
+                raise UnsupportedArgumentError(full_message)
             else:
                 warnings.warn(full_message)
 
@@ -390,7 +406,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             Information to include in the warning/error message
 
         raise_error: bool
-            If True (the default), raise an exception (which interrupts the code).
+            If True (the default), raise an UnsupportedArgumentError (which interrupts the code).
             If False, raise a warning.
 
         Implementation note: This should be called when the implementing code handles
@@ -406,7 +422,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
         if message is not None:
             full_message += f' {message}'
         if raise_error:
-            raise Exception(full_message)
+            raise UnsupportedArgumentError(full_message)
         else:
             warnings.warn(full_message)
 
@@ -422,8 +438,8 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             Information to include in the warning/error message
 
         raise_error: bool
-            If False (the default), raise a warning. If true, raise an exception
-            (which interrupts the code).
+            If False (the default), raise a warning. If true, raise an
+            UnsupportedArgumentError (which interrupts the code).
 
         Implementation note: This should be called within PICMI, e.g., in a model validator
         of the class, for each deprecated argument. This assumes that the argument is still a
@@ -441,7 +457,7 @@ class _PICMIModel(BaseModel, metaclass=_DocumentedModelMetaClass):
             if message is not None:
                 full_message += f' {message}'
             if raise_error:
-                raise Exception(full_message)
+                raise UnsupportedArgumentError(full_message)
             else:
                 warnings.warn(full_message)
 
@@ -527,7 +543,7 @@ class PICMI_ExpressionParameters(_PICMIModel):
         for key in list(data):
             if key in known:
                 continue
-            if any(re.search(r'\b%s\b' % re.escape(key), expression) for expression in expressions):
+            if any(re.search(rf'\b{re.escape(key)}\b', expression) for expression in expressions):
                 user_defined_kw[key] = data.pop(key)
         # only set it if given or collected, so that the field is not marked as set otherwise
         if user_defined_kw or user_defined_kw_key in data:
